@@ -33,8 +33,6 @@ la asociación de pacientes de cáncer de páncreas.
 - **Protección de datos por diseño**: los documentos clínicos se
   anonimizan antes de ser usados por el sistema. La identidad del
   paciente nunca se almacena en la base de datos de la aplicación.
-- **Panel de mediador**: profesionales y voluntarios de ACANPAN
-  supervisan la carga y anonimización de documentos.
 
 ## Estado del proyecto
 
@@ -57,9 +55,8 @@ frontend). Si te interesa colaborar, escríbenos.
 
 ## Colaboración
 
-ACOMPAS se desarrolla en colaboración con **ACANPAN**, que aporta
-contexto clínico, acceso a mediadores y pacientes, y validación del
-producto.
+ACOMPAS se desarrolla en colaboración con **ACANPAN**, que aporta 
+contexto clínico, acceso a pacientes y validación del producto.
 
 ## Contacto
 
