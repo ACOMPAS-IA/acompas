@@ -33,8 +33,6 @@ the Spanish pancreatic cancer patient association.
 - **Privacy by design**: clinical documents are anonymized before
   being used by the system. Patient identity is never stored in the
   application's database.
-- **Mediator panel**: ACANPAN professionals and volunteers supervise
-  document upload and anonymization.
 
 You can find more context about the project at
 [acompas-ia.es](https://www.acompas-ia.es).
@@ -62,8 +60,7 @@ frontend). If you're interested in contributing, reach out.
 ## Collaboration
 
 ACOMPAS is developed in collaboration with **ACANPAN**, which
-contributes clinical context, access to mediators and patients, and
-product validation.
+contributes clinical context, access to patients, and product validation.
 
 ## Contact
 
