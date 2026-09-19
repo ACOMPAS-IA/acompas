@@ -60,7 +60,8 @@ frontend). If you're interested in contributing, reach out.
 ## Collaboration
 
 ACOMPAS is developed in collaboration with **ACANPAN**, which
-contributes clinical context, access to patients, and product validation.
+contributes clinical context, access to patients, and product 
+validation.
 
 ## Contact
 
