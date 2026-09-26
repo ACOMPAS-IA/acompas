@@ -16,6 +16,16 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: "1"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
 volumes:
   postgres_data:
