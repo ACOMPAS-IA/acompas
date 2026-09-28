@@ -42,6 +42,86 @@ You can find more context about the project at
 Currently in early development (Phase 0 / Phase 1). This repository
 will be populated progressively as implementation advances.
 
+## Development setup
+
+ACOMPAS uses Docker as the reference development environment. The goal
+is that every contributor can run the same services locally regardless
+of their host operating system.
+
+### Requirements
+
+- Git
+- Docker Desktop with WSL2 integration on Windows
+- Docker Engine / Docker Compose on Linux or macOS
+
+Python, PostgreSQL and Node.js do not need to be installed directly on
+the host for the standard development workflow.
+
+### First setup
+
+Clone the repository and enter the project directory:
+
+```bash
+git clone git@github.com:ACOMPAS-IA/acompas.git
+cd acompas
+```
+
+Create the local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Start the development environment:
+
+```bash
+docker compose up -d --build
+```
+
+Check the running services:
+
+```bash
+docker compose ps
+```
+
+The backend health endpoint should return:
+
+```json
+{"status":"ok"}
+```
+
+It can be checked with:
+
+```bash
+curl http://localhost:8000/health
+```
+
+### Stopping the environment
+
+To stop the services:
+
+```bash
+docker compose down
+```
+
+The local PostgreSQL data volume is preserved unless it is explicitly
+removed.
+
+### Development workflow
+
+Changes should be developed on feature branches and submitted through
+Pull Requests. Direct pushes to `main` are not part of the normal
+workflow.
+
+Example:
+
+```bash
+git switch -c feature/ACO-XXX-short-description
+```
+
+Before opening a Pull Request, make sure the relevant tests pass and
+the Docker environment starts correctly.
+
 ## Team
 
 - **Miguel Martínez** — Project lead and founder. Computer
@@ -60,7 +140,7 @@ frontend). If you're interested in contributing, reach out.
 ## Collaboration
 
 ACOMPAS is developed in collaboration with **ACANPAN**, which
-contributes clinical context, access to patients, and product 
+contributes clinical context, access to patients, and product
 validation.
 
 ## Contact
