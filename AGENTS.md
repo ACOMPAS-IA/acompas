@@ -108,6 +108,29 @@ automáticamente "BLOQUEO".
 Si, por el contrario, la ficha del ACO indica que una decisión requiere
 BLOQUEO, el agente debe detenerse y solicitar decisión humana.
 
+### Separación entre decisión delegada y hallazgos derivados
+
+Cuando una decisión esté expresamente delegada por la ficha del ACO, el agente puede resolverla durante PLAN dentro de las restricciones autorizadas.
+
+La resolución de esa decisión no implica automáticamente que todas las mejoras, refactorizaciones o cambios relacionados detectados durante el análisis formen parte del BUILD.
+
+El agente debe distinguir entre:
+
+* **DECISIÓN:** elección técnica necesaria para ejecutar el ACO.
+* **HALLAZGO:** problema o mejora detectada durante el análisis que puede corregirse dentro del ACO.
+* **FUERA DE ALCANCE:** trabajo que pertenece a otro ACO.
+* **BLOQUEO:** condición que impide cumplir el ACO actual.
+
+Los hallazgos no deben incorporarse automáticamente al plan de implementación de la decisión delegada si no son necesarios para cumplir sus criterios de aceptación.
+
+Cuando existan varios cambios previstos, el agente debe indicar cuáles son:
+
+1. necesarios para implementar la decisión delegada;
+2. necesarios para cumplir otros criterios de aceptación del ACO;
+3. correcciones de hallazgos independientes.
+
+Una decisión delegada no autoriza por sí misma la ampliación del alcance del ACO.
+
 ### Regla de prioridad
 
 Ante una situación ambigua, el agente debe determinar primero:
@@ -255,6 +278,24 @@ Implementar exclusivamente el alcance aprobado.
 
 Ejecutar las pruebas y comprobaciones correspondientes e informar de resultados, incidencias y bloqueos.
 
+## 14.1 Integridad del repositorio durante PLAN
+
+Cuando una prueba o ejecución PLAN indique expresamente que no deben existir modificaciones del repositorio, el agente debe registrar antes de comenzar:
+
+* rama actual;
+* `HEAD`;
+* `git status --porcelain`;
+* cambios tracked mediante `git diff --stat`;
+* cambios staged mediante `git diff --cached --stat`.
+
+Al finalizar PLAN debe repetir las mismas comprobaciones y compararlas con el baseline inicial.
+
+Debe informar explícitamente de cualquier diferencia detectada.
+
+La comprobación final no debe afirmar que el repositorio permanece sin cambios basándose únicamente en una observación del estado final.
+
+Las comprobaciones utilizadas para establecer o comparar el baseline deben ser de solo lectura y no deben modificar el repositorio.
+
 ## 15. Regla de bloqueo
 
 El agente debe detenerse cuando:
@@ -267,7 +308,7 @@ El agente debe detenerse cuando:
 - el trabajo requiera modificar otro ACO;
 - no pueda cumplir los criterios de aceptación definidos.
 
-**Ante una decisión no especificada, bloquear. No inventar.**
+**Ante una decisión no especificada, determinar primero si está delegada por el ACO. Si no está delegada y requiere autorización humana, bloquear.**
 
 ## 16. Responsabilidad humana
 
