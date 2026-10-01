@@ -28,7 +28,97 @@ El agente ejecuta un ACO concreto; no redefine el proyecto.
 
 No amplía el alcance por iniciativa propia, no modifica decisiones arquitectónicas sin autorización y no inventa requisitos.
 
-Si necesita una decisión no especificada para continuar: `BLOQUEO`.
+Si necesita una decisión no especificada para continuar, debe determinar primero
+si esa decisión está delegada por el ACO o si constituye una decisión que requiere
+autorización humana. Solo en este último caso debe declarar `BLOQUEO`.
+
+## 3.1 Clasificación de incidencias y decisiones
+
+El agente debe distinguir entre una decisión no especificada, un bloqueo real,
+un trabajo fuera de alcance y un hallazgo.
+
+### BLOQUEO
+
+Debe detenerse cuando el problema:
+
+- impida cumplir los criterios de aceptación del ACO;
+- requiera una decisión arquitectónica no autorizada;
+- requiera introducir una dependencia no aprobada;
+- contradiga una decisión explícita del ACO, del Documento Operativo,
+  del Plan de Trabajo, del Plan de Proyecto o de la arquitectura;
+- implique un riesgo relevante de seguridad o privacidad;
+- requiera modificar otro ACO para poder completar el ACO actual.
+
+Debe informar:
+
+`BLOQUEO — <motivo>`
+
+### FUERA DE ALCANCE
+
+Si durante la ejecución aparece trabajo que pertenece a otro ACO,
+el agente no debe implementarlo como parte del ACO actual.
+
+Debe informar:
+
+`FUERA DE ALCANCE — requiere ACO-XXX`
+
+La existencia de trabajo fuera de alcance no implica por sí misma que el ACO
+actual esté bloqueado.
+
+### HALLAZGO
+
+Un problema, inconsistencia o posible mejora que no impide cumplir el ACO
+actual debe registrarse como hallazgo y no debe convertirse automáticamente
+en un bloqueo.
+
+Debe informar:
+
+`HALLAZGO — <descripción>`
+
+El agente puede corregir un hallazgo si su corrección está claramente dentro
+del alcance del ACO actual. Si pertenece a otro ACO, debe marcarlo como
+FUERA DE ALCANCE.
+
+### ADVERTENCIA
+
+La falta de información contextual o documentación auxiliar no implica por
+sí misma un bloqueo si el agente puede cumplir de forma segura y verificable
+los criterios del ACO.
+
+Debe informar:
+
+`ADVERTENCIA — <descripción>`
+
+### Decisiones delegadas por el ACO
+
+Si la ficha del ACO delega expresamente una decisión técnica al propio ACO,
+esa decisión está autorizada dentro de su alcance.
+
+El agente puede analizar, elegir e implementar una solución compatible con:
+
+- los objetivos del ACO;
+- sus criterios de aceptación;
+- sus restricciones técnicas;
+- la arquitectura existente;
+- las reglas de AGENTS.md.
+
+Por tanto, "no está predeterminado en otro documento" no significa
+automáticamente "BLOQUEO".
+
+Si, por el contrario, la ficha del ACO indica que una decisión requiere
+BLOQUEO, el agente debe detenerse y solicitar decisión humana.
+
+### Regla de prioridad
+
+Ante una situación ambigua, el agente debe determinar primero:
+
+1. ¿La ficha del ACO autoriza expresamente la decisión?
+2. ¿La decisión está restringida o prohibida explícitamente?
+3. ¿La decisión afecta a otro ACO?
+4. ¿Impide cumplir el ACO actual?
+5. ¿Es únicamente un hallazgo o advertencia?
+
+Solo debe utilizar `BLOQUEO` cuando exista una condición real de bloqueo.
 
 ## 4. Alcance del trabajo
 
