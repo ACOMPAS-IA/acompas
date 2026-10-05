@@ -1,0 +1,74 @@
+Hospital Universitario Monteluz
+Laboratorio de Análisis Clínicos
+Villaserena (Valladolid)
+
+INFORME DE RESULTADOS DE LABORATORIO
+
+DATOS DEL PACIENTE
+Paciente: Rosario Albendea Quintanar
+DNI: 12345678Z
+NHC: 7300451
+Tarjeta sanitaria: TSI 0000 1234 5678
+Fecha de nacimiento: 14/03/1958
+Domicilio: Calle del Almendro Florido, 14, 3.º B, Villaserena (Valladolid)
+Teléfono: 600 123 456
+
+DATOS DE LA PETICIÓN
+Nº de petición: PET-2026-000123
+Médico solicitante: Dra. Inés Carrascal Ochoa
+Servicio: Oncología Médica
+Fecha de extracción: 15/09/2026
+Fecha de validación: 15/09/2026
+
+Los resultados marcados con (*) están fuera del intervalo de referencia.
+
+HEMATOLOGÍA
+Prueba | Resultado | Unidades | Valores de referencia
+Hemoglobina | 11,4 (*) | g/dL | 12,0 - 15,5
+Hematocrito | 34,8 (*) | % | 36,0 - 46,0
+Volumen corpuscular medio | 88 | fL | 80 - 100
+Leucocitos | 7,2 | x10^3/µL | 4,0 - 11,0
+Neutrófilos | 4,9 | x10^3/µL | 2,0 - 7,5
+Linfocitos | 1,5 | x10^3/µL | 1,0 - 4,0
+Plaquetas | 245 | x10^3/µL | 150 - 400
+
+COAGULACIÓN
+Prueba | Resultado | Unidades | Valores de referencia
+Tiempo de protrombina (INR) | 1,1 | - | 0,8 - 1,2
+
+BIOQUÍMICA GENERAL
+Prueba | Resultado | Unidades | Valores de referencia
+Glucosa | 128 (*) | mg/dL | 70 - 110
+Creatinina | 0,78 | mg/dL | 0,50 - 1,00
+Filtrado glomerular estimado | > 90 | mL/min/1,73 m² | > 60
+Sodio | 138 | mmol/L | 135 - 145
+Potasio | 4,1 | mmol/L | 3,5 - 5,1
+Proteínas totales | 6,2 (*) | g/dL | 6,4 - 8,3
+Albúmina | 3,3 (*) | g/dL | 3,5 - 5,2
+
+PERFIL HEPÁTICO Y PANCREÁTICO
+Prueba | Resultado | Unidades | Valores de referencia
+Bilirrubina total | 2,1 (*) | mg/dL | 0,3 - 1,2
+Bilirrubina directa | 1,5 (*) | mg/dL | 0,0 - 0,3
+AST (GOT) | 58 (*) | U/L | < 35
+ALT (GPT) | 72 (*) | U/L | < 35
+Gamma-glutamil transferasa (GGT) | 312 (*) | U/L | < 40
+Fosfatasa alcalina | 268 (*) | U/L | 35 - 104
+Lactato deshidrogenasa (LDH) | 210 | U/L | < 250
+Lipasa | 45 | U/L | 13 - 60
+
+MARCADORES TUMORALES
+Prueba | Resultado | Unidades | Valores de referencia
+CA 19-9 | 1.240 (*) | U/mL | < 37
+Antígeno carcinoembrionario (CEA) | 8,4 (*) | ng/mL | < 5,0
+CA 125 | 28 | U/mL | < 35
+
+COMENTARIO DEL LABORATORIO
+Se observa una elevación marcada del marcador tumoral CA 19-9 y una elevación moderada del CEA. El CA 19-9 también puede aumentar cuando la bilis no drena bien (colestasis), por lo que su valor debe interpretarse junto con la bilirrubina y la evolución clínica. Se recomienda repetir la determinación cuando la colestasis se haya resuelto, como valor de referencia antes de iniciar el tratamiento.
+
+La bilirrubina y las enzimas hepáticas (GGT, fosfatasa alcalina y transaminasas) siguen elevadas, en relación con la obstrucción de la vía biliar ya tratada. La hemoglobina y la albúmina están ligeramente bajas. La función renal es normal.
+
+Validado por: Dr. Fermín Ugarte Salcedo
+Especialista en Análisis Clínicos
+Nº de colegiado: 99/00456
+Hospital Universitario Monteluz

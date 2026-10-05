@@ -1,0 +1,57 @@
+Hospital Universitario Monteluz
+Servicio de Oncología Médica
+Villaserena (Valladolid)
+Teléfono de consultas: 900 000 000
+Correo electrónico: oncologia.monteluz@example.org
+
+INFORME DE CONSULTA DE ONCOLOGÍA MÉDICA
+
+Fecha: 22 de septiembre de 2026
+
+Paciente: Rosario Albendea Quintanar
+Fecha de nacimiento: 14/03/1958 (68 años)
+DNI: 12345678Z
+NHC: 7300451
+Tarjeta sanitaria: TSI 0000 1234 5678
+Domicilio: Calle del Almendro Florido, 14, 3.º B, Villaserena (Valladolid)
+Teléfono: 600 123 456
+Correo electrónico: rosario.albendea@example.com
+
+MOTIVO DE CONSULTA
+Primera consulta en Oncología Médica para valorar el tratamiento tras el diagnóstico de cáncer de páncreas. Acude acompañada de su marido, Tomás Ibarrola Senra, a quien autoriza a recibir información sobre su proceso.
+
+ANTECEDENTES
+Se trata de una mujer de 68 años, sin alergias a medicamentos conocidas, con hipertensión arterial en tratamiento y diabetes tipo 2 de diagnóstico reciente. No fumadora. Sin antecedentes familiares de cáncer conocidos.
+
+ENFERMEDAD ACTUAL
+Consultó por ictericia indolora, orina oscura y pérdida de unos 6 kg de peso. La TC de tórax, abdomen y pelvis del 03/09/2026 mostró una masa de 3,2 cm en la cabeza del páncreas que rodea la arteria mesentérica superior en más de 180°, con dilatación de la vía biliar y dos ganglios regionales sospechosos, sin metástasis en hígado ni en pulmón. El 05/09/2026 se colocó una prótesis biliar metálica mediante CPRE para resolver la obstrucción. El 08/09/2026 se realizó ecoendoscopia con PAAF y BAG. El informe de Anatomía Patológica del 12/09/2026, firmado por el Dr. Andrés Lozoya Benítez, confirma un adenocarcinoma ductal de páncreas moderadamente diferenciado. En la analítica del 15/09/2026 destacan CA 19-9 de 1.240 U/mL (normal por debajo de 37), CEA de 8,4 ng/mL y bilirrubina total de 2,1 mg/dL, en descenso.
+
+EXPLORACIÓN FÍSICA
+ECOG 1: realiza su vida habitual, con limitación para esfuerzos intensos. Peso 61 kg. Leve tinte amarillo en los ojos. Abdomen blando, no doloroso, sin masas palpables.
+
+JUICIO CLÍNICO
+Adenocarcinoma ductal de cabeza de páncreas, cT4 N1 M0, estadio III (clasificación AJCC, 8.ª edición). Enfermedad localmente avanzada, no operable de entrada por la afectación de la arteria mesentérica superior, sin metástasis a distancia.
+
+COMITÉ MULTIDISCIPLINAR
+El caso se presentó en el comité de tumores digestivos del 19/09/2026. Se acordó quimioterapia de inducción y reevaluación posterior para valorar cirugía o radioterapia.
+
+PLAN DE TRATAMIENTO
+1. Quimioterapia con esquema mFOLFIRINOX (oxaliplatino, irinotecán, leucovorina y 5-fluorouracilo en infusión de 46 horas) cada 14 días.
+2. Colocación de un reservorio venoso subcutáneo, programada para el 25/09/2026.
+3. Inicio del primer ciclo el 29/09/2026 en el hospital de día.
+4. Analítica con hemograma, bioquímica y CA 19-9 antes de cada ciclo.
+5. TC de reevaluación tras 4 ciclos y nueva presentación en el comité.
+6. Valoración por Nutrición y control de la glucemia por su médico de Atención Primaria.
+
+INFORMACIÓN A LA PACIENTE
+Se explica a la Sra. Albendea Quintanar y a su marido el diagnóstico, que la enfermedad no es operable en este momento y que el objetivo del tratamiento es controlar el tumor y, si responde, valorar un tratamiento local. Se comentan los efectos adversos más frecuentes: cansancio, náuseas, diarrea, llagas en la boca, bajada de defensas (neutropenia) con riesgo de infección y hormigueo en manos y pies por el oxaliplatino, que empeora con el frío. Se entrega hoja informativa y firma el consentimiento informado.
+
+PAUTAS Y CONTACTO
+Debe acudir a Urgencias si tiene fiebre de 38 °C o más, más de cuatro deposiciones diarreicas al día pese a la medicación, vómitos que le impidan comer o beber, o si vuelve a ponerse amarilla. Para dudas puede llamar al 900 000 000 o escribir a oncologia.monteluz@example.org.
+
+Próxima cita: 29/09/2026, hospital de día de Oncología.
+
+Fdo.: Dra. Inés Carrascal Ochoa
+Facultativa especialista de Oncología Médica
+Nº de colegiado: 99/00789
+Hospital Universitario Monteluz, Villaserena, 22 de septiembre de 2026
