@@ -10,7 +10,7 @@ Esta carpeta contiene tres documentos clínicos oncológicos sintéticos, en esp
 | `documents/analitica_01.txt` | Analítica con marcadores tumorales |
 | `documents/carta_oncologia_01.txt` | Informe de consulta de oncología con el plan de tratamiento |
 
-Los datos identificativos se han colocado a propósito y están listados en `expected_entities.json`. Ficha: [`docs/acos/ACO-051.md`](../../../docs/acos/ACO-051.md).
+Los datos identificativos se han colocado a propósito y están listados en `expected_entities.json`. Ficha: [`docs/aco/ACO-051.md`](../../../docs/aco/ACO-051.md).
 
 ## Reglas para que ningún dato sea real
 
