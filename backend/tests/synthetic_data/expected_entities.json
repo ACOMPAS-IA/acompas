@@ -1,0 +1,312 @@
+{
+  "documents": [
+    {
+      "file": "informe_patologia_01.txt",
+      "type": "informe_anatomia_patologica",
+      "entities": [
+        {
+          "text": "Hospital Universitario Monteluz",
+          "category": "HOSPITAL",
+          "count": 2
+        },
+        {
+          "text": "Villaserena",
+          "category": "TERRITORIO",
+          "count": 2
+        },
+        {
+          "text": "Valladolid",
+          "category": "TERRITORIO",
+          "count": 1
+        },
+        {
+          "text": "7300451",
+          "category": "ES_HISTORIA_CLINICA",
+          "count": 1
+        },
+        {
+          "text": "12345678Z",
+          "category": "ES_DNI",
+          "count": 1
+        },
+        {
+          "text": "14/03/1958",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "Inés Carrascal Ochoa",
+          "category": "PERSON",
+          "count": 2
+        },
+        {
+          "text": "ALBENDEA QUINTANAR, ROSARIO",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "Andrés Lozoya Benítez",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "68 años",
+          "category": "AGE",
+          "count": 1
+        },
+        {
+          "text": "Mujer",
+          "category": "SEXO",
+          "count": 1
+        },
+        {
+          "text": "08/09/2026",
+          "category": "DATE_TIME",
+          "count": 2
+        },
+        {
+          "text": "12/09/2026",
+          "category": "DATE_TIME",
+          "count": 3
+        },
+        {
+          "text": "99/00123",
+          "category": "ID_TITULACION_PERSONAL_SANITARIO",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "analitica_01.txt",
+      "type": "analitica",
+      "entities": [
+        {
+          "text": "Hospital Universitario Monteluz",
+          "category": "HOSPITAL",
+          "count": 2
+        },
+        {
+          "text": "Villaserena",
+          "category": "TERRITORIO",
+          "count": 2
+        },
+        {
+          "text": "Valladolid",
+          "category": "TERRITORIO",
+          "count": 2
+        },
+        {
+          "text": "7300451",
+          "category": "ES_HISTORIA_CLINICA",
+          "count": 1
+        },
+        {
+          "text": "12345678Z",
+          "category": "ES_DNI",
+          "count": 1
+        },
+        {
+          "text": "14/03/1958",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "Inés Carrascal Ochoa",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "Rosario Albendea Quintanar",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "Fermín Ugarte Salcedo",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "TSI 0000 1234 5678",
+          "category": "ID_ASEGURAMIENTO",
+          "count": 1
+        },
+        {
+          "text": "Calle del Almendro Florido, 14, 3.º B",
+          "category": "CALLE",
+          "count": 1
+        },
+        {
+          "text": "600 123 456",
+          "category": "PHONE_NUMBER",
+          "count": 1
+        },
+        {
+          "text": "PET-2026-000123",
+          "category": "ID_CONTACTO_ASISTENCIAL",
+          "count": 1
+        },
+        {
+          "text": "15/09/2026",
+          "category": "DATE_TIME",
+          "count": 2
+        },
+        {
+          "text": "99/00456",
+          "category": "ID_TITULACION_PERSONAL_SANITARIO",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "file": "carta_oncologia_01.txt",
+      "type": "carta_oncologia",
+      "entities": [
+        {
+          "text": "Hospital Universitario Monteluz",
+          "category": "HOSPITAL",
+          "count": 2
+        },
+        {
+          "text": "Villaserena",
+          "category": "TERRITORIO",
+          "count": 3
+        },
+        {
+          "text": "Valladolid",
+          "category": "TERRITORIO",
+          "count": 2
+        },
+        {
+          "text": "7300451",
+          "category": "ES_HISTORIA_CLINICA",
+          "count": 1
+        },
+        {
+          "text": "12345678Z",
+          "category": "ES_DNI",
+          "count": 1
+        },
+        {
+          "text": "14/03/1958",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "Inés Carrascal Ochoa",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "Rosario Albendea Quintanar",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "Albendea Quintanar",
+          "category": "PERSON",
+          "count": 2
+        },
+        {
+          "text": "Tomás Ibarrola Senra",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "Andrés Lozoya Benítez",
+          "category": "PERSON",
+          "count": 1
+        },
+        {
+          "text": "68 años",
+          "category": "AGE",
+          "count": 2
+        },
+        {
+          "text": "mujer",
+          "category": "SEXO",
+          "count": 1
+        },
+        {
+          "text": "TSI 0000 1234 5678",
+          "category": "ID_ASEGURAMIENTO",
+          "count": 1
+        },
+        {
+          "text": "Calle del Almendro Florido, 14, 3.º B",
+          "category": "CALLE",
+          "count": 1
+        },
+        {
+          "text": "600 123 456",
+          "category": "PHONE_NUMBER",
+          "count": 1
+        },
+        {
+          "text": "900 000 000",
+          "category": "PHONE_NUMBER",
+          "count": 2
+        },
+        {
+          "text": "rosario.albendea@example.com",
+          "category": "EMAIL_ADDRESS",
+          "count": 1
+        },
+        {
+          "text": "oncologia.monteluz@example.org",
+          "category": "EMAIL_ADDRESS",
+          "count": 2
+        },
+        {
+          "text": "22 de septiembre de 2026",
+          "category": "DATE_TIME",
+          "count": 2
+        },
+        {
+          "text": "03/09/2026",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "05/09/2026",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "08/09/2026",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "12/09/2026",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "15/09/2026",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "19/09/2026",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "25/09/2026",
+          "category": "DATE_TIME",
+          "count": 1
+        },
+        {
+          "text": "29/09/2026",
+          "category": "DATE_TIME",
+          "count": 2
+        },
+        {
+          "text": "99/00789",
+          "category": "ID_TITULACION_PERSONAL_SANITARIO",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

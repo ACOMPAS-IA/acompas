@@ -1,0 +1,59 @@
+Hospital Universitario Monteluz
+Servicio de Anatomía Patológica
+Villaserena (Valladolid)
+
+INFORME DE ANATOMÍA PATOLÓGICA
+
+DATOS DEL PACIENTE
+Paciente: ALBENDEA QUINTANAR, ROSARIO
+NHC: 7300451
+DNI: 12345678Z
+Fecha de nacimiento: 14/03/1958
+Edad: 68 años
+Sexo: Mujer
+
+DATOS DE LA PETICIÓN
+Servicio peticionario: Oncología Médica
+Médico peticionario: Dra. Inés Carrascal Ochoa
+Fecha de obtención de la muestra: 08/09/2026
+Fecha de recepción: 08/09/2026
+Fecha del informe: 12/09/2026
+
+TIPO DE MUESTRA
+Punción-aspiración con aguja fina (PAAF) y biopsia con aguja gruesa (BAG) de una masa en la cabeza del páncreas, obtenidas mediante ecoendoscopia.
+
+DATOS CLÍNICOS
+Ictericia indolora de unas tres semanas de evolución y pérdida de peso de unos 6 kg. En la tomografía computarizada (TC) se describe una masa hipodensa de 3,2 cm en la cabeza pancreática. Se solicita estudio para filiar la lesión.
+
+DESCRIPCIÓN MACROSCÓPICA
+Se reciben dos extensiones citológicas fijadas en alcohol, material para bloque celular y tres cilindros de tejido blanquecino y de consistencia firme, de 0,6 a 1,1 cm de longitud. Los cilindros se incluyen en su totalidad en un casete.
+
+DESCRIPCIÓN MICROSCÓPICA
+Los cilindros muestran estructuras glandulares irregulares y de tamaño variable, revestidas por células cilíndricas con atipia nuclear moderada: núcleos aumentados de tamaño, cromatina irregular y nucléolos visibles. Las glándulas se disponen de forma desordenada en el seno de un estroma desmoplásico, es decir, un tejido fibroso que reacciona alrededor del tumor. Se observan mitosis aisladas y se identifica invasión perineural focal (infiltración alrededor de pequeños nervios). No se reconoce tejido pancreático no tumoral significativo en el material remitido.
+
+La extensión citológica muestra grupos cohesivos de células epiteliales con pérdida de la polaridad, superposición nuclear y anisonucleosis, hallazgos compatibles con adenocarcinoma.
+
+ESTUDIO INMUNOHISTOQUÍMICO
+- CK7: positivo, intenso y difuso.
+- CK19: positivo.
+- CK20: negativo.
+- CDX2: negativo.
+- SMAD4 (DPC4): pérdida de expresión nuclear en las células tumorales, con control interno positivo.
+- Ki-67: índice de proliferación aproximado del 30 %.
+El perfil inmunohistoquímico apoya un origen pancreatobiliar.
+
+DIAGNÓSTICO
+Páncreas, cabeza (PAAF y BAG guiadas por ecoendoscopia):
+ADENOCARCINOMA DUCTAL DE PÁNCREAS, MODERADAMENTE DIFERENCIADO (GRADO 2).
+- Invasión perineural presente.
+- Pérdida de expresión de SMAD4.
+
+COMENTARIO
+Se trata de una biopsia, que no permite valorar el tamaño del tumor, los márgenes ni los ganglios linfáticos. Por ello no se establece estadio patológico (pTNM): la estadificación debe completarse con las pruebas de imagen y la valoración clínica. Se ha comunicado el resultado a la Dra. Inés Carrascal Ochoa el 12/09/2026 y se recomienda presentar el caso en el comité multidisciplinar de tumores digestivos.
+
+El material queda archivado en el servicio por si se considera necesario realizar estudios moleculares adicionales, por ejemplo de inestabilidad de microsatélites o de alteraciones en los genes BRCA.
+
+Fdo.: Dr. Andrés Lozoya Benítez
+Facultativo especialista de Anatomía Patológica
+Nº de colegiado: 99/00123
+Hospital Universitario Monteluz, Villaserena, 12/09/2026
