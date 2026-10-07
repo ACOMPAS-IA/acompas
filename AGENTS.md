@@ -1,334 +1,110 @@
-# ACOMPAS — Agent Development Rules
+# ACOMPAS — Reglas para agentes de IA
 
-## 1. Propósito
+> Parte del arnés de ACOMPAS (capa derivada). Se regenera, no se edita a mano. Recoge el comportamiento transversal del agente: jerarquía de fuentes, bloqueo, flujo de trabajo y revisión. No resume decisiones de producto. Las versiones exactas de sus fuentes constan en `docs/arnes/MANIFIESTO.md`.
+>
+> **Fuentes:** Plan de Trabajo (§4, incluido «Ejecución de un ACO con un agente de IA», y §8, §9, §10); Estrategia de Actualización Documental (§4.1, reglas del arnés).
 
-Este archivo define las reglas que debe seguir cualquier agente de IA que participe en el desarrollo de ACOMPAS.
+## 1. Papel del agente
 
-No sustituye al Plan de Proyecto, al Plan de Trabajo, al Documento Operativo ni a las fichas de los ACO.
+El agente puede analizar, proponer, implementar, ejecutar tests y preparar la PR. **La aceptación del cambio corresponde siempre a la revisión humana.** *(Plan de Trabajo §4)*
 
-El agente debe utilizar esos documentos como contexto del proyecto y esta guía como reglas de ejecución.
+El agente ejecuta un ACO concreto. No redefine el proyecto, no amplía el alcance y no inventa requisitos.
 
-## 2. Fuente de verdad
+## 2. Fuentes y prevalencia
 
-Antes de actuar, el agente debe consultar:
+El agente trabaja a partir de: *(Plan de Trabajo §4)*
 
-1. `AGENTS.md`.
-2. La ficha del ACO asignado.
-3. El Documento Operativo del Sprint correspondiente.
-4. El Plan de Trabajo.
-5. El Plan de Proyecto.
-6. La documentación de arquitectura y ADR aplicables.
-7. El código existente.
+1. la **Ficha ACO** asignada (`docs/aco/ACO-XXX.md`): alcance y criterios de aceptación;
+2. la **matriz del Documento Operativo** del sprint en curso: responsable, revisión, estimación y dependencias;
+3. el **arnés** (`docs/arnes/`): 01-PRODUCTO, 02-DOMINIO, 03-REGLAS, 04-INTERFAZ, 05-DISEÑO, 06-SEMILLA, 07-INTERCAMBIO, 08-PLAN y 09-TESTS.
 
-Si existe una contradicción entre documentos, el agente no decide por su cuenta: declara `BLOQUEO` y explica qué decisión falta.
+Reglas de prevalencia:
 
-## 3. Regla fundamental
+- **Las fuentes oficiales prevalecen sobre las derivadas.** Una Ficha ACO o el arnés nunca cambian una decisión del Plan de Proyecto, de la Arquitectura del Sistema ni de un ADR aprobado. *(Plan de Trabajo §4; Estrategia §4.1)*
+- En responsable, estimación y dependencias **prevalece la matriz del Documento Operativo** sobre la ficha. *(Plan de Trabajo §4)*
+- **El arnés no decide:** es una compilación trazable, no una fuente de verdad. Si el arnés y una fuente oficial no coinciden, vale la fuente oficial y se informa de la discrepancia. *(Estrategia §4.1)*
 
-El agente ejecuta un ACO concreto; no redefine el proyecto.
+## 3. Fases de ejecución
 
-No amplía el alcance por iniciativa propia, no modifica decisiones arquitectónicas sin autorización y no inventa requisitos.
+*(Plan de Trabajo §4)*
 
-Si necesita una decisión no especificada para continuar, debe determinar primero
-si esa decisión está delegada por el ACO o si constituye una decisión que requiere
-autorización humana. Solo en este último caso debe declarar `BLOQUEO`.
+**PLAN.** Leer la ficha y la matriz; comprobar las dependencias; inspeccionar el código existente; identificar los cambios necesarios, los riesgos y las decisiones no especificadas. **El plan se presenta antes de modificar código.**
 
-## 3.1 Clasificación de incidencias y decisiones
+**BUILD.** Implementar exclusivamente el alcance de la ficha.
 
-El agente debe distinguir entre una decisión no especificada, un bloqueo real,
-un trabajo fuera de alcance y un hallazgo.
+**TEST.** Ejecutar los tests y comprobaciones correspondientes e informar de resultados, incidencias y bloqueos. Un ACO no se da por terminado porque el código parezca correcto, sino cuando los tests relevantes se han ejecutado y pasan.
 
-### BLOQUEO
+## 4. Bloqueo
 
-Debe detenerse cuando el problema:
+El agente se detiene, lo indica con **`BLOQUEO — <motivo>`** y explica qué decisión falta cuando: *(Plan de Trabajo §4)*
 
-- impida cumplir los criterios de aceptación del ACO;
-- requiera una decisión arquitectónica no autorizada;
-- requiera introducir una dependencia no aprobada;
-- contradiga una decisión explícita del ACO, del Documento Operativo,
-  del Plan de Trabajo, del Plan de Proyecto o de la arquitectura;
-- implique un riesgo relevante de seguridad o privacidad;
-- requiera modificar otro ACO para poder completar el ACO actual.
+- falta información necesaria;
+- hay una contradicción entre documentos;
+- necesita una decisión de arquitectura no definida;
+- necesita una dependencia no aprobada;
+- tiene una duda relevante de seguridad o privacidad;
+- el trabajo requiere modificar otro ACO;
+- no puede cumplir los criterios de aceptación.
 
-Debe informar:
+**Ante una decisión no especificada, se bloquea; no se inventa.** *(Plan de Trabajo §4)*
 
-`BLOQUEO — <motivo>`
+**Cuestiones abiertas:** las que recoge el arnés siguen abiertas. Si una de ellas impide ejecutar el ACO, se convierte en BLOQUEO, no en una decisión automática. *(Estrategia §4.1)*
 
-### FUERA DE ALCANCE
+Además, el agente nunca: *(Estrategia §4.1)*
 
-Si durante la ejecución aparece trabajo que pertenece a otro ACO,
-el agente no debe implementarlo como parte del ACO actual.
+- elige valores que las fuentes no han decidido;
+- modifica una fuente oficial para hacerla compatible con su trabajo;
+- trata una Ficha ACO como autoridad para cambiar una decisión oficial;
+- genera instrucciones o datos para pacientes reales cuando las fuentes exigen datos sintéticos;
+- oculta una contradicción mediante una interpretación unilateral.
 
-Debe informar:
+## 5. Fuera de alcance
 
-`FUERA DE ALCANCE — requiere ACO-XXX`
+Un problema que pertenece a otro ACO no se resuelve en el actual: se señala como **`FUERA DE ALCANCE — requiere ACO-XXX`**. *(Plan de Trabajo §4)*
 
-La existencia de trabajo fuera de alcance no implica por sí misma que el ACO
-actual esté bloqueado.
+## 6. Decisiones
 
-### HALLAZGO
+- Una decisión nueva no se consolida solo en un comentario de código. Si modifica el alcance o los criterios de un ACO, se actualiza su ficha; si es una decisión técnica, sigue el procedimiento de ADR. *(Plan de Trabajo §4)*
+- **Requieren decisión conjunta** del equipo (Issue «decisión conjunta», 48 h para objetar), y por tanto son BLOQUEO para el agente: añadir, quitar o mover ACOs o fichas entre sprints; nuevas dependencias, componentes o cambios de stack; cambios de seguridad o privacidad (whitelist, JWT, secretos, persistencia de documentos, retención, prompt injection, datos reales); cambios en los contratos de API entre áreas; reasignaciones; reestimaciones de más del 50%; cambios que afecten a lo acordado con ACANPAN; y las cuestiones abiertas de arquitectura. *(Plan de Trabajo §8)*
+- **Puede decidirlos la persona responsable, informando en la PR:** refactors internos del ACO, corrección de bugs, ampliación de tests y documentación, dividir el ACO en Issues sin cambiar su alcance y ajustes menores de estimación. *(Plan de Trabajo §8)* El agente puede proponerlos en la PR, y la decisión es de la persona responsable.
+- **Hace falta ADR** si la decisión es difícil de revertir, afecta a la seguridad, la privacidad o los datos de pacientes, cambia el stack, afecta a más de un área o se aparta del Plan de Proyecto o de la Arquitectura. Un ADR aprobado no se edita: se sustituye por otro. *(Plan de Trabajo §9)*
 
-Un problema, inconsistencia o posible mejora que no impide cumplir el ACO
-actual debe registrarse como hallazgo y no debe convertirse automáticamente
-en un bloqueo.
+## 7. Seguridad y datos
 
-Debe informar:
+- No se desactivan controles de seguridad para facilitar una prueba. *(Plan de Trabajo §4)*
+- Las credenciales y los secretos nunca se almacenan en Git. *(Plan de Trabajo §10)*
+- Las pruebas usan documentos sintéticos y los documentos originales de pacientes no se persisten. *(Plan de Trabajo §10)*
+- El detalle de las reglas de privacidad y seguridad está en `docs/arnes/03-REGLAS.md`.
 
-`HALLAZGO — <descripción>`
+## 8. Flujo de Git y PR
 
-El agente puede corregir un hallazgo si su corrección está claramente dentro
-del alcance del ACO actual. Si pertenece a otro ACO, debe marcarlo como
-FUERA DE ALCANCE.
+*(Plan de Trabajo §4)*
 
-### ADVERTENCIA
+- Flujo: Issue → rama → desarrollo local → tests → Pull Request → revisión de la otra persona → CI verde → merge. **Ningún cambio directo sobre main.**
+- Ramas: `feature/ACO-XXX-descripcion` o `fix/ACO-XXX-descripcion`.
+- La Issue es solo un puntero (título, responsable, estado y enlace a la ficha). La PR enlaza su ficha y su Issue y se revisa con la Guía rápida de revisión de PR.
+- El revisor aprueba o rechaza según el contenido, sin modificarlo; los cambios los aplica el autor. El merge lo hace el revisor al aprobar, con la CI en verde, salvo que el autor pida en la PR que se espere.
+- Merge **siempre squash**. Título del commit: el de la PR, que empieza por el ID del ACO o del ADR («ACO-021: Presidio + MEDDOCAN»), con un cuerpo breve y sin el listado de commits intermedios.
+- **Coautoría con IA:** si ha intervenido un agente, el commit final lleva **una sola** línea `Co-Authored-By` del agente.
 
-La falta de información contextual o documentación auxiliar no implica por
-sí misma un bloqueo si el agente puede cumplir de forma segura y verificable
-los criterios del ACO.
+## 9. Definition of Done
 
-Debe informar:
+*(Plan de Trabajo §10)*
 
-`ADVERTENCIA — <descripción>`
+- Criterios de aceptación de la ficha cumplidos.
+- Código implementado y revisado.
+- Tests correspondientes ejecutados y CI verde.
+- Documentación actualizada cuando corresponda.
+- Sin secretos ni datos reales de pacientes.
+- Integraciones afectadas comprobadas.
+- PR enlazada a su ficha e Issue.
 
-### Decisiones delegadas por el ACO
+El sprint en curso puede añadir criterios en su Documento Operativo (ver `docs/arnes/08-PLAN.md`).
 
-Si la ficha del ACO delega expresamente una decisión técnica al propio ACO,
-esa decisión está autorizada dentro de su alcance.
+## 10. El arnés
 
-El agente puede analizar, elegir e implementar una solución compatible con:
+*(Estrategia §4.1)*
 
-- los objetivos del ACO;
-- sus criterios de aceptación;
-- sus restricciones técnicas;
-- la arquitectura existente;
-- las reglas de AGENTS.md.
-
-Por tanto, "no está predeterminado en otro documento" no significa
-automáticamente "BLOQUEO".
-
-Si, por el contrario, la ficha del ACO indica que una decisión requiere
-BLOQUEO, el agente debe detenerse y solicitar decisión humana.
-
-### Separación entre decisión delegada y hallazgos derivados
-
-Cuando una decisión esté expresamente delegada por la ficha del ACO, el agente puede resolverla durante PLAN dentro de las restricciones autorizadas.
-
-La resolución de esa decisión no implica automáticamente que todas las mejoras, refactorizaciones o cambios relacionados detectados durante el análisis formen parte del BUILD.
-
-El agente debe distinguir entre:
-
-* **DECISIÓN:** elección técnica necesaria para ejecutar el ACO.
-* **HALLAZGO:** problema o mejora detectada durante el análisis que puede corregirse dentro del ACO.
-* **FUERA DE ALCANCE:** trabajo que pertenece a otro ACO.
-* **BLOQUEO:** condición que impide cumplir el ACO actual.
-
-Los hallazgos no deben incorporarse automáticamente al plan de implementación de la decisión delegada si no son necesarios para cumplir sus criterios de aceptación.
-
-Cuando existan varios cambios previstos, el agente debe indicar cuáles son:
-
-1. necesarios para implementar la decisión delegada;
-2. necesarios para cumplir otros criterios de aceptación del ACO;
-3. correcciones de hallazgos independientes.
-
-Una decisión delegada no autoriza por sí misma la ampliación del alcance del ACO.
-
-### Regla de prioridad
-
-Ante una situación ambigua, el agente debe determinar primero:
-
-1. ¿La ficha del ACO autoriza expresamente la decisión?
-2. ¿La decisión está restringida o prohibida explícitamente?
-3. ¿La decisión afecta a otro ACO?
-4. ¿Impide cumplir el ACO actual?
-5. ¿Es únicamente un hallazgo o advertencia?
-
-Solo debe utilizar `BLOQUEO` cuando exista una condición real de bloqueo.
-
-## 4. Alcance del trabajo
-
-Cada ejecución debe estar asociada a un ACO concreto y conocer, como mínimo:
-
-- objetivo;
-- responsable;
-- dependencias;
-- alcance incluido;
-- alcance excluido;
-- criterios de aceptación;
-- tests esperados;
-- componentes que puede modificar.
-
-Si esta información no está suficientemente definida, no debe empezar a implementar.
-
-## 5. Git
-
-Está prohibido:
-
-- trabajar directamente sobre `main`;
-- hacer push directamente a `main`;
-- modificar ramas de otra persona sin autorización;
-- mezclar cambios de otros ACOs en el trabajo actual.
-
-El flujo normal es:
-
-`ACO → rama feature/ACO-XXX-descripcion → implementación → tests → commit → push → PR → revisión → CI → merge`.
-
-## 6. Dependencias
-
-El agente debe respetar las dependencias declaradas por el ACO.
-
-No debe implementar una dependencia futura ni incorporar una librería, servicio, modelo o infraestructura no contemplados.
-
-Si necesita una dependencia no aprobada: `BLOQUEO — dependencia no aprobada`.
-
-## 7. Arquitectura
-
-Debe respetarse la arquitectura existente.
-
-No se deben introducir por iniciativa propia:
-
-- nuevos patrones arquitectónicos;
-- nuevos servicios innecesarios;
-- nuevas tecnologías;
-- cambios de contratos entre componentes;
-- cambios del modelo de datos aprobado;
-- sustituciones de tecnologías existentes.
-
-Una modificación arquitectónica requiere decisión humana y, cuando corresponda, ADR.
-
-## 8. Seguridad y privacidad
-
-ACOMPAS trabaja con información clínica.
-
-Está prohibido utilizar datos reales de pacientes en desarrollo, pruebas o demostraciones de Sprint 1.
-
-Nunca se deben:
-
-- introducir secretos en el código;
-- escribir API keys en el repositorio;
-- registrar información clínica sensible innecesariamente;
-- persistir documentos originales cuando el diseño indique que no deben persistirse;
-- desactivar controles de seguridad para facilitar una prueba.
-
-Ante una duda relevante de seguridad o privacidad: `BLOQUEO`.
-
-## 9. Datos de prueba
-
-Las pruebas deben utilizar datos sintéticos o expresamente autorizados.
-
-Los documentos clínicos originales no deben aparecer en logs, mensajes de error, fixtures, commits, documentación, capturas ni archivos temporales persistentes.
-
-Cuando una regla de privacidad sea verificable, debe convertirse en una comprobación automatizada cuando resulte razonable.
-
-## 10. Dependencias externas
-
-Antes de introducir una dependencia nueva, comprobar que:
-
-1. está contemplada en el ACO;
-2. es compatible con la arquitectura aprobada;
-3. no contradice decisiones existentes.
-
-Si no se cumple alguna condición, detenerse y solicitar decisión.
-
-## 11. Tests
-
-Todo comportamiento verificable debe tener una prueba adecuada.
-
-Antes de finalizar el trabajo, el agente debe:
-
-1. ejecutar los tests relevantes;
-2. comprobar que pasan;
-3. ejecutar las comprobaciones necesarias del proyecto;
-4. informar de cualquier fallo que no pueda resolver dentro del alcance.
-
-El agente no puede considerar terminado un ACO solo porque el código parezca correcto.
-
-## 12. Cambios fuera de alcance
-
-Si aparece un problema que pertenece a otro ACO, no debe implementarlo como parte del ACO actual salvo autorización explícita.
-
-Debe señalarlo como:
-
-`FUERA DE ALCANCE — requiere ACO-XXX`.
-
-## 13. Documentación
-
-Una decisión nueva no debe quedar convertida en decisión permanente únicamente mediante un comentario de código.
-
-Si una decisión aprobada modifica el alcance o los criterios de un ACO, debe actualizarse su ficha.
-
-## 14. Modo de ejecución
-
-Cuando se solicite ejecutar un ACO, trabajar en tres fases:
-
-### PLAN
-
-- leer `AGENTS.md`;
-- leer la ficha del ACO;
-- comprobar dependencias;
-- inspeccionar el código existente;
-- identificar cambios necesarios;
-- identificar riesgos y decisiones no especificadas.
-
-Si todo está definido, presentar el plan antes de modificar código cuando el flujo de trabajo lo requiera.
-
-### BUILD
-
-Implementar exclusivamente el alcance aprobado.
-
-### TEST
-
-Ejecutar las pruebas y comprobaciones correspondientes e informar de resultados, incidencias y bloqueos.
-
-## 14.1 Integridad del repositorio durante PLAN
-
-Cuando una prueba o ejecución PLAN indique expresamente que no deben existir modificaciones del repositorio, el agente debe registrar antes de comenzar:
-
-* rama actual;
-* `HEAD`;
-* `git status --porcelain`;
-* cambios tracked mediante `git diff --stat`;
-* cambios staged mediante `git diff --cached --stat`.
-
-Al finalizar PLAN debe repetir las mismas comprobaciones y compararlas con el baseline inicial.
-
-Debe informar explícitamente de cualquier diferencia detectada.
-
-La comprobación final no debe afirmar que el repositorio permanece sin cambios basándose únicamente en una observación del estado final.
-
-Las comprobaciones utilizadas para establecer o comparar el baseline deben ser de solo lectura y no deben modificar el repositorio.
-
-## 15. Regla de bloqueo
-
-El agente debe detenerse cuando:
-
-- falte información necesaria;
-- exista una contradicción entre documentos;
-- necesite tomar una decisión arquitectónica no definida;
-- necesite introducir una dependencia no aprobada;
-- exista una duda relevante de seguridad o privacidad;
-- el trabajo requiera modificar otro ACO;
-- no pueda cumplir los criterios de aceptación definidos.
-
-**Ante una decisión no especificada, determinar primero si está delegada por el ACO. Si no está delegada y requiere autorización humana, bloquear.**
-
-## 16. Responsabilidad humana
-
-El agente puede analizar, proponer, implementar, ejecutar tests y preparar un PR.
-
-La aceptación del cambio corresponde a las personas responsables del proyecto.
-
-Todo código generado por un agente está sujeto a revisión humana.
-
-## 17. Definition of Done
-
-Un ACO ejecutado por un agente no se considera terminado hasta que:
-
-- el trabajo está en su rama correspondiente;
-- cumple el alcance de la ficha;
-- los tests relevantes pasan;
-- no contiene datos reales de pacientes;
-- respeta seguridad y privacidad;
-- el PR está abierto;
-- CI está verde;
-- la revisión humana se ha realizado;
-- las observaciones bloqueantes se han resuelto;
-- el PR ha sido aprobado y fusionado.
+- El arnés **no se edita a mano** dentro de un ACO: se regenera desde las fuentes. Si el agente detecta un error en el arnés, lo informa; la corrección se hace en la fuente oficial y después se regenera.
+- Ningún documento oficial ni ADR cita archivos del arnés: el agente no añade esas referencias.
+- El Calendario de Acciones no es fuente.
