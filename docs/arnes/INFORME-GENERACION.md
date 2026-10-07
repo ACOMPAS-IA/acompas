@@ -12,7 +12,7 @@ Primera generación (modo A) según la Estrategia de Actualización Documental �
 | 4. Auditoría (§4.4) | Dos rondas. Cerrada: los cambios de la segunda ronda se aplicaron y lo que queda abierto pasa a pendientes (§4) |
 | 5. Criterios de aceptación (§4.9) | Se cumplen (§5) |
 
-No se ha modificado ninguna fuente. Los SHA-256 de `~/projects/acompas-fuentes` coinciden antes y después, y en git solo cambian `AGENTS.md` (sustituido) y `docs/arnes/` (nuevo). No hay commit ni push.
+No se ha modificado ninguna fuente. Los SHA-256 de `~/projects/acompas-fuentes` coinciden antes y después, y en git solo cambian `AGENTS.md` (sustituido) y `docs/arnes/` (nuevo). El resultado se sube en la rama `docs/arnes-primera-generacion` para su revisión en PR.
 
 ## 2. Decisiones del usuario tomadas en el PLAN
 
@@ -45,7 +45,7 @@ Se repitieron las comprobaciones. Solo hizo falta un cambio: en 04, una remisió
 
 ## 4. Lista de pendientes documentales
 
-Las Issues **no se han creado**. Se proponen con la etiqueta «pendiente documental» (regla 4 de la Estrategia), indicando el documento afectado y la revisión planificada en que se resuelven. Ninguna bloquea el arnés.
+Las Issues **no se han creado**; se crearán cuando se apruebe la PR del arnés. Se proponen con la etiqueta «pendiente documental» (regla 4 de la Estrategia), indicando el documento afectado y la revisión planificada en que se resuelven. Ninguna bloquea el arnés.
 
 | Nº | Documento afectado | Descripción | Tipo | Revisión propuesta |
 |---|---|---|---|---|
@@ -82,6 +82,8 @@ Ya previstos en la pasada B, y sin Issue nueva: integrar en la Arquitectura §16
 | Los ACO pueden ejecutarse sin reconstruir decisiones del proyecto | 08 da orden, matriz, alcance y estado por ACO; 03 y 09 dan reglas y verificaciones; AGENTS.md da el comportamiento. Lo que falta está identificado como cuestión abierta, y AGENTS.md lo convierte en BLOQUEO cuando impide ejecutar | Cumple, con las cuestiones abiertas de MANIFIESTO §5 |
 
 ## 7. Verificación de integridad
+
+Estado del repositorio al terminar la generación, antes del commit de esta PR.
 
 - Antes y después: rama `docs/arnes-primera-generacion`, HEAD = `2cc2f5ac92413f88b5275e8b7964a8845a12b6d6`, sin cambios staged.
 - `git status --porcelain` final: `M AGENTS.md` y `?? docs/arnes/`. Sin cambios en `docs/adr/`, `docs/aco/` ni en el código.
