@@ -3,6 +3,8 @@
 from presidio_analyzer import AnalyzerEngine
 from presidio_analyzer.nlp_engine import TransformersNlpEngine, NerModelConfiguration
 
+from .recognizers import build_recognizers
+
 MEDDOCAN_MODEL = "BSC-NLP4BIA/bsc-bio-ehr-es-meddocan"
 
 MEDDOCAN_ENTITY_MAPPING = {
@@ -30,21 +32,12 @@ MEDDOCAN_ENTITY_MAPPING = {
     "SEXO_SUJETO_ASISTENCIA": "SEXO",
 }
 
-DEFAULT_ENTITIES = [
-    "PERSON",
-    "DATE_TIME",
-    "PHONE_NUMBER",
-    "EMAIL_ADDRESS",
-    "ES_DNI",
-    "ES_HISTORIA_CLINICA",
-    "ID_ASEGURAMIENTO",
-    "ID_CONTACTO_ASISTENCIAL",
-    "ID_EMPLEO_PERSONAL_SANITARIO",
-    "ID_TITULACION_PERSONAL_SANITARIO",
-    "CALLE",
-]
+# Todo lo que detecta el motor, se anonimice o no. Qué se anonimiza y con qué
+# umbral lo decide ACO-023 (ficha ACO-022, P9).
+DEFAULT_ENTITIES = sorted(set(MEDDOCAN_ENTITY_MAPPING.values()) | {"ES_DNI", "ES_NIE"})
 
-MIN_SCORE_THRESHOLD = 0.35
+# Reconocedores predefinidos de Presidio sustituidos por los propios (ficha ACO-022, P5).
+REPLACED_PREDEFINED_RECOGNIZERS = ["EsNifRecognizer", "EsNieRecognizer"]
 
 
 def build_analyzer() -> AnalyzerEngine:
@@ -71,7 +64,14 @@ def build_analyzer() -> AnalyzerEngine:
         ner_model_configuration=ner_model_configuration,
     )
 
-    return AnalyzerEngine(
+    analyzer = AnalyzerEngine(
         nlp_engine=nlp_engine,
         supported_languages=["es"],
     )
+
+    for name in REPLACED_PREDEFINED_RECOGNIZERS:
+        analyzer.registry.remove_recognizer(name, language="es")
+    for recognizer in build_recognizers():
+        analyzer.registry.add_recognizer(recognizer)
+
+    return analyzer
