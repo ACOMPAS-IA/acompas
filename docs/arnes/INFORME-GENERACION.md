@@ -10,7 +10,8 @@ Primera generación (modo A) según la Estrategia de Actualización Documental �
 | 2. Generación de las piezas (§4.5, §4.1, §4.6) | 01–09 en `docs/arnes/` y `AGENTS.md` en la raíz. **Ninguna pieza detenida** |
 | 3. Manifiesto (§4.2) | `docs/arnes/MANIFIESTO.md` |
 | 4. Auditoría (§4.4) | Dos rondas. Cerrada: los cambios de la segunda ronda se aplicaron y lo que queda abierto pasa a pendientes (§4) |
-| 5. Criterios de aceptación (§4.9) | Se cumplen (§5) |
+| 5. Criterios de aceptación (§4.9) | Se cumplen (§6) |
+| Calibración (ejecución de un ACO con el arnés) | ACO-021 repetido en un worktree desechable. Dos hallazgos sobre el arnés, que pasan a pendientes (§8) |
 
 No se ha modificado ninguna fuente. Los SHA-256 de `~/projects/acompas-fuentes` coinciden antes y después, y en git solo cambian `AGENTS.md` (sustituido) y `docs/arnes/` (nuevo). El resultado se sube en la rama `docs/arnes-primera-generacion` para su revisión en PR.
 
@@ -62,6 +63,8 @@ Las Issues **no se han creado**; se crearán cuando se apruebe la PR del arnés.
 | PD-11 | Repositorio / Plan de Trabajo | El Plan de Trabajo §4 y AGENTS.md remiten a la «Guía rápida de revisión de PR», que no está en el repositorio. | Referencia sin destino | Siguiente revisión del Plan de Trabajo |
 | PD-12 | Plan de Proyecto | El riesgo «Concentración de carga en una persona» atribuye al Plan de Trabajo la mitigación (recortar ACO-052 y aplazar parte de ACO-026), pero esa mitigación está en el Documento Operativo §9. | Referencia obsoleta | Pasada B, paso 3 |
 | PD-13 | Modelo E/R | FRAGMENTO_RAG.embedding fija VECTOR(768), cuando el modelo de embeddings y la dimensionalidad siguen pendientes (ADR-007, Plan de Trabajo §9). | Detalle adelantado a una decisión abierta | Pasada B, paso 6 (marcarlo como provisional) |
+| PD-14 | Plan de Trabajo §8 → AGENTS.md | En la calibración, el agente declaró BLOQUEO por el modelo de spaCy que necesita MEDDOCAN, aunque la ficha de ACO-021 incluye «las dependencias necesarias para utilizar Presidio Analyzer y el motor NLP requerido». La regla de que una dependencia nueva es BLOQUEO no distingue las que autoriza la propia ficha. | Sobrebloqueo (hallazgo de calibración) | Siguiente revisión del Plan de Trabajo; después, regenerar AGENTS.md |
+| PD-15 | Ficha de ACO-021 o ADR del entorno de desarrollo | La decisión de usar PyTorch estándar y aplazar la variante solo CPU (tomada en la #5) no consta en ninguna fuente del arnés; en la calibración hubo que darla de palabra. Está relacionada con el tamaño de la imagen del backend (9,66 GB). | Decisión sin fuente (hallazgo de calibración) | ADR del entorno de desarrollo (Plan de Trabajo §9) o ampliación de la ficha de ACO-022 |
 
 Ya previstos en la pasada B, y sin Issue nueva: integrar en la Arquitectura §16 los ADR pendientes del Sprint 1 del Plan de Trabajo §9, y retirar la referencia a la «Propuesta de Plan de Trabajo» (paso 1); el Documento Operativo duplica la Definition of Done del Plan de Trabajo, con criterios adicionales no contradictorios (paso 4; 08-PLAN recoge la unión de ambas).
 
@@ -88,3 +91,54 @@ Estado del repositorio al terminar la generación, antes del commit de esta PR.
 - Antes y después: rama `docs/arnes-primera-generacion`, HEAD = `2cc2f5ac92413f88b5275e8b7964a8845a12b6d6`, sin cambios staged.
 - `git status --porcelain` final: `M AGENTS.md` y `?? docs/arnes/`. Sin cambios en `docs/adr/`, `docs/aco/` ni en el código.
 - `~/projects/acompas-fuentes`: los SHA-256 de todos los ficheros coinciden antes y después de la generación.
+
+## 8. Calibración con ACO-021
+
+Antes de la revisión en PR, el arnés se probó ejecutando con él un ACO ya implementado, para comparar el resultado con lo fusionado. Los fallos del arnés se corrigen en sus fuentes y regenerando, no editando las piezas.
+
+### 8.1 Planteamiento
+
+- **ACO:** ACO-021 (Presidio + MEDDOCAN), implementado en `main` por la PR #5.
+- **Entorno:** worktree desechable `~/projects/calib-aco021`, rama local `calib/aco-021` desde el commit anterior a la #5 (`a15bc9f^1`), con el arnés nuevo (sin este informe), la ficha actual de ACO-021 y los ADR vigentes.
+- **Bloqueos del agente:** declaró BLOQUEO por el mapeo de MEDDOCAN, el modelo de spaCy, PyTorch y la CI. Se respondieron con las decisiones que tomó la #5 (PyTorch estándar, sin tocar el Dockerfile ni la CI).
+- **Resultado:** implementación commiteada en `calib/aco-021`; 14 tests pasan en Docker.
+
+### 8.2 Hallazgos sobre el arnés
+
+| Nº | Hallazgo | Tratamiento |
+|---|---|---|
+| H-01 | Sobrebloqueo por el modelo de spaCy: la ficha ya autoriza las dependencias del motor NLP. | PD-14 |
+| H-02 | La decisión sobre PyTorch (estándar, aplazar la variante solo CPU) no tiene fuente en el arnés. | PD-15 |
+
+El resto de bloqueos (mapeo de MEDDOCAN, CI) eran legítimos: son decisiones que la ficha no fija.
+
+### 8.3 Comparación con la PR #5
+
+| Aspecto | PR #5 (en `main`) | Calibración |
+|---|---|---|
+| Mapeo MEDDOCAN → Presidio | Paciente, sanitarios y familiares a `PERSON` | El mismo |
+| `DEFAULT_ENTITIES` | Fija qué se anonimiza e incluye `ES_DNI`, sin reconocedor que lo emita | Eliminado |
+| `MIN_SCORE_THRESHOLD` | Definido (0,35) y sin usar | Eliminado |
+| Reconocedores registrados | Los predefinidos de Presidio, además de MEDDOCAN | Solo MEDDOCAN |
+| Modelo de spaCy | No fijado en dependencias | `es_core_news_sm` fijado en `pyproject.toml` |
+| `aggregation_strategy` / `alignment_mode` | `simple` / `expand` | No fijados (valores por defecto) |
+
+La calibración se ajusta mejor al alcance de la ficha (sin política ni umbral, que son de ACO-023). Sobre el código de la #5 se observa además:
+
+- Al agrupar a todas las personas en `PERSON` se pierden las etiquetas por rol ([PACIENTE], [MÉDICO_n]) que usan la Arquitectura §4 y ADR-012.
+- Con los reconocedores predefinidos de Presidio registrados, los tests de la #5 podrían pasar gracias a ellos y no a MEDDOCAN.
+
+**Decisión:** el código de la #5 no se corrige con una PR aparte; lo corrige ACO-022. La política de anonimización, el umbral y las etiquetas por rol se proponen en un ADR propio (ADR-013).
+
+### 8.4 Hallazgos de producto (para ACO-022 y ACO-023)
+
+- Un DNI se detectó como persona (puntuación 0,80): hace falta un reconocedor de DNI con letra de control.
+- El número de historia clínica no se detectó: hace falta un reconocedor por contexto.
+- Algunos fragmentos salen mal delimitados (entidades cortadas o ampliadas).
+- La imagen Docker del backend ocupa 9,66 GB (relacionado con PD-15).
+- No se comprobó la ejecución en la CI.
+
+### 8.5 Siguiente paso
+
+Calibración con ACO-022, una vez aprobado ADR-013 y ampliada su ficha.
+
