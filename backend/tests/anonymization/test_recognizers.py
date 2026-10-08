@@ -110,7 +110,16 @@ def test_historia_clinica_ignores_parts_of_other_identifiers(text):
     assert find(HistoriaClinicaRecognizer(), text) == []
 
 
-def test_historia_clinica_followed_by_a_word_is_still_found():
-    assert find(HistoriaClinicaRecognizer(), "NHC 7300451 y DNI") == [
+@pytest.mark.parametrize(
+    "text",
+    [
+        "NHC 7300451 y DNI",
+        "NHC: 7300451 F.NAC: 01/01/1950",
+        "NHC 7300451 H",
+        "NHC: 7300451-A",
+    ],
+)
+def test_historia_clinica_followed_by_a_word_or_letter_is_still_found(text):
+    assert find(HistoriaClinicaRecognizer(), text) == [
         ("7300451", HISTORIA_CLINICA_BASE_SCORE)
     ]

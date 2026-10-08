@@ -95,8 +95,11 @@ class HistoriaClinicaRecognizer(PatternRecognizer):
             patterns=[
                 Pattern(
                     "historia_clinica",
-                    # No toma los dígitos de un DNI con la letra separada («12345678-Z»).
-                    r"(?<![\w.,/-])\d{5,9}(?!\w)(?![.,/-]\d)(?!" + _LETTER + ")",
+                    # Con 8 cifras y letra suelta detrás es un DNI con la letra
+                    # separada («12345678-Z»): no se toma. Con otra longitud se
+                    # detecta aunque le siga una letra («7300451 F.NAC»).
+                    r"(?<![\w.,/-])(?:\d{8}(?!" + _LETTER + r")|\d{5,7}|\d{9})"
+                    r"(?!\w)(?![.,/-]\d)",
                     HISTORIA_CLINICA_BASE_SCORE,
                 ),
             ],
