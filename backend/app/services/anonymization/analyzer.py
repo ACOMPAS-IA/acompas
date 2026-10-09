@@ -8,10 +8,12 @@ from .recognizers import build_recognizers
 MEDDOCAN_MODEL = "BSC-NLP4BIA/bsc-bio-ehr-es-meddocan"
 
 MEDDOCAN_ENTITY_MAPPING = {
-    "NOMBRE_SUJETO_ASISTENCIA": "PERSON",
-    "NOMBRE_PERSONAL_SANITARIO": "PERSON",
+    # Personas con rol; PERSON es el tipo genérico cuando el rol no está claro
+    # (ficha ACO-022, P4).
+    "NOMBRE_SUJETO_ASISTENCIA": "PACIENTE",
+    "NOMBRE_PERSONAL_SANITARIO": "PERSONAL_SANITARIO",
     "OTROS_SUJETO_ASISTENCIA": "PERSON",
-    "FAMILIARES_SUJETO_ASISTENCIA": "PERSON",
+    "FAMILIARES_SUJETO_ASISTENCIA": "FAMILIAR",
     "ID_SUJETO_ASISTENCIA": "ES_HISTORIA_CLINICA",
     "ID_ASEGURAMIENTO": "ID_ASEGURAMIENTO",
     "ID_CONTACTO_ASISTENCIAL": "ID_CONTACTO_ASISTENCIAL",
@@ -34,7 +36,10 @@ MEDDOCAN_ENTITY_MAPPING = {
 
 # Todo lo que detecta el motor, se anonimice o no. Qué se anonimiza y con qué
 # umbral lo decide ACO-023 (ficha ACO-022, P9).
-DEFAULT_ENTITIES = sorted(set(MEDDOCAN_ENTITY_MAPPING.values()) | {"ES_DNI", "ES_NIE"})
+DEFAULT_ENTITIES = sorted(
+    set(MEDDOCAN_ENTITY_MAPPING.values())
+    | {entity for recognizer in build_recognizers() for entity in recognizer.supported_entities}
+)
 
 # Reconocedores predefinidos de Presidio sustituidos por los propios (ficha ACO-022, P5).
 REPLACED_PREDEFINED_RECOGNIZERS = ["EsNifRecognizer", "EsNieRecognizer"]
