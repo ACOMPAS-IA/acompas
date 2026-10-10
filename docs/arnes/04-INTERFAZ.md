@@ -21,9 +21,10 @@ Pantallas, flujos y comportamientos de interfaz que se pueden implementar, con i
 
 *(Plan de Proyecto §4, S1; Arquitectura §3, §14 fila S1; UC-01, UC-03, UC-04, UC-05, UC-06, UC-08)*
 
-Login con 2FA (Keycloak) → acceso solo si el email está en la lista blanca → subida de un documento oncológico **sintético** → anonimización de Nivel 1 con validación por umbral → pregunta sobre el documento → respuesta de Claude con el disclaimer visible.
+Login con 2FA (Keycloak) → acceso solo si el email está en la lista blanca → subida de un documento oncológico **sintético** → anonimización de Nivel 1 con validación automática (umbral de hallazgo y umbral de documento) → pregunta sobre el documento → respuesta de Claude con el disclaimer visible.
 
-- Si la confianza es baja, el documento se retiene y no se completa la carga *(UC-06; Wireframes, pantalla 4)*. Lo que ve el paciente en ese caso está abierto.
+- Si la confianza del documento queda por debajo del umbral de documento, el documento se retiene: no se carga ni se guarda, ni el original ni el resultado anonimizado *(Arquitectura §4)*. El aviso al paciente se describe en 03-REGLAS R-49, y su texto está abierto.
+- Si el documento es ilegible (texto extraído vacío), no se procesa y se avisa al paciente con un motivo distinto del de baja confianza *(Arquitectura §4)*.
 - Según la Arquitectura §14, en el Sprint 1 no hay historial persistente (S3), Niveles 2 y 3 (S2), RAG (S3+), resumen ni preferencias (S5). Los ACO concretos de la interfaz del Sprint 1, sus exclusiones y los criterios de la demo están en 08-PLAN, y su verificación, en 09-TESTS.
 
 ## 2. Pantallas
@@ -46,6 +47,9 @@ La columna «Sprint» sale del Plan de Proyecto §4 y de la Arquitectura §14. C
 
 - **Nombre del documento:** la interfaz muestra el **nombre genérico** del documento, nunca el nombre del fichero original *(Arquitectura §9)*. Los wireframes 2, 4 y 5 muestran nombres como «analitica_junio.pdf»: una fuente derivada no puede contradecir a una normativa, así que prevalece la Arquitectura. La discrepancia está registrada como pendiente en INFORME-GENERACION.
 - **Documento duplicado:** el sistema detecta subidas repetidas del mismo fichero *(Arquitectura §9)*. El comportamiento ante un duplicado está en 03-REGLAS R-09. Ni los Casos de Uso ni los Wireframes tienen todavía ese aviso, que es posterior al Sprint 1.
+- **Etiquetas en la vista del documento anonimizado:** las de la Arquitectura §4 (`[PACIENTE]`, `[SANITARIO_n]`, `[FAMILIAR_n]`, la genérica `[PERSONA_n]`, `[HOSPITAL]`, `[FECHA_NACIMIENTO]`). El wireframe 4 muestra `[MÉDICO_1]` y `MÉDICO_2`, y UC-05 usa `[MÉDICO_1]`: prevalece la Arquitectura.
+- **Umbrales:** la validación automática usa dos umbrales configurables, el de hallazgo y el de documento *(Arquitectura §4)*. El wireframe 4 muestra un único «umbral mínimo: 0.85»: prevalece la Arquitectura, y los valores se toman de 03-REGLAS R-13.
+- **Documento retenido:** no se revisa después ni se muestra para revisión, porque no se guarda *(Arquitectura §4)*. UC-06 dice que «se retiene para que lo revise el paciente»: prevalece la Arquitectura. La revisión obligatoria del documento retenido llegará con el diseño del Nivel 3, que está abierto.
 - **Disclaimer** permanente en la interfaz y en las respuestas. *(Arquitectura §11; Wireframes 5)*
 - **Origen de la respuesta:** se cita la fuente (documento, glosario o RAG) o se indica con claridad que la respuesta procede del conocimiento interno del LLM. *(Arquitectura §6; UC-09)*
 - **Ocultar en el resumen** no limita la conversación. *(Arquitectura §7)*
@@ -54,8 +58,8 @@ La columna «Sprint» sale del Plan de Proyecto §4 y de la Arquitectura §14. C
 
 | Cuestión | Fuente |
 |---|---|
-| Qué ve o hace el paciente con un documento retenido por baja confianza. UC-06: «se retiene para que lo revise el paciente». Wireframe 4: «se habría retenido… en vez de mostrarse aquí». Pendiente de ADR. | Plan de Trabajo §9; UC-06; Wireframes, pantalla 4 |
-| Valor del umbral: el wireframe 4 muestra «umbral mínimo: 0.85» solo como ejemplo. | Plan de Trabajo §9 |
+| Texto de los avisos al paciente: documento retenido y documento ilegible. | ADR-013 (Fuera de esta decisión) |
+| Diseño del Nivel 3 (pantalla 4 en S2): marcado de datos escapados y ocultación de contenido en el momento de la carga, almacenamiento temporal durante la revisión y marcado posterior. Cuando exista, el documento retenido pasará a revisión obligatoria en lugar de descartarse. | Arquitectura §16 nº 10 |
 | Formatos de subida en el Sprint 1. El wireframe 3 admite «PDF, JPG, PNG · máx. 20 MB», pero el pipeline del Sprint 1 trabaja sobre texto (ACO-020) y el OCR es del Sprint 2 (ACO-051 P1; Arquitectura §4). No está definido qué acepta la interfaz mínima. | Wireframes, pantalla 3; ACO-020; ACO-051 |
 | Campo «Motivo (opcional)» de la solicitud de desbloqueo: no existe en el Modelo E/R. | Wireframes, pantalla 8; Modelo E/R |
 | Texto del aviso de documento duplicado y formato exacto del nombre genérico. | ADR-012 (Fuera de esta decisión); pasada B de la Estrategia (Casos de Uso y Wireframes) |

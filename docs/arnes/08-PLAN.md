@@ -14,7 +14,7 @@ Orden de ejecución por ACO, dependencias y aceptación del sprint en curso (Spr
 
 ## Fuentes
 
-- **Normativas:** Plan de Proyecto (§4: S1 y su hito); Plan de Trabajo (§4, §6, §10, §11); Documento Operativo del Sprint 1 (§2, §6, §9, §10, §11, §12, §13, §14).
+- **Normativas:** Plan de Proyecto (§4: S1 y su hito); Plan de Trabajo (§4, §6, §9, §10, §11); Documento Operativo del Sprint 1 (§2, §6, §9, §10, §11, §12, §13, §14).
 - **Derivadas:** Fichas ACO de docs/aco/: ACO-011 a ACO-033, ACO-051 y ACO-052.
 
 ## 1. Objetivo e hito del Sprint 1
@@ -27,10 +27,10 @@ Orden de ejecución por ACO, dependencias y aceptación del sprint en curso (Spr
 |---|---|---|
 | D-01 | Reproducibilidad | Una persona nueva clona el repositorio, ejecuta `docker compose up -d --build` y obtiene en `/health` la respuesta `{"status":"ok"}`. |
 | D-02 | Acceso | Un usuario de la lista blanca inicia sesión con 2FA vía Keycloak y uno no autorizado es rechazado. Las peticiones al API llevan un JWT validado. |
-| D-03 | Documento sintético | Se sube desde la interfaz mínima y pasa por Presidio (Nivel 1) con etiquetado automático y umbral de confianza. Un documento con confianza baja se retiene y no se carga. |
+| D-03 | Documento sintético | Se sube desde la interfaz mínima y pasa por Presidio (Nivel 1) con etiquetado automático y los dos umbrales de ADR-013: el de hallazgo, por debajo del cual la detección se descarta como ruido, y el de documento, por debajo del cual el documento se retiene. Un documento con confianza baja se retiene y no se carga. Un documento ilegible (texto extraído vacío) no se procesa y se avisa al paciente con un motivo distinto del de baja confianza. |
 | D-04 | No persistencia del original | Se verifica que el documento original no queda guardado; solo el resultado anonimizado. |
 | D-05 | Conversación | Claude responde a partir del documento anonimizado, con el disclaimer visible y sin datos reales de pacientes en ningún punto. |
-| D-06 | Calidad mínima | El conjunto de casos de prueba sintéticos (ACO-051/052) pasa en el flujo completo. Objetivo de detección: no se escapa ninguna entidad de los casos definidos. |
+| D-06 | Calidad mínima | El conjunto de casos de prueba sintéticos (ACO-051/052) pasa en el flujo completo. Objetivo de detección: no se escapa ninguna entidad de las categorías que ADR-013 garantiza (nombres de personas, identificadores, teléfono, fax y correo electrónico, dirección y fecha de nacimiento), en los casos definidos. |
 | D-07 | Ingeniería | CI verde, tests E2E (ACO-033) pasando, sin secretos en Git y todos los cambios integrados por PR revisada. |
 
 Quedan fuera de la demo: los Niveles 2 y 3, el RAG, el historial, el VPS, y el derecho al olvido y la auditoría completos. *(Plan de Trabajo §11)*
@@ -92,7 +92,12 @@ Quedan fuera de la demo: los Niveles 2 y 3, el RAG, el historial, el VPS, y el d
 
 ## 5. Estado de las fichas y aceptación por ACO
 
-La ficha es la fuente del alcance y de los criterios de aceptación *(Plan de Trabajo §4)*. Estado de las fichas en el commit del manifiesto:
+La ficha es la fuente del alcance y de los criterios de aceptación *(Plan de Trabajo §4)*:
+
+- **Ficha de alcance:** la de `docs/aco/ACO-XXX.md`, con objetivo, alcance y criterios de aceptación, sin responsable, estimación ni dependencias (están en la matriz de §2).
+- **Ficha ejecutable:** la ficha de alcance ampliada con la plantilla `docs/aco/PLANTILLA.md`. El responsable del ACO la amplía al empezarlo, a mano o con un agente de IA, y la ampliación es el **primer commit de la PR** del ACO. El revisor revisa primero la ficha ampliada y después el código. Un agente no empieza BUILD sobre una ficha sin ampliar (`AGENTS.md`).
+
+Estado de las fichas en el commit del manifiesto:
 
 | Estado de la ficha | ACO |
 |---|---|
@@ -131,6 +136,8 @@ Resumen de alcance de cada ACO *(fichas, §Objetivo, §Incluye y §Fuera de alca
 | 051 | Corpus sintético y manifiesto (ver 06-SEMILLA) | Ver ficha §5 |
 | 052 | Casos de consulta, fuera de alcance, disclaimer y seguridad conversacional, preparados para la demo | Ampliar el alcance funcional |
 
+**Política de anonimización del Nivel 1** (ADR-013, en el registro del Plan de Trabajo §9, que resuelve el umbral y el documento retenido de ACO-023): las reglas que aplican ACO-022, ACO-023 y ACO-026 están en 03-REGLAS (R-13, R-44…R-50), y sus verificaciones, en 09-TESTS.
+
 **Criterio de revisión común de las fichas de alcance:** la persona revisora comprueba que el código implementa el objetivo de la ficha, que se respetan las dependencias, que hay pruebas cuando el comportamiento es verificable y que no se introducen datos reales, persistencia ni secretos fuera del alcance. *(Fichas ACO, §Criterio de revisión)*
 
 ## 6. Definition of Done
@@ -152,7 +159,6 @@ Resumen de alcance de cada ACO *(fichas, §Objetivo, §Incluye y §Fuera de alca
 |---|---|
 | ACO-014 depende de «007» en la matriz, pero en docs/aco/ no hay ficha de ACO-007 (es anterior al Sprint 1). Qué entrega debe darse por cumplida no está documentado. | Documento Operativo §6; docs/aco/ |
 | Criterios de aceptación de ACO-027, 029, 030, 031 y 052 pendientes de revisión: hasta que se confirmen, el alcance ejecutable es el de la ficha de alcance. | Fichas ACO-027, 029, 030, 031, 052 |
-| Cómo pasa una ficha de alcance a ficha ejecutable (sección 0 de puntos a confirmar, aclaraciones) no lo describe el Plan de Trabajo; ACO-051 lo muestra con «criterios propuestos por el responsable, confirmados en la revisión de la PR». | Plan de Trabajo §4; ACO-051 |
-| «Identificadores definidos para Sprint 1» (ACO-022) y «filtros para falsos positivos previstos» (ACO-023): no están enumerados en ninguna fuente. | ACO-022; ACO-023 |
-| Umbral de confianza, tratamiento del documento retenido, gestión de secretos, encaje del gateway y modelo de Claude: ADR pendientes del Sprint 1. | Plan de Trabajo §9 |
+| Lista concreta de reconocedores, filtros de falsos positivos y términos permitidos de ACO-022 y ACO-023: la fijan sus fichas al ampliarse. | ADR-013 (Fuera de esta decisión); ACO-022; ACO-023 |
+| Gestión de secretos, encaje del gateway y modelo de Claude: ADR pendientes del Sprint 1. | Plan de Trabajo §9 |
 | ADR del entorno de desarrollo (decisión ya adoptada, ADR sin redactar). | Plan de Trabajo §9 |
