@@ -8,13 +8,13 @@ Datos sintéticos y configuración inicial que pueden cargarse de forma controla
 
 ## Qué no contiene
 
-- Datos reales de pacientes, ni fragmentos de documentos reales, ni siquiera anonimizados.
+- Datos reales de pacientes, ni fragmentos de documentos reales, ni siquiera anonimizados, ni nombres de ficheros originales *(Arquitectura §11)*.
 - Secretos, contraseñas ni API keys (R-24).
 - Valores de catálogos o de configuración que ninguna fuente fija: aparecen como cuestión abierta.
 
 ## Fuentes
 
-- **Normativas:** Plan de Proyecto (§2); Arquitectura del Sistema (§6, §11); ADR-008, ADR-009 y ADR-011.
+- **Normativas:** Plan de Proyecto (§2); Arquitectura del Sistema (§4, §6, §11); ADR-008, ADR-009, ADR-011 y ADR-013.
 - **Derivadas:** Fichas ACO de docs/aco/: ACO-051 (corpus sintético), ACO-012 (realm) y ACO-015 (lista blanca).
 
 ## 1. Principio
@@ -48,13 +48,14 @@ Cualquier dato sintético nuevo que creen otros ACO sigue estas mismas reglas. *
 | Lista blanca | La gestiona **manualmente el administrador**, se guarda en la base de datos de ACOMPAS y contiene emails autorizados por ACANPAN, sin referencia al UUID. | ADR-009; Arquitectura §11 |
 | Glosario | **Sin semilla inicial validada.** El LLM lo construye progresivamente y cada entrada nueva queda pendiente de validación. | Arquitectura §6 (D6) |
 | Usuarios de prueba | Deben poder probarse un usuario autorizado y uno no autorizado. | ACO-015 |
+| Umbrales de anonimización | Configurables, con valor inicial 0,35 para el umbral de hallazgo y 0,85 para el umbral de documento. Se calibran con el corpus sintético de ACO-051; cambiarlos no requiere un ADR nuevo mientras se respete el criterio de ADR-013, y el cambio y su justificación quedan en la PR. | ADR-013; Arquitectura §4 |
 
 ## Cuestiones abiertas
 
 | Cuestión | Fuente |
 |---|---|
 | Emails de la lista blanca y usuarios de prueba en desarrollo: ninguna fuente fija sus valores. Por coherencia con ACO-051, lo esperable son dominios reservados (`example.*`), pero es una **inferencia**: debe confirmarse en la ficha del ACO. | ACO-015; ADR-008 |
-| Catálogos iniciales (TIPO_DOCUMENTO, TIPO_ETIQUETA): no hay valores semilla aprobados. Los ejemplos están en 02-DOMINIO. | Modelo E/R; ADR-012 |
+| Catálogos iniciales (TIPO_DOCUMENTO, TIPO_ETIQUETA): no hay valores semilla aprobados, ni el nombre exacto de la etiqueta genérica de persona. Los ejemplos están en 02-DOMINIO. | Modelo E/R; ADR-012; ADR-013 (Fuera de esta decisión) |
 | Valores iniciales de crédito (topes diario y mensual) por paciente. | Plan de Trabajo §9 (regla de cálculo del crédito) |
 | Flujo OIDC, clientes y política de contraseñas del realm. | ADR-011 (Fuera de esta decisión) |
 | Cómo se comprueba la lista blanca y cómo se conecta con el login. | ADR-009 (Fuera de esta decisión) |
