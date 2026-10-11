@@ -126,20 +126,13 @@ pasan correctamente y que el entorno Docker se inicia sin errores.
 
 ## Equipo
 
-- **Miguel Martínez** — Responsable y fundador del proyecto. Ingeniero
-  informático y también paciente de cáncer de páncreas; su experiencia
-  fue la motivación directa para crear ACOMPAS. Trabaja junto a Javier
-  en la dirección técnica y la implementación del proyecto.
-- **Javier Pérez** — Responsable técnico (voluntario). Trabaja junto a
-  Miguel en la dirección técnica del proyecto y es responsable de la
-  implementación principal desarrollada hasta ahora, incluyendo el
-  pipeline de generación aumentada mediante recuperación (RAG),
-  compuesto por la ingesta de documentos, embeddings y búsqueda
-  semántica, así como de la arquitectura del sistema.
+- **Miguel Martínez** — Fundador y responsable del proyecto.
+- **Javier Pérez** — Consultor técnico y acompañamiento al equipo.
+- **Luis del Olmo** — IA y procesamiento del lenguaje natural.
 
-Buscamos ampliar nuestro equipo técnico de voluntarios (backend,
-IA/NLP y frontend). Si estás interesado en colaborar, ponte en
-contacto con nosotros.
+Buscamos ampliar nuestro equipo técnico de voluntarios, sobre todo en
+backend y frontend. Si estás interesado en colaborar, ponte en contacto
+con nosotros en info@acompas-ia.es.
 
 ## Colaboración
 
