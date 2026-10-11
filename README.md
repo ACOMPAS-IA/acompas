@@ -124,18 +124,13 @@ the Docker environment starts correctly.
 
 ## Team
 
-- **Miguel Martínez** — Project lead and founder. Computer
-  engineer, and also a pancreatic cancer patient himself — the
-  experience that directly motivated ACOMPAS. Works alongside Javier
-  on the project's technical direction and implementation.
-- **Javier Pérez** — Technical lead (volunteer). Works alongside
-  Miguel on the project's technical direction, and is responsible for
-  the core implementation built so far, including the
-  retrieval-augmented generation (RAG) pipeline (document ingestion,
-  embeddings, and semantic search) and system architecture.
+- **Miguel Martínez** — Founder and project lead.
+- **Javier Pérez** — Technical advisor and team support.
+- **Luis del Olmo** — AI and natural language processing.
 
-We are looking to grow our volunteer technical team (backend, AI/NLP,
-frontend). If you're interested in contributing, reach out.
+We are looking to grow our team of technical volunteers, especially in
+backend and frontend. If you are interested in contributing, please
+contact us at info@acompas-ia.es.
 
 ## Collaboration
 
