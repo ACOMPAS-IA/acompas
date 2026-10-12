@@ -96,6 +96,40 @@ It can be checked with:
 curl http://localhost:8000/health
 ```
 
+### Frontend
+
+The React frontend is served at <http://localhost:5173> and reloads
+automatically when files in `frontend/` change.
+
+Before the first `docker compose up`, create the folder where the
+container mounts `node_modules`, so that it belongs to your user:
+
+```bash
+mkdir frontend/node_modules
+```
+
+If Docker already created it as `root`, remove it and create it again:
+
+```bash
+sudo rm -rf frontend/node_modules
+mkdir frontend/node_modules
+```
+
+Its checks run inside the container:
+
+```bash
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run typecheck
+docker compose exec frontend npm test
+```
+
+`node_modules` lives in a container volume. After changing the
+frontend dependencies, rebuild the service and renew that volume:
+
+```bash
+docker compose up -d --build -V frontend
+```
+
 ### Stopping the environment
 
 To stop the services:
