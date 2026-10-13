@@ -96,6 +96,38 @@ It can be checked with:
 curl http://localhost:8000/health
 ```
 
+### Keycloak
+
+`docker compose up -d` also starts Keycloak in development mode. Its
+port is only published on `127.0.0.1`.
+
+- Administration console: <http://localhost:8080> (or the port set in
+  `KEYCLOAK_PORT`).
+- Initial administrator credentials: `KEYCLOAK_BOOTSTRAP_ADMIN_USER` and
+  `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD` from `.env`. They are for
+  development only and are applied when the Keycloak volume is created;
+  if you change them later, remove the volume.
+
+Once `docker compose ps` shows `keycloak` as `healthy`, check that it
+responds with:
+
+```bash
+scripts/check-keycloak.sh
+```
+
+Keycloak data is stored in the `keycloak_data` volume and is preserved
+across restarts. To start from scratch:
+
+```bash
+docker compose rm -sf keycloak
+docker volume rm acompas_keycloak_data
+```
+
+The volume prefix is the project directory name (`acompas` by
+default).
+
+JSON realms placed in `infra/keycloak/import/` are imported on startup.
+
 ### Stopping the environment
 
 To stop the services:
