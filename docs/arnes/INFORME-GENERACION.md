@@ -142,3 +142,105 @@ La calibración se ajusta mejor al alcance de la ficha (sin política ni umbral,
 
 Calibración con ACO-022, una vez aprobado ADR-013 y ampliada su ficha.
 
+
+## Regeneración (modo B)
+
+Regeneración según la Estrategia de Actualización Documental §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-10-11. Rama: `docs/arnes-regeneracion-adr013`. Fuentes, versiones y commit: `MANIFIESTO.md`.
+
+### B.1 Fuentes cambiadas y piezas regeneradas
+
+| Fuente | Cambio (control de cambios o diff) | Secciones con cambio de contenido |
+|---|---|---|
+| Plan de Trabajo v0.9 → v0.10 | Ficha de alcance y ficha ejecutable; decisiones delegadas y dependencias nombradas; HALLAZGO y ADVERTENCIA; ADR-013 en el registro; criterios de la demo con los dos umbrales, el documento ilegible y las categorías garantizadas | §4, §9, §11, §13 |
+| Arquitectura del Sistema v0.7 → v0.8 | Qué se anonimiza; umbral de hallazgo y umbral de documento; documento retenido e ilegible; etiquetas por rol y genérica de persona; nombre del fichero original; cuestiones 7 a 10 | §4, §11, §14, §16 |
+| `docs/adr/` (`2cc2f5a` → `22004f1`) | ADR-013, nuevo y aprobado | — |
+
+Las demás fuentes conservan la versión y el SHA-256 del manifiesto anterior. `docs/aco/` no cambia entre los dos commits.
+
+| Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
+|---|---|---|---|
+| 01-PRODUCTO | No | Sus fuentes no cambian; la Arquitectura §16 nº 1 y nº 6 tampoco | — |
+| 02-DOMINIO | Sí | Arquitectura §4; ADR-013 | Etiquetas por rol y genérica; categorías; los dos umbrales; confianza del documento; documento retenido e ilegible; dos discrepancias resueltas por prevalencia (§5) |
+| 03-REGLAS | Sí | Arquitectura §4, §11, §14, §16; Plan de Trabajo §4, §9; ADR-013 | R-04, R-13, R-15, R-17 y R-38 actualizadas; nuevas R-44 a R-50 (ADR-013), R-51 (ficha de alcance y ficha ejecutable) y R-52 (decisiones y dependencias delegadas) |
+| 04-INTERFAZ | Sí | Arquitectura §4, §11, §14 | Flujo del Sprint 1 con los dos umbrales, el retenido y el ilegible; etiquetas, umbrales y documento retenido por prevalencia frente a UC-05, UC-06 y el wireframe 4 |
+| 05-DISEÑO | Sí | Arquitectura §4, §11, §14; ADR-013 | Pipeline del módulo de anonimización; pista B; cuestiones 8 a 10 |
+| 06-SEMILLA | Sí | Arquitectura §11; ADR-013 | Valores iniciales configurables de los umbrales; sin nombres de ficheros originales; catálogo de etiquetas |
+| 07-INTERCAMBIO | Sí | Arquitectura §4, §11; ADR-013 | Analizador, política y umbrales, etiquetas y DOCUMENTO del documento retenido |
+| 08-PLAN | Sí | Plan de Trabajo §4, §9, §11 | D-03 y D-06; ficha de alcance y ficha ejecutable; remisión a 03 para ADR-013 |
+| 09-TESTS | Sí | Arquitectura §4, §11; ADR-013; D-03 y D-06 | T-04, T-10, T-28, T-29, T-31 y T-32 actualizadas; nuevas T-33 a T-37; los tests leen los umbrales de la configuración |
+| AGENTS.md | Sí | Plan de Trabajo §4, §9 | Ficha ejecutable y BUILD (§3); decisiones delegadas y dependencias nombradas (§5); BLOQUEO, FUERA DE ALCANCE, HALLAZGO y ADVERTENCIA en la PR, y solo BLOQUEO detiene (§6) |
+
+Los identificadores R y T del modo A se conservan, y los nuevos continúan la numeración. 04 y 08 no tienen ADR entre sus fuentes (§4.5): lo que procede de ADR-013 se remite a 03 y 09, salvo en las cuestiones abiertas y en el texto de D-03 y D-06, que reproduce el Plan de Trabajo §11. Las etiquetas de persona siguen la Arquitectura §4: `[PACIENTE]`, `[SANITARIO_n]`, `[FAMILIAR_n]` y `[PERSONA_n]`. `[MÉDICO_n]` solo aparece al citar las discrepancias.
+
+Cuestiones abiertas (MANIFIESTO §5):
+
+- **Salen:** «Valor del umbral de confianza» y «Tratamiento del documento retenido» (los resuelve ADR-013), y «Paso de ficha de alcance a ficha ejecutable» (lo resuelve el Plan de Trabajo v0.10).
+- **Entran:**
+  - las cuestiones 7 a 10 de la Arquitectura §16;
+  - el «Fuera de esta decisión» de ADR-013: el texto de los avisos y el nombre de la etiqueta genérica con el catálogo; los demás puntos coinciden con las cuestiones 7 a 10 o con la fila de reconocedores;
+  - dos huecos detectados al derivar 09 (PD-21 y PD-22).
+- **Se reformula:** «Identificadores del Sprint 1 y filtros sin enumerar» pasa a ser «Lista concreta de reconocedores, filtros y términos permitidos», porque ADR-013 enumera los reconocedores mínimos de ACO-022 y deja la lista concreta a las fichas.
+
+### B.2 Auditoría (solo piezas regeneradas)
+
+**Ronda 1.** Se comprobaron:
+
+- que no hay versiones fuera del manifiesto;
+- que `[MÉDICO_n]` no aparece fuera de las discrepancias;
+- que no se cita «T-31 del arnés»;
+- que no quedan las cuestiones abiertas que salen;
+- que 04 y 08 no citan ADR en el cuerpo;
+- la trazabilidad entre R y T en los dos sentidos;
+- que no queda redacción de umbral único.
+
+Cambios necesarios aplicados:
+
+1. T-28 y T-29 no cubrían R-51 ni R-52. Se añadieron, y se precisó su comprobación (primer commit con la ficha ampliada; decisiones delegadas dentro de sus límites y anotadas en la PR).
+2. R-02 indicaba solo T-02, aunque T-01 la cubre y la trazabilidad inversa ya lo recogía. Venía del modo A. Se corrigió a «T-01, T-02».
+
+**Ronda 2.** Se repitieron las comprobaciones y se revisaron a mano los cambios de 02, 04, 05 y 08. No hizo falta ningún cambio. **La auditoría queda cerrada**:
+
+- 52 reglas (R-01…R-52) y 37 verificaciones (T-01…T-37), todas trazadas en los dos sentidos;
+- D-01…D-07 con verificación;
+- ninguna pieza detenida.
+
+Criterios de aceptación (§4.9): se cumplen como en el modo A (§6). Las piezas regeneradas mantienen «Objetivo y alcance», «Qué no contiene», «Fuentes» y «Cuestiones abiertas». No incorporan contenido de ramas sin fusionar (la ficha de ACO-022 de la PR #47 no se ha leído como fuente) y no convierten cuestiones abiertas en reglas: los valores 0,35 y 0,85 los fija ADR-013 como valores iniciales configurables, y los tests no los fijan.
+
+### B.3 Pendientes del modo A que cierran las fuentes
+
+| Nº | Situación |
+|---|---|
+| PD-05 | La decisión la toma ADR-013. Queda alinear los documentos derivados: PD-16, PD-17 y PD-18 |
+| PD-09 | Cerrado por el Plan de Trabajo v0.10 §4 (ficha de alcance y ficha ejecutable). Recogido en AGENTS.md §3, 03 R-51 y 08 §5 |
+| PD-10 | Cerrado por el Plan de Trabajo v0.10 §4: HALLAZGO, ADVERTENCIA y decisiones delegadas, recogidos en AGENTS.md §5 y §6. La regla de prioridad ante situaciones ambiguas y el registro del baseline de git siguen sin fuente y no pasan a AGENTS.md |
+| PD-14 | Cerrado por el Plan de Trabajo v0.10 §4 (dependencias nombradas por la ficha). Recogido en AGENTS.md §5 y 03 R-52. Ver PD-20 |
+
+PD-04 se aplicó: las tablas de entidades del Modelo E/R se volvieron a leer del .docx v0.9, cuyo SHA-256 no cambia.
+
+### B.4 Pendientes nuevos
+
+Se proponen con la etiqueta «pendiente documental», igual que en §4. Las Issues no se han creado. Ninguno bloquea el arnés.
+
+| Nº | Documento afectado | Descripción | Tipo | Revisión propuesta |
+|---|---|---|---|---|
+| PD-16 | Modelo E/R | TIPO_ETIQUETA usa `[MÉDICO]` como ejemplo, y ETIQUETA_ANONIMIZACION usa `[MÉDICO_1]` en `numero` y `'MEDICO'` en `tipo_entidad`, frente a las etiquetas de la Arquitectura §4 (`[SANITARIO_n]`, `[FAMILIAR_n]`, `[PERSONA_n]`). DOCUMENTO dice que el documento retenido se guarda «para revisión posterior», con el estado `retenido_baja_confianza`, frente a ADR-013 (no se guarda; solo queda un registro de auditoría). | Discrepancia con un ADR y con la Arquitectura (prevalecen las fuentes normativas; 02-DOMINIO §5) | Pasada B, paso 6 |
+| PD-17 | Casos de Uso | UC-05 usa `[MÉDICO_1]`. UC-06 habla de un único umbral de confianza y de que el documento retenido «se retiene para que lo revise el paciente», frente a ADR-013. No recoge el documento ilegible. | Discrepancia con un ADR y con la Arquitectura | Pasada B |
+| PD-18 | Wireframes, pantalla 4 | Muestra `[MÉDICO_1]` y `MÉDICO_2`, y un único «umbral mínimo: 0.85». No tiene el aviso de documento retenido ni el de documento ilegible. **Precisión:** el wireframe 4 no dice literalmente «revisión posterior» («se habría retenido… en vez de mostrarse aquí»), así que lo que choca con ADR-013 son las etiquetas, el umbral único y la falta de los avisos. | Discrepancia con un ADR y con la Arquitectura | Pasada B, paso 5 |
+| PD-19 | ADR-013 | Las Consecuencias citan «T-31 del arnés», y la Estrategia §4.1 prohíbe que un ADR cite archivos del arnés. No es una contradicción de contenido, y las piezas no lo citan. Un ADR aprobado no se edita, así que la referencia solo puede retirarse cuando se sustituya ADR-013. Mientras tanto, el arnés conserva el identificador T-31 para la comprobación de fugas. | Referencia prohibida | Cuando se sustituya ADR-013 |
+| PD-20 | Plan de Trabajo §8 | §8 exige una decisión conjunta para «nuevas dependencias», sin mencionar la excepción de §4 (una dependencia que nombra la ficha ejecutable queda autorizada por su revisión). AGENTS.md y 03 (R-38, R-52) recogen las dos reglas con su sección, y la excepción la declara la propia §4 («el agente no se bloquea»). Conviene que §8 remita a §4. | Incoherencia de redacción | Siguiente revisión del Plan de Trabajo |
+| PD-21 | Ficha de ACO-051 o de ACO-026 | T-31 comprueba solo las categorías garantizadas, pero el manifiesto de ACO-051 no las distingue: `DATE_TIME` incluye la fecha de nacimiento y las demás fechas, y `TERRITORIO` incluye la localidad y la provincia, que ADR-013 no menciona. Falta definir cómo se identifican las entidades que comprueba T-31. | Hueco (cuestión abierta en 09) | Ficha de ACO-026 al ampliarse (ADR-013 la cita entre las afectadas) o revisión de ACO-051 |
+| PD-22 | Ficha de ACO-023 / Plan de Trabajo | ADR-013 exige un registro de auditoría del documento retenido (fecha, tipo de documento, motivo). El modelo del registro de auditoría está abierto (Arquitectura §16 nº 4) y la auditoría completa queda fuera del Sprint 1, así que no está definido qué registro debe quedar en el Sprint 1. | Hueco (cuestión abierta en 09) | Ficha de ACO-023 al ampliarse |
+| PD-23 | Plan de Trabajo §4 → AGENTS.md | De lo que pedía PD-10 quedan sin fuente, y por tanto fuera de AGENTS.md, la regla de prioridad ante ambigüedades y el registro del baseline de git. Si se quieren en AGENTS.md, hay que llevarlos antes al Plan de Trabajo §4. | Cambio de gobernanza a decidir | Plan de Trabajo v0.11, junto con PD-20 |
+
+### B.5 Hallazgos que no requieren cambios
+
+- **Etiquetas en ADR-013 y en la Arquitectura.** Las Consecuencias de ADR-013 dicen que la Arquitectura y los wireframes «mantienen» `[MÉDICO_1]`, pero la Arquitectura v0.8 usa `[SANITARIO_1]`. ADR-013 deja fuera de la decisión el nombre exacto de las etiquetas, así que no hay contradicción. El arnés sigue la Arquitectura §4, como indica el encargo.
+- **Umbral único en la Arquitectura §4 (último párrafo) y §15.** Siguen hablando de un «umbral conservador» o «umbral de confianza». Es compatible con el umbral de documento. Conviene ajustar la redacción en la siguiente revisión.
+- **Fichas de alcance de ACO-022, 023 y 026, y título de ACO-023 en la matriz** («Umbral de confianza»). Están en singular, pero ADR-013 prevé actualizar esas fichas al ampliarlas. No contradicen la política: la remisión de 08 §5 a 03 lo cubre.
+- **`ADR-013.md` suelto en `~/projects/acompas-fuentes/`.** Difiere del fichero de `docs/adr/` en una consecuencia: el acierto de rol se mide «sobre el mismo corpus» frente a «con casos sintéticos definidos en la ficha de ACO-022». La fuente es la del repositorio (MANIFIESTO §2).
+
+### B.6 Verificación de integridad
+
+- Rama `docs/arnes-regeneracion-adr013`, HEAD = `22004f1cebee17787826e2cbec8107e6a320e99e` antes del commit, sin cambios previos.
+- Solo cambian `AGENTS.md`, `docs/arnes/02` a `09`, `MANIFIESTO.md` y este informe. `01-PRODUCTO.md`, `docs/adr/`, `docs/aco/` y el código no cambian.
+- `~/projects/acompas-fuentes`: los SHA-256 coinciden antes y después de la regeneración.

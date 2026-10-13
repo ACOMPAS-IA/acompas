@@ -14,7 +14,7 @@ Traduce la Arquitectura del Sistema a módulos con responsabilidades y fronteras
 
 ## Fuentes
 
-- **Normativas:** Arquitectura del Sistema (§3, §4, §5, §6, §7, §8, §9, §10, §11, §13, §14); Plan de Proyecto (§2); ADR-001, ADR-003, ADR-004, ADR-005, ADR-006, ADR-007, ADR-009, ADR-010, ADR-011 y ADR-012.
+- **Normativas:** Arquitectura del Sistema (§3, §4, §5, §6, §7, §8, §9, §10, §11, §13, §14); Plan de Proyecto (§2); ADR-001, ADR-003, ADR-004, ADR-005, ADR-006, ADR-007, ADR-009, ADR-010, ADR-011, ADR-012 y ADR-013.
 - **Derivadas:** Wireframes MVP (componentes de interfaz); Modelo E/R (persistencia).
 
 ## 1. Stack (cerrado)
@@ -43,7 +43,7 @@ Traduce la Arquitectura del Sistema a módulos con responsabilidades y fronteras
 | **Identidad (Keycloak)** | Autenticación OIDC con 2FA; emite el JWT; custodia la correspondencia email↔UUID; resuelve o crea el UUID solo para emails autorizados. | No lo sustituye ningún sistema paralelo. ACOMPAS no guarda credenciales. | ADR-001, ADR-011; Arquitectura §11 |
 | **Backend API (FastAPI)** | Valida el JWT en cada petición protegida y aplica la autorización por rol y por propiedad del recurso; expone las APIs internas; comprueba la lista blanca. | No almacena el email del paciente. | ADR-011, ADR-009; Arquitectura §3 |
 | **Frontend (React)** | Login, layout, cliente de API centralizado con autenticación, subida de documento, conversación con disclaimer. | No accede a la API key del LLM ni llama al LLM directamente. | Arquitectura §3, §11; Wireframes |
-| **Anonimización** | Pipeline: extracción de texto → Presidio Analyzer (detección) → validación por umbral (decide si se carga o se retiene) → Presidio Anonymizer (etiquetas numeradas por documento). El original solo existe en memoria o en un volumen efímero. | No persiste el original, no guarda valores originales, no llama a Claude API. | ADR-003, ADR-005, ADR-012; Arquitectura §4 |
+| **Anonimización** | Pipeline: extracción de texto (si el texto extraído está vacío, el documento es ilegible y no se procesa) → Presidio Analyzer (detección de las categorías garantizadas y sin garantía) → validación automática con dos umbrales configurables: el de hallazgo descarta el ruido y el de documento decide si se carga o se retiene → Presidio Anonymizer (etiquetas numeradas por documento, por rol cuando se puede determinar y genérica de persona si no). El original solo existe en memoria o en un volumen efímero. Del documento retenido solo queda un registro de auditoría sin contenido ni nombre del fichero. | No persiste el original ni el resultado anonimizado de un documento retenido, no guarda valores originales, no deja el nombre del fichero original en logs ni temporales y no llama a Claude API. | ADR-003, ADR-005, ADR-012, ADR-013; Arquitectura §4, §11 |
 | **LLM gateway** | Punto de paso obligatorio de toda llamada a Claude API. Mide tokens, aplica el modelo de crédito e integra el clasificador de intención. | No hay llamadas a Claude API al margen del gateway. | ADR-006; Arquitectura §8 |
 | **Conversación** | Construye el contexto con el documento anonimizado del paciente (y, en sprints posteriores, el historial y el RAG), usa el prompt de sistema restringido y devuelve la respuesta con su origen y el disclaimer. | No recibe nunca el documento original. | Arquitectura §3, §6, §11 |
 | **Persistencia (PostgreSQL + pgvector)** | Datos estructurados (Modelo E/R) y vectores del RAG, con trazabilidad hacia su fuente. | No hay una segunda base de datos. | ADR-007; Arquitectura §9 |
@@ -56,7 +56,7 @@ Traduce la Arquitectura del Sistema a módulos con responsabilidades y fronteras
 *(Arquitectura §14, fila S1)*
 
 - **Pista A:** conversación básica. Claude responde sobre un informe oncológico sintético. El alcance del LLM gateway en el Sprint 1 está abierto (ver Cuestiones abiertas y 08-PLAN).
-- **Pista B:** Nivel 1: Presidio básico, etiquetado automático y validación por umbral.
+- **Pista B:** Nivel 1: Presidio básico, etiquetado automático y validación automática con umbral de hallazgo y umbral de documento. Qué se anonimiza y el tratamiento del documento retenido e ilegible están en 03-REGLAS (R-13, R-44…R-50).
 - **Pista C:** Keycloak con 2FA y OAuth2/OIDC; JWT en todas las peticiones; registro validado contra la lista blanca.
 - Persistencia del modelo de datos UUID, derecho al olvido y auditoría: Sprint 2.
 
@@ -72,6 +72,9 @@ Las áreas de trabajo y los responsables no son decisiones de diseño: se consul
 | Calendario y corpus del RAG en S3–S4 | Arquitectura §16 nº 6 |
 | Modelo de embeddings, chunking e índice | ADR-007 (Fuera de esta decisión); Plan de Trabajo §9 |
 | Motor de OCR definitivo (solo si Tesseract no rinde) | Plan de Trabajo §9 |
+| Comprobación de que el documento es de tipo clínico antes de procesarlo | Arquitectura §16 nº 8 |
+| Uso de la confianza del OCR para detectar documentos ilegibles, y si los umbrales cambian en los Niveles 2 y 3 o con documentos reales | Arquitectura §16 nº 9 |
+| Diseño del Nivel 3: marcado y ocultación en el momento de la carga, almacenamiento temporal durante la revisión y marcado posterior; revisión obligatoria del documento retenido cuando exista | Arquitectura §16 nº 10 |
 | Diseño del derecho al olvido y del registro de auditoría | Arquitectura §16 nº 3–4 |
 | Flujo OIDC concreto, clientes y realms | ADR-011 (Fuera de esta decisión) |
 | Modelo de Claude y política de versiones | Plan de Trabajo §9 |
