@@ -98,6 +98,75 @@ Puedes comprobarlo con:
 curl http://localhost:8000/health
 ```
 
+### Frontend
+
+El frontend React se sirve en <http://localhost:5173> (o el puerto de
+`FRONTEND_PORT`) y se recarga automáticamente al cambiar los ficheros
+de `frontend/`.
+
+Antes del primer `docker compose up`, crea la carpeta donde el
+contenedor monta `node_modules`, para que sea de tu usuario:
+
+```bash
+mkdir frontend/node_modules
+```
+
+Si Docker ya la creó como `root`, bórrala y vuelve a crearla:
+
+```bash
+sudo rm -rf frontend/node_modules
+mkdir frontend/node_modules
+```
+
+Sus comprobaciones se ejecutan dentro del contenedor:
+
+```bash
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run typecheck
+docker compose exec frontend npm test
+```
+
+`node_modules` está en un volumen del contenedor. Después de cambiar
+las dependencias del frontend, reconstruye el servicio y renueva ese
+volumen:
+
+```bash
+docker compose up -d --build -V frontend
+```
+
+### Keycloak
+
+`docker compose up -d` también arranca Keycloak en modo de desarrollo.
+Su puerto solo se publica en `127.0.0.1`.
+
+- Consola de administración: <http://localhost:8080> (o el puerto de
+  `KEYCLOAK_PORT`).
+- Credenciales del administrador inicial: `KEYCLOAK_BOOTSTRAP_ADMIN_USER`
+  y `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD` de `.env`. Son solo de desarrollo
+  y se aplican al crear el volumen de Keycloak; si las cambias después,
+  borra el volumen.
+
+Cuando `docker compose ps` muestre `keycloak` como `healthy`, comprueba
+que responde con:
+
+```bash
+scripts/check-keycloak.sh
+```
+
+Los datos de Keycloak se guardan en el volumen `keycloak_data` y se
+conservan entre arranques. Para empezar de cero:
+
+```bash
+docker compose rm -sf keycloak
+docker volume rm acompas_keycloak_data
+```
+
+El prefijo del volumen es el nombre del directorio del proyecto
+(`acompas` por defecto).
+
+Los realms en JSON que se coloquen en `infra/keycloak/import/` se
+importan al arrancar.
+
 ### Detener el entorno
 
 Para detener los servicios:
@@ -126,20 +195,13 @@ pasan correctamente y que el entorno Docker se inicia sin errores.
 
 ## Equipo
 
-- **Miguel Martínez** — Responsable y fundador del proyecto. Ingeniero
-  informático y también paciente de cáncer de páncreas; su experiencia
-  fue la motivación directa para crear ACOMPAS. Trabaja junto a Javier
-  en la dirección técnica y la implementación del proyecto.
-- **Javier Pérez** — Responsable técnico (voluntario). Trabaja junto a
-  Miguel en la dirección técnica del proyecto y es responsable de la
-  implementación principal desarrollada hasta ahora, incluyendo el
-  pipeline de generación aumentada mediante recuperación (RAG),
-  compuesto por la ingesta de documentos, embeddings y búsqueda
-  semántica, así como de la arquitectura del sistema.
+- **Miguel Martínez** — Fundador y responsable del proyecto.
+- **Javier Pérez** — Consultor técnico y acompañamiento al equipo.
+- **Luis del Olmo** — IA y procesamiento del lenguaje natural.
 
-Buscamos ampliar nuestro equipo técnico de voluntarios (backend,
-IA/NLP y frontend). Si estás interesado en colaborar, ponte en
-contacto con nosotros.
+Buscamos ampliar nuestro equipo técnico de voluntarios, sobre todo en
+backend y frontend. Si estás interesado en colaborar, ponte en contacto
+con nosotros en info@acompas-ia.es.
 
 ## Colaboración
 

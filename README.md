@@ -96,6 +96,73 @@ It can be checked with:
 curl http://localhost:8000/health
 ```
 
+### Frontend
+
+The React frontend is served at <http://localhost:5173> (or the port in
+`FRONTEND_PORT`) and reloads automatically when files in `frontend/`
+change.
+
+Before the first `docker compose up`, create the folder where the
+container mounts `node_modules`, so that it belongs to your user:
+
+```bash
+mkdir frontend/node_modules
+```
+
+If Docker already created it as `root`, remove it and create it again:
+
+```bash
+sudo rm -rf frontend/node_modules
+mkdir frontend/node_modules
+```
+
+Its checks run inside the container:
+
+```bash
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run typecheck
+docker compose exec frontend npm test
+```
+
+`node_modules` lives in a container volume. After changing the
+frontend dependencies, rebuild the service and renew that volume:
+
+```bash
+docker compose up -d --build -V frontend
+```
+
+### Keycloak
+
+`docker compose up -d` also starts Keycloak in development mode. Its
+port is only published on `127.0.0.1`.
+
+- Administration console: <http://localhost:8080> (or the port set in
+  `KEYCLOAK_PORT`).
+- Initial administrator credentials: `KEYCLOAK_BOOTSTRAP_ADMIN_USER` and
+  `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD` from `.env`. They are for
+  development only and are applied when the Keycloak volume is created;
+  if you change them later, remove the volume.
+
+Once `docker compose ps` shows `keycloak` as `healthy`, check that it
+responds with:
+
+```bash
+scripts/check-keycloak.sh
+```
+
+Keycloak data is stored in the `keycloak_data` volume and is preserved
+across restarts. To start from scratch:
+
+```bash
+docker compose rm -sf keycloak
+docker volume rm acompas_keycloak_data
+```
+
+The volume prefix is the project directory name (`acompas` by
+default).
+
+JSON realms placed in `infra/keycloak/import/` are imported on startup.
+
 ### Stopping the environment
 
 To stop the services:
@@ -124,18 +191,13 @@ the Docker environment starts correctly.
 
 ## Team
 
-- **Miguel Martínez** — Project lead and founder. Computer
-  engineer, and also a pancreatic cancer patient himself — the
-  experience that directly motivated ACOMPAS. Works alongside Javier
-  on the project's technical direction and implementation.
-- **Javier Pérez** — Technical lead (volunteer). Works alongside
-  Miguel on the project's technical direction, and is responsible for
-  the core implementation built so far, including the
-  retrieval-augmented generation (RAG) pipeline (document ingestion,
-  embeddings, and semantic search) and system architecture.
+- **Miguel Martínez** — Founder and project lead.
+- **Javier Pérez** — Technical advisor and team support.
+- **Luis del Olmo** — AI and natural language processing.
 
-We are looking to grow our volunteer technical team (backend, AI/NLP,
-frontend). If you're interested in contributing, reach out.
+We are looking to grow our team of technical volunteers, especially in
+backend and frontend. If you are interested in contributing, please
+contact us at info@acompas-ia.es.
 
 ## Collaboration
 
