@@ -98,6 +98,42 @@ Puedes comprobarlo con:
 curl http://localhost:8000/health
 ```
 
+### Frontend
+
+El frontend React se sirve en <http://localhost:5173> (o el puerto de
+`FRONTEND_PORT`) y se recarga automáticamente al cambiar los ficheros
+de `frontend/`.
+
+Antes del primer `docker compose up`, crea la carpeta donde el
+contenedor monta `node_modules`, para que sea de tu usuario:
+
+```bash
+mkdir frontend/node_modules
+```
+
+Si Docker ya la creó como `root`, bórrala y vuelve a crearla:
+
+```bash
+sudo rm -rf frontend/node_modules
+mkdir frontend/node_modules
+```
+
+Sus comprobaciones se ejecutan dentro del contenedor:
+
+```bash
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run typecheck
+docker compose exec frontend npm test
+```
+
+`node_modules` está en un volumen del contenedor. Después de cambiar
+las dependencias del frontend, reconstruye el servicio y renueva ese
+volumen:
+
+```bash
+docker compose up -d --build -V frontend
+```
+
 ### Keycloak
 
 `docker compose up -d` también arranca Keycloak en modo de desarrollo.
