@@ -3,9 +3,16 @@
 # descubrimiento OIDC del realm master (ACO-011).
 #
 # Uso: scripts/check-keycloak.sh
-# El puerto se toma de KEYCLOAK_PORT (por defecto, 8080).
+# El puerto se toma de KEYCLOAK_PORT, del entorno o de .env (por defecto, 8080).
 
 set -euo pipefail
+
+# Si KEYCLOAK_PORT no viene del entorno, se lee de .env. Solo se extrae esa
+# variable: no se hace source del fichero para no cargar las contraseñas.
+env_file="$(dirname "${BASH_SOURCE[0]}")/../.env"
+if [[ -z "${KEYCLOAK_PORT:-}" && -f "${env_file}" ]]; then
+  KEYCLOAK_PORT="$(grep -E '^KEYCLOAK_PORT=' "${env_file}" | tail -n1 | cut -d= -f2- || true)"
+fi
 
 port="${KEYCLOAK_PORT:-8080}"
 base_url="http://localhost:${port}"
