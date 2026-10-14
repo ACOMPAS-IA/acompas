@@ -100,8 +100,9 @@ curl http://localhost:8000/health
 
 ### Frontend
 
-El frontend React se sirve en <http://localhost:5173> y se recarga
-automáticamente al cambiar los ficheros de `frontend/`.
+El frontend React se sirve en <http://localhost:5173> (o el puerto de
+`FRONTEND_PORT`) y se recarga automáticamente al cambiar los ficheros
+de `frontend/`.
 
 Antes del primer `docker compose up`, crea la carpeta donde el
 contenedor monta `node_modules`, para que sea de tu usuario:
@@ -132,6 +133,39 @@ volumen:
 ```bash
 docker compose up -d --build -V frontend
 ```
+
+### Keycloak
+
+`docker compose up -d` también arranca Keycloak en modo de desarrollo.
+Su puerto solo se publica en `127.0.0.1`.
+
+- Consola de administración: <http://localhost:8080> (o el puerto de
+  `KEYCLOAK_PORT`).
+- Credenciales del administrador inicial: `KEYCLOAK_BOOTSTRAP_ADMIN_USER`
+  y `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD` de `.env`. Son solo de desarrollo
+  y se aplican al crear el volumen de Keycloak; si las cambias después,
+  borra el volumen.
+
+Cuando `docker compose ps` muestre `keycloak` como `healthy`, comprueba
+que responde con:
+
+```bash
+scripts/check-keycloak.sh
+```
+
+Los datos de Keycloak se guardan en el volumen `keycloak_data` y se
+conservan entre arranques. Para empezar de cero:
+
+```bash
+docker compose rm -sf keycloak
+docker volume rm acompas_keycloak_data
+```
+
+El prefijo del volumen es el nombre del directorio del proyecto
+(`acompas` por defecto).
+
+Los realms en JSON que se coloquen en `infra/keycloak/import/` se
+importan al arrancar.
 
 ### Detener el entorno
 
