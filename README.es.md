@@ -153,6 +153,8 @@ que responde con:
 scripts/check-keycloak.sh
 ```
 
+Si cambias `KEYCLOAK_PORT` en `.env`, el script lo toma de ahí.
+
 Los datos de Keycloak se guardan en el volumen `keycloak_data` y se
 conservan entre arranques. Para empezar de cero:
 
@@ -166,6 +168,17 @@ El prefijo del volumen es el nombre del directorio del proyecto
 
 Los realms en JSON que se coloquen en `infra/keycloak/import/` se
 importan al arrancar.
+
+Keycloak se reinicia solo cada vez que arranca Docker
+(`restart: unless-stopped`) y ocupa su puerto aunque no estés trabajando
+en ACOMPAS. Para pararlo sin borrar sus datos:
+
+```bash
+docker compose stop keycloak
+```
+
+`docker compose up -d --build backend` no lo arranca;
+`docker compose up -d` sí.
 
 ### Detener el entorno
 
