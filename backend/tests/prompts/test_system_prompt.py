@@ -38,7 +38,13 @@ ANCHORS = {
         "</documento_clinico>",
         "instrucciones",
     ],
-    "Etiquetas de anonimización": ["[paciente]", "[médico_1]", "corchetes", "rol"],
+    "Etiquetas de anonimización": [
+        "[paciente]",
+        "[sanitario_1]",
+        "[persona_1]",
+        "corchetes",
+        "rol",
+    ],
     "Preparar la consulta": ["consulta", "preguntas", "límites clínicos"],
     "Urgencias": ["112", "024"],
     "Tono y forma": ["español", "tú"],
@@ -91,6 +97,11 @@ def test_delimiters_present_and_match_constants():
     assert DOCUMENT_CLOSE_TAG == "</documento_clinico>"
     assert DOCUMENT_OPEN_TAG in text
     assert DOCUMENT_CLOSE_TAG in text
+
+
+def test_no_obsolete_medico_label():
+    # Catálogo de etiquetas de persona de la aclaración B4 de ACO-022.
+    assert "[médico_" not in load_system_prompt().text.lower()
 
 
 def test_text_has_no_placeholders_todos_emails_or_urls():
