@@ -150,6 +150,8 @@ responds with:
 scripts/check-keycloak.sh
 ```
 
+If you change `KEYCLOAK_PORT` in `.env`, the script reads it from there.
+
 Keycloak data is stored in the `keycloak_data` volume and is preserved
 across restarts. To start from scratch:
 
@@ -162,6 +164,17 @@ The volume prefix is the project directory name (`acompas` by
 default).
 
 JSON realms placed in `infra/keycloak/import/` are imported on startup.
+
+Keycloak restarts on its own every time Docker starts
+(`restart: unless-stopped`) and holds its port even when you are not
+working on ACOMPAS. To stop it without deleting its data:
+
+```bash
+docker compose stop keycloak
+```
+
+`docker compose up -d --build backend` does not start it;
+`docker compose up -d` does.
 
 ### Stopping the environment
 

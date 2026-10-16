@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-acompas}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-acompas_dev}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/docker/postgres/init:/docker-entrypoint-initdb.d
@@ -23,7 +23,7 @@ services:
     environment:
       PYTHONUNBUFFERED: "1"
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
