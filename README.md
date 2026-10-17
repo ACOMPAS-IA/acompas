@@ -176,6 +176,24 @@ docker compose stop keycloak
 `docker compose up -d --build backend` does not start it;
 `docker compose up -d` does.
 
+### Claude API (LLM gateway)
+
+The backend only calls Claude API through `backend/app/services/llm_gateway/`.
+The application starts without these variables; only calls to the gateway fail.
+
+To enable them, fill in your local `.env` (the key is never committed):
+
+- `ANTHROPIC_API_KEY`: your Anthropic API key.
+- `LLM_MODEL`: the Claude model. The project has not chosen it yet (pending ADR).
+- Optional: `LLM_MAX_OUTPUT_TOKENS` (1024), `LLM_TIMEOUT_SECONDS` (60) and
+  `LLM_MAX_RETRIES` (2).
+
+Then recreate the backend so it receives them:
+
+```bash
+docker compose up -d backend
+```
+
 ### Stopping the environment
 
 To stop the services:
