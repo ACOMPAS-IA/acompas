@@ -164,7 +164,7 @@ El primer script comprueba el realm `master`; el segundo, el realm
 `acompas`. Si cambias `KEYCLOAK_PORT` en `.env`, los scripts lo toman
 de ahí.
 
-Los datos de Keycloak se guardan en el volumen `keycloak_data` y se
+Los datos de Keycloak se guardan en el volumen `acompas_keycloak_data` y se
 conservan entre arranques. Para empezar de cero:
 
 ```bash

@@ -161,7 +161,7 @@ The first script checks the `master` realm; the second checks the
 `acompas` realm. If you change `KEYCLOAK_PORT` in `.env`, the scripts
 read it from there.
 
-Keycloak data is stored in the `keycloak_data` volume and is preserved
+Keycloak data is stored in the `acompas_keycloak_data` volume and is preserved
 across restarts. To start from scratch:
 
 ```bash
