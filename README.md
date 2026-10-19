@@ -142,15 +142,24 @@ port is only published on `127.0.0.1`.
   `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD` from `.env`. They are for
   development only and are applied when the Keycloak volume is created;
   if you change them later, remove the volume.
+- The ACOMPAS realm is `acompas` (visible name `ACOMPAS`). Its OIDC
+  discovery document is at
+  <http://localhost:8080/realms/acompas/.well-known/openid-configuration>
+  (or the port set in `KEYCLOAK_PORT`). Its roles, 2FA, password policy,
+  brute-force protection and reimport procedure are documented in
+  `infra/keycloak/README.md`.
 
 Once `docker compose ps` shows `keycloak` as `healthy`, check that it
 responds with:
 
 ```bash
 scripts/check-keycloak.sh
+scripts/check-realm.sh
 ```
 
-If you change `KEYCLOAK_PORT` in `.env`, the script reads it from there.
+The first script checks the `master` realm; the second checks the
+`acompas` realm. If you change `KEYCLOAK_PORT` in `.env`, the scripts
+read it from there.
 
 Keycloak data is stored in the `keycloak_data` volume and is preserved
 across restarts. To start from scratch:
@@ -164,6 +173,8 @@ The volume prefix is the project directory name (`acompas` by
 default).
 
 JSON realms placed in `infra/keycloak/import/` are imported on startup.
+The ACOMPAS realm is defined in
+`infra/keycloak/import/acompas-realm.json`.
 
 Keycloak restarts on its own every time Docker starts
 (`restart: unless-stopped`) and holds its port even when you are not
