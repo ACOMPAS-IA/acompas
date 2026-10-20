@@ -43,7 +43,11 @@ export function AppShell({
         ))}
       </nav>
       <main className="app-shell__main">{children}</main>
-      <footer className="app-shell__footer" aria-label="Aviso legal">
+      <footer
+        className="app-shell__footer"
+        aria-label="Aviso legal"
+        hidden={!disclaimer}
+      >
         {disclaimer}
       </footer>
     </div>

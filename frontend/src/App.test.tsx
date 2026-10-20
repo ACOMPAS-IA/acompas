@@ -18,7 +18,7 @@ describe('App', () => {
     expect(screen.getByRole('main')).toBeDefined()
     expect(screen.getByText('Contenido de prueba')).toBeDefined()
     expect(
-      screen.getByRole('contentinfo', { name: 'Aviso legal' }),
-    ).toBeDefined()
+      screen.queryByRole('contentinfo', { name: 'Aviso legal' }),
+    ).toBeNull()
   })
 })

@@ -36,6 +36,16 @@ describe('AppShell', () => {
     expect(screen.getByText('Aviso legal')).toBeDefined()
   })
 
+  it('no muestra el pie si no hay disclaimer', () => {
+    render(
+      <AppShell navItems={navItems} activeNavId="conversation">
+        <p>Contenido</p>
+      </AppShell>,
+    )
+
+    expect(screen.queryByRole('contentinfo')).toBeNull()
+  })
+
   it('marca el ítem activo y entrega su id al navegar', () => {
     const onNavigate = vi.fn()
 
