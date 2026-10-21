@@ -1,5 +1,6 @@
 {
   "realm": "acompas",
+  "browserFlow": "acompas-browser",
   "enabled": true,
   "displayName": "ACOMPAS",
   "sslRequired": "external",
@@ -118,7 +119,7 @@
       "alias": "delete_credential",
       "name": "Delete Credential",
       "providerId": "delete_credential",
-      "enabled": true,
+      "enabled": false,
       "defaultAction": false,
       "priority": 110,
       "config": {}
@@ -149,6 +150,68 @@
       "defaultAction": false,
       "priority": 1000,
       "config": {}
+    }
+  ],
+  "authenticationFlows": [
+    {
+      "id": "0ab29a16-8a86-48f4-b9f9-6af94cdfe7ee",
+      "alias": "acompas-browser",
+      "description": "Browser based authentication for ACOMPAS with mandatory OTP",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "identity-provider-redirector",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 25,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "ALTERNATIVE",
+          "priority": 30,
+          "autheticatorFlow": true,
+          "flowAlias": "acompas-forms",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "47008ee2-b430-49c3-80dd-d818d7bb2fd4",
+      "alias": "acompas-forms",
+      "description": "Username, password and mandatory OTP",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        }
+      ]
     }
   ],
   "roles": {

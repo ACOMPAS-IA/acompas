@@ -20,6 +20,7 @@ El realm se define en `import/acompas-realm.json` y se importa con la opción
 | Recuperación de contraseña (`resetPasswordAllowed`) | `false` |
 | Verificación de email (`verifyEmail`) | `false` |
 | Editar nombre de usuario (`editUsernameAllowed`) | `false` |
+| Flujo browser (`browserFlow`) | `acompas-browser` (OTP obligatorio) |
 | Idioma | `es` por defecto |
 | Duración del token de acceso | 300 s |
 | Sesión SSO inactiva / máxima | 1800 s / 36000 s |
@@ -40,13 +41,25 @@ usuario (ACO-015).
 
 El segundo factor es TOTP obligatorio para todos los usuarios del realm:
 
+- flujo browser propio `acompas-browser`, con el formulario OTP como
+  `REQUIRED`: el código se pide en todos los accesos, no solo cuando el usuario
+  ya tiene una credencial OTP configurada;
+- si el usuario no tiene OTP, el flujo le obliga a configurarlo antes de entrar.
+  Esto cubre también a los usuarios creados por Admin API sin la acción
+  `CONFIGURE_TOTP`;
 - acción requerida por defecto `CONFIGURE_TOTP`, de modo que un usuario nuevo
   debe configurar su aplicación autenticadora en el primer acceso;
+- `delete_credential` desactivada como defensa en profundidad. En Keycloak
+  26.8.0 la consola de cuenta devuelve `removeable: false` y rechaza el borrado
+  con `Credential type cannot be removed`. En todo caso, el borrado de la
+  credencial por Admin API no permite entrar solo con contraseña: el siguiente
+  login vuelve a exigir la configuración del OTP;
 - 6 dígitos, periodo de 30 s, algoritmo `HmacSHA1` y ventana de anticipación 1,
   los valores por defecto de Keycloak.
 
 No se usa WebAuthn ni SMS. La configuración se hace con la aplicación
-autenticadora del usuario (TOTP).
+autenticadora del usuario (TOTP). El flujo `browser` integrado de Keycloak es
+condicional y no se usa como flujo del realm.
 
 ### Política de contraseñas
 
