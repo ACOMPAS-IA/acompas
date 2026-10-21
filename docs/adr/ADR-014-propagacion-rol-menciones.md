@@ -14,12 +14,12 @@ ADR-012 numera las etiquetas por documento y deja abierta la agrupación de las 
 1. La agrupación es siempre dentro de un documento, nunca entre documentos.
 2. Se consideran el mismo nombre las mismas palabras, sin contar orden, mayúsculas, tildes ni puntuación. Para comparar se ignoran los tratamientos, pero la pista de rol se evalúa antes de quitarlos: un tratamiento que indique rol sigue siendo pista.
 3. El rol solo se propaga desde una mención con pista, conforme a ADR-013. No se propaga el rol que el modelo asigna sin pista.
-4. Una mención parcial hereda el rol si tiene al menos dos palabras tras quitar los tratamientos, todas sus palabras están contenidas en el nombre completo de una persona con pista y no encaja con otra persona de rol distinto.
+4. Una mención parcial hereda el rol si tiene al menos dos palabras tras quitar los tratamientos, todas sus palabras están contenidas en el nombre completo de una persona con pista y no coincide con otra persona de rol distinto o genérica. A estos efectos, «otra persona» es cualquier otro hallazgo de persona del mismo documento con un nombre normalizado distinto del de la persona de la que se hereda, cualquiera que sea su rol, incluida la persona genérica; no cuentan las menciones del mismo nombre de la persona de la que se hereda ni las menciones cuyas palabras estén todas contenidas en ese nombre. Si coincide con dos o más personas y todas tienen el mismo rol, esa coincidencia no bloquea la herencia y se aplica la regla 8.
 5. Una palabra suelta nunca hereda. Una mención más larga que el nombre con pista, aunque lo contenga, tampoco hereda.
 6. Una mención con pista propia conserva su rol.
 7. El rol propagado prevalece sobre el rol del modelo, porque prevalece el contexto (ADR-013).
-8. Si la mención encaja con dos o más personas con roles distintos, no se propaga y queda como persona genérica, aunque el modelo le hubiera asignado un rol. Si los roles coinciden, se propaga. Con pistas contradictorias, cada mención con pista conserva la suya.
-9. La propagación solo cambia la etiqueta de menciones ya detectadas: no detecta nombres nuevos, no fusiona hallazgos y no cambia posiciones ni puntuaciones.
+8. Si la mención coincide con dos o más personas de roles distintos, o con una persona genérica, no se propaga y queda como persona genérica, aunque el modelo le hubiera asignado un rol. Si coincide con dos o más personas y todas tienen el mismo rol, se propaga ese rol, pero la mención no se agrupa con ninguna de ellas; ACO-023 decide la etiqueta final y la numeración. Si coincide con una sola persona de rol distinto o genérica, tampoco se propaga; sin pista propia, queda como persona genérica (ADR-013). Con pistas contradictorias, cada mención con pista conserva la suya.
+9. La propagación solo cambia el rol asignado a menciones ya detectadas; la etiqueta final y la numeración corresponden a ACO-023. No detecta nombres nuevos, no fusiona hallazgos y no cambia posiciones ni puntuaciones.
 10. No se guardan nombres ni valores originales. La agrupación es en memoria y no se escribe en logs, errores ni avisos (ADR-005, ADR-012).
 11. No se añaden pistas de familiar: ese rol sigue dependiendo del modelo.
 
@@ -35,11 +35,11 @@ ADR-012 numera las etiquetas por documento y deja abierta la agrupación de las 
 - Fusionar las menciones en un solo hallazgo: descartada; la anonimización necesita cada aparición.
 
 ## Consecuencias
-- La ficha de ACO-022 recoge la regla y sus casos de prueba; ACO-023 usa la misma agrupación para numerar; ACO-026 incorpora los casos.
+- La ficha de ACO-022 recoge la regla y sus casos de prueba; ACO-023 usa la misma agrupación para numerar, salvo las menciones que no se agrupan con ninguna persona, que reciben número propio; ACO-026 incorpora los casos.
 - El acierto de rol sigue siendo un indicador de calidad, sin bloquear. Un rol mal propagado no es una fuga: afecta a la comprensión, no a la privacidad.
 - La confianza del documento no cambia: las etiquetas de persona cuentan como una sola categoría (ADR-013).
-- Los casos ambiguos quedan conservadoramente como persona genérica.
-- Dos personas distintas con el mismo nombre normalizado pueden agruparse.
+- Los casos ambiguos entre roles distintos quedan conservadoramente como persona genérica; si una mención coincide con dos o más personas y todas tienen el mismo rol, se propaga el rol sin agrupar.
+- Dos personas distintas con el mismo nombre normalizado siguen siendo indistinguibles; si una mención coincide con ambas y tienen el mismo rol, no se agrupa con ninguna y ACO-023 le asigna un número propio.
 
 ## Fuera de esta decisión
 - Coherencia entre documentos.
