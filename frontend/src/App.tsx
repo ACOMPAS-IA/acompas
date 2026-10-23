@@ -1,8 +1,12 @@
+import { AppShell } from './components/layout/AppShell.tsx'
+
+const navItems = [{ id: 'conversation', label: 'Conversación' }]
+
 function App() {
   return (
-    <main>
-      <h1>ACOMPAS</h1>
-    </main>
+    <AppShell navItems={navItems} activeNavId="conversation">
+      <p>Contenido de prueba</p>
+    </AppShell>
   )
 }
 
