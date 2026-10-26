@@ -27,6 +27,23 @@ def test_max_tokens_marks_answer_as_truncated(llm_env):
     assert response == ConversationResponse(answer=ANSWER, truncated=True)
 
 
+@pytest.mark.parametrize(
+    "text, stop_reason, expected_answer, expected_truncated",
+    [
+        pytest.param("r" * 8_001, "end_turn", "r" * 8_000, True, id="over-limit-is-cut"),
+        pytest.param("r" * 8_000, "end_turn", "r" * 8_000, False, id="at-limit-unchanged"),
+        pytest.param(ANSWER, "end_turn", ANSWER, False, id="normal"),
+        pytest.param("r" * 100, "max_tokens", "r" * 100, True, id="max-tokens"),
+    ],
+)
+def test_answer_is_capped_at_max_answer_chars(llm_env, text, stop_reason, expected_answer, expected_truncated):
+    provider = FakeProvider(text=text, stop_reason=stop_reason)
+
+    response = ConversationService(LLMGateway(provider)).answer(make_request())
+
+    assert response == ConversationResponse(answer=expected_answer, truncated=expected_truncated)
+
+
 def test_gateway_receives_system_prompt_and_documents(llm_env):
     provider = FakeProvider()
 

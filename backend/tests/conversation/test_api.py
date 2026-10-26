@@ -54,6 +54,25 @@ def test_truncated_answer(use_provider):
     assert response.json() == {"answer": ANSWER, "truncated": True}
 
 
+def test_long_answer_is_capped_and_can_be_sent_back(use_provider):
+    use_provider(FakeProvider(text="r" * 8_001))
+
+    first = client.post(URL, json=payload())
+
+    assert first.status_code == 200
+    assert first.json() == {"answer": "r" * 8_000, "truncated": True}
+
+    messages = [
+        {"role": "user", "content": QUESTION},
+        {"role": "assistant", "content": first.json()["answer"]},
+        {"role": "user", "content": "Segunda pregunta inventada."},
+    ]
+
+    second = client.post(URL, json=payload(messages=messages))
+
+    assert second.status_code == 200
+
+
 def test_full_conversation_reaches_gateway(use_provider):
     provider = use_provider(FakeProvider())
     messages = [

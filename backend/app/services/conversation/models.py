@@ -70,5 +70,5 @@ class ConversationResponse(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     answer: str
-    # El gateway informó stop_reason = "max_tokens".
+    # stop_reason = "max_tokens" o answer recortado a MAX_ANSWER_CHARS.
     truncated: bool

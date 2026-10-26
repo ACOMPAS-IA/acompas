@@ -13,23 +13,24 @@ _NEUTRALIZED_TAG = "(documento_clinico)"
 _OPENING = "<＜﹤"
 _CLOSING = ">＞﹥"
 
-# Toda aparición de una etiqueta de documento (ficha ACO-030, P6): con o sin
-# barra (normal o de ancho completo), «documento» y «clinico» separados por
-# guion bajo, guion o espacios, «clinico» con o sin tilde (también con la tilde
-# combinada) y sin distinguir mayúsculas. Tras el nombre admite hasta 40
-# caracteres de atributos sin corchetes angulares: una etiqueta sin cerrar no
-# se lleva por delante el texto que la sigue.
+# Arranque de toda etiqueta de documento (ficha ACO-030, P6): corchete de
+# apertura, barra opcional (normal o de ancho completo) y el nombre, con
+# «documento» y «clinico» juntos o separados por guion bajo, guion o espacios,
+# «clinico» con o sin tilde (también con la tilde combinada) y sin distinguir
+# mayúsculas. Solo si tras el nombre no hay más que espacios y un corchete de
+# cierre, se incluyen también; cualquier otra cosa queda como texto, que sin
+# corchete delante ya no abre ni cierra una etiqueta. La barra y sus espacios
+# forman un único grupo opcional para que el patrón no retroceda en cuadrático.
 _DOCUMENT_TAG = re.compile(
-    rf"[{_OPENING}]\s*[/／]?\s*"
-    r"documento[\s_-]+cl(?:[ií]́?)nico"
-    rf"[^{_OPENING}{_CLOSING}]{{0,40}}"
-    rf"[{_CLOSING}]",
+    rf"[{_OPENING}]\s*(?:[/／]\s*)?"
+    r"documento[\s_-]*cl(?:í?|í)nico"
+    rf"(?:\s*[{_CLOSING}])?",
     re.IGNORECASE,
 )
 
 
 def neutralize_delimiters(text: str) -> str:
-    """Sustituye las etiquetas de documento por un texto que no las cierra ni las abre."""
+    """Sustituye el arranque de las etiquetas de documento por un texto que no las cierra ni las abre."""
     return _DOCUMENT_TAG.sub(_NEUTRALIZED_TAG, text)
 
 
