@@ -231,6 +231,179 @@ def test_role_is_derived_from_entity_type():
     ]
 
 
+# Propagación del rol sin modelo: resultados construidos a mano (ficha ACO-022, P12, B9 y AC-17).
+
+
+def detection_at(text, value, entity_type, occurrence=0, score=0.7):
+    start = -1
+    for _ in range(occurrence + 1):
+        start = text.index(value, start + 1)
+    return Detection(entity_type, start, start + len(value), score)
+
+
+def propagated_types(text, detections):
+    return [detection.entity_type for detection in assign_roles(text, detections)]
+
+
+def test_same_name_inherits_role():
+    # C-13: la segunda mención no lleva pista y hereda el rol de la primera.
+    text = "Paciente: Rosario Albendea Quintanar. Rosario Albendea Quintanar refiere dolor."
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
+        detection_at(text, "Rosario Albendea Quintanar", "PERSON", occurrence=1),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PACIENTE"]
+
+
+def test_same_name_ignores_order_case_accents_and_punctuation():
+    text = "Paciente: Rosario Albendea Quintanar. ALBENDEA QUINTANAR, ROSARIO refiere dolor."
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
+        detection_at(text, "ALBENDEA QUINTANAR, ROSARIO", "PERSON"),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PACIENTE"]
+
+
+def test_partial_mention_is_blocked_by_another_person():
+    # C-14: la parcial coincide con la paciente y con la hermana.
+    text = (
+        "Paciente: Rosario Albendea Quintanar. Acude con su hermana, Lucía Albendea Quintanar. "
+        "Se explica a la Sra. Albendea Quintanar el tratamiento."
+    )
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
+        detection_at(text, "Lucía Albendea Quintanar", "FAMILIAR"),
+        detection_at(text, "Sra. Albendea Quintanar", "PERSON"),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "FAMILIAR", "PERSON"]
+
+
+def test_partial_mention_inherits_without_another_person():
+    # C-15: sin la hermana, la parcial hereda el rol de la paciente.
+    text = "Paciente: Rosario Albendea Quintanar. Se explica a la Sra. Albendea Quintanar el tratamiento."
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
+        detection_at(text, "Sra. Albendea Quintanar", "PERSON"),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PACIENTE"]
+
+
+def test_single_word_ambiguity_leaves_generic_person():
+    # C-16: la doctora conserva su pista y el apellido suelto es ambiguo.
+    text = "Paciente: Ana López García. La Dra. López solicita TAC. López indica reposo."
+    detections = [
+        detection_at(text, "Ana López García", "PACIENTE"),
+        detection_at(text, "López", "PERSON", occurrence=1),
+        detection_at(text, "López", "PACIENTE", occurrence=2),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PERSONAL_SANITARIO", "PERSON"]
+
+
+def test_single_word_does_not_inherit():
+    # Regla 5: una palabra suelta conserva el tipo del modelo, aunque coincida.
+    text = "Paciente: Rosario Albendea Quintanar. Rosario refiere dolor."
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
+        detection_at(text, "Rosario", "PERSONAL_SANITARIO", occurrence=1),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PERSONAL_SANITARIO"]
+
+
+def test_longer_mention_does_not_inherit():
+    # Regla 5: una mención más larga que el nombre con pista no hereda.
+    text = "Paciente: Rosario Albendea Quintanar. Rosario Albendea Quintanar de la Fuente acude."
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
+        detection_at(text, "Rosario Albendea Quintanar de la Fuente", "PERSON"),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PERSON"]
+
+
+def test_contradictory_cues_leave_generic_person():
+    # Regla 8: cada pista conserva su rol y la mención sin pista queda genérica.
+    text = "Paciente: Inés Carrascal. Dra. Inés Carrascal. Inés Carrascal refiere."
+    detections = [
+        detection_at(text, "Inés Carrascal", "PERSON"),
+        detection_at(text, "Inés Carrascal", "PERSON", occurrence=1),
+        detection_at(text, "Inés Carrascal", "PERSON", occurrence=2),
+    ]
+
+    assert propagated_types(text, detections) == [
+        "PACIENTE",
+        "PERSONAL_SANITARIO",
+        "PERSON",
+    ]
+
+
+def test_same_role_sources_propagate():
+    text = "Paciente: Inés Carrascal. Paciente: Inés Carrascal. Inés Carrascal refiere."
+    detections = [
+        detection_at(text, "Inés Carrascal", "PERSON"),
+        detection_at(text, "Inés Carrascal", "PERSON", occurrence=1),
+        detection_at(text, "Inés Carrascal", "PERSON", occurrence=2),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PACIENTE", "PACIENTE"]
+
+
+def test_own_cue_wins_over_propagation():
+    text = "Paciente: Rosario Albendea Quintanar. Dra. Rosario Albendea Quintanar."
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
+        detection_at(text, "Rosario Albendea Quintanar", "PERSON", occurrence=1),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PERSONAL_SANITARIO"]
+
+
+def test_generic_competitor_blocks_partial_mention():
+    # Regla 4: una persona genérica con las mismas palabras también bloquea.
+    text = "Paciente: Rosario Albendea Quintanar. Lucía Albendea Quintanar. Sra. Albendea Quintanar."
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
+        detection_at(text, "Lucía Albendea Quintanar", "PERSON"),
+        detection_at(text, "Sra. Albendea Quintanar", "PERSON"),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PERSON", "PERSON"]
+
+
+def test_leading_treatment_is_a_cue():
+    # B9: un «Dra.» dentro del propio hallazgo también es pista.
+    text = "Dra. Inés Carrascal Ochoa. Inés Carrascal Ochoa firma."
+    detections = [
+        detection_at(text, "Dra. Inés Carrascal Ochoa", "PERSON"),
+        detection_at(text, "Inés Carrascal Ochoa", "PERSON", occurrence=1),
+    ]
+
+    assert propagated_types(text, detections) == ["PERSONAL_SANITARIO", "PERSONAL_SANITARIO"]
+
+
+def test_propagation_keeps_positions_scores_and_detections():
+    text = "Paciente: Rosario Albendea Quintanar. Rosario Albendea Quintanar refiere."
+    detections = [
+        detection_at(text, "Rosario Albendea Quintanar", "PACIENTE", score=0.61),
+        detection_at(text, "Rosario Albendea Quintanar", "PERSON", occurrence=1, score=0.42),
+    ]
+
+    assigned = assign_roles(text, detections)
+
+    assert [(d.start, d.end, d.score) for d in assigned] == [
+        (d.start, d.end, d.score) for d in detections
+    ]
+    assert [(d.entity_type, d.role) for d in assigned] == [
+        ("PACIENTE", "PACIENTE"),
+        ("PACIENTE", "PACIENTE"),
+    ]
+
+
 # Separación entre detección y decisión (ficha ACO-022, AC-11).
 
 
