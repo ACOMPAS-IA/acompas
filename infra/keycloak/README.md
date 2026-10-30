@@ -75,9 +75,34 @@ permanente. No hay desbloqueo manual en el Sprint 1.
 
 ### Usuarios y clientes
 
-El realm importado no contiene usuarios ni clientes de aplicación. Solo
-aparecen los roles y clientes integrados de Keycloak. El cliente OIDC de
-ACOMPAS es de ACO-013 y el alta y la lista blanca, de ACO-015.
+El realm importado no contiene usuarios. Contiene el cliente de aplicación
+`acompas-frontend` (ACO-013) y los clientes integrados de Keycloak. El alta de
+usuarios y la lista blanca son de ACO-015.
+
+### Cliente OIDC `acompas-frontend`
+
+El cliente de la SPA de ACOMPAS se declara en `import/acompas-realm.json`:
+
+| Ajuste | Valor |
+| --- | --- |
+| Tipo | Público, sin secreto |
+| Flujo | Authorization code |
+| PKCE | `S256` obligatorio |
+| Redirección | `http://localhost:5173/auth/callback` |
+| Origen web | `http://localhost:5173` |
+| Cierre de sesión | `http://localhost:5173/` |
+| Scopes por defecto | `profile`, `email`, `roles`, `web-origins`, `acr`, `basic` |
+| `fullScopeAllowed` | `true` |
+
+El flujo implícito, la concesión directa de contraseña y las cuentas de
+servicio están desactivados. La redirección `/auth/callback` es el contrato con
+ACO-018, que implementa el login en el frontend. El cliente no crea usuarios ni
+valida tokens: la validación del JWT es de ACO-014.
+
+El puerto 5173 es el valor por defecto de `FRONTEND_PORT`. El JSON no lee
+variables de entorno, así que si se cambia el puerto hay que actualizar
+`redirectUris`, `webOrigins`, `rootUrl`, `baseUrl` y la URI de cierre de sesión,
+y reimportar el realm.
 
 ## Importación y reimportación
 
@@ -90,8 +115,9 @@ docker compose up -d
 ```
 
 Si el realm `acompas` ya existe, Keycloak **no lo sobrescribe**: los cambios
-hechos en la consola se conservan y el JSON no se aplica. Para reconstruir el
-realm desde el JSON hay que borrar el volumen y volver a arrancar:
+hechos en la consola se conservan y el JSON no se aplica. Esto incluye el
+cliente `acompas-frontend` de ACO-013. Para reconstruir el realm desde el JSON
+hay que borrar el volumen y volver a arrancar:
 
 ```bash
 docker compose rm -sf keycloak
@@ -105,14 +131,28 @@ que se hayan creado a mano; en desarrollo no contiene datos reales.
 
 ## Comprobación
 
-Con Keycloak en marcha:
+Con Keycloak en marcha y el realm reimportado:
 
 ```bash
 scripts/check-realm.sh
 ```
 
-El script comprueba el documento de descubrimiento OIDC del realm `acompas` y
-su `issuer`. `scripts/check-keycloak.sh` sigue comprobando el realm `master`.
+El script comprueba:
+
+- el documento de descubrimiento OIDC del realm `acompas` y su `issuer`;
+- el cliente `acompas-frontend` por la Admin API: tipo, flujo, PKCE,
+  redirección, origen, scopes, `fullScopeAllowed` y ausencia de secreto;
+- una petición de autorización con el cliente y la redirección registrados, que
+  debe devolver el formulario de login;
+- una petición con una redirección no registrada, que debe rechazarse.
+
+El script obtiene un token de administrador del realm `master` con
+`KEYCLOAK_BOOTSTRAP_ADMIN_USER` y `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD`, del
+entorno o de `.env` (por defecto, los valores de desarrollo de Compose). No
+imprime el token ni la contraseña. No se añade a la CI: la CI actual no levanta
+Keycloak.
+
+`scripts/check-keycloak.sh` sigue comprobando el realm `master`.
 
 El puerto se toma de `KEYCLOAK_PORT`, del entorno o de `.env` (por defecto,
 8080). Si se cambia `KEYCLOAK_PORT`, la URL del issuer también cambia.
@@ -131,6 +171,7 @@ corresponde a ACO-011 o a una ficha posterior.
 ## Límites
 
 - No se guardan secretos, credenciales ni usuarios en el JSON (ACO-012 §7).
+- El cliente `acompas-frontend` es público y no tiene secreto (ACO-013).
 - Keycloak es el único custodio de la correspondencia email↔UUID; ACOMPAS no
   almacena el email (ADR-001).
 - La lista blanca del piloto se guarda en la base de datos de ACOMPAS y no se
