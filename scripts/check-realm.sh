@@ -77,7 +77,7 @@ if ! clients_body="$(curl -fsS --max-time 5 -H "Authorization: Bearer ${access_t
   exit 1
 fi
 
-client_count="$(grep -o "\"clientId\":\"${client_id}\"" <<<"${clients_body}" | wc -l | tr -d ' ')"
+client_count="$(grep -Eo "\"clientId\"[[:space:]]*:[[:space:]]*\"${client_id}\"" <<<"${clients_body}" | wc -l | tr -d ' ')"
 if [[ "${client_count}" -ne 1 ]]; then
   echo "ERROR: se esperaba un cliente ${client_id} y hay ${client_count}" >&2
   exit 1
@@ -92,12 +92,25 @@ check_bool() {
   fi
 }
 
+check_string() {
+  local field="$1"
+  local expected="$2"
+  if ! grep -Eq "\"${field}\"[[:space:]]*:[[:space:]]*\"${expected}\"" <<<"${clients_body}"; then
+    echo "ERROR: el cliente ${client_id} no tiene ${field}: ${expected}" >&2
+    exit 1
+  fi
+}
+
 check_bool publicClient true
 check_bool standardFlowEnabled true
 check_bool implicitFlowEnabled false
 check_bool directAccessGrantsEnabled false
 check_bool serviceAccountsEnabled false
 check_bool fullScopeAllowed true
+check_bool enabled true
+check_string name "ACOMPAS frontend"
+check_string rootUrl "${web_origin}"
+check_string baseUrl "${web_origin}"
 
 if ! grep -Eq '"protocol"[[:space:]]*:[[:space:]]*"openid-connect"' <<<"${clients_body}"; then
   echo "ERROR: el cliente ${client_id} no usa el protocolo openid-connect" >&2
@@ -109,29 +122,30 @@ extract_array() {
   grep -o "\"${field}\"[[:space:]]*:[[:space:]]*\[[^]]*\]" <<<"${clients_body}" | head -n1
 }
 
-redirects="$(extract_array redirectUris)"
-if ! grep -q "\"${redirect_uri}\"" <<<"${redirects}"; then
-  echo "ERROR: el cliente ${client_id} no tiene la redirección ${redirect_uri}" >&2
-  exit 1
-fi
-if grep -q '\*' <<<"${redirects}"; then
-  echo "ERROR: la redirección del cliente ${client_id} no debe usar comodines" >&2
+array_values() {
+  local field="$1"
+  extract_array "${field}" | sed 's/^[^:]*://' | tr -d '[]"' | tr ',' '\n' \
+    | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sed '/^$/d' | sort
+}
+
+redirects="$(array_values redirectUris)"
+if [[ "${redirects}" != "${redirect_uri}" ]]; then
+  echo "ERROR: redirectUris debe ser exactamente [${redirect_uri}]" >&2
   exit 1
 fi
 
-origins="$(extract_array webOrigins)"
-if ! grep -q "\"${web_origin}\"" <<<"${origins}"; then
-  echo "ERROR: el cliente ${client_id} no tiene el origen ${web_origin}" >&2
+origins="$(array_values webOrigins)"
+if [[ "${origins}" != "${web_origin}" ]]; then
+  echo "ERROR: webOrigins debe ser exactamente [${web_origin}]" >&2
   exit 1
 fi
 
-scopes="$(extract_array defaultClientScopes)"
-for scope in profile email roles web-origins acr basic; do
-  if ! grep -q "\"${scope}\"" <<<"${scopes}"; then
-    echo "ERROR: el cliente ${client_id} no tiene el scope ${scope}" >&2
-    exit 1
-  fi
-done
+scopes="$(array_values defaultClientScopes)"
+expected_scopes="$(printf '%s\n' profile email roles web-origins acr basic | sort)"
+if [[ "${scopes}" != "${expected_scopes}" ]]; then
+  echo "ERROR: defaultClientScopes debe ser exactamente [profile, email, roles, web-origins, acr, basic]" >&2
+  exit 1
+fi
 
 if ! grep -Eq '"pkce\.code\.challenge\.method"[[:space:]]*:[[:space:]]*"S256"' <<<"${clients_body}"; then
   echo "ERROR: el cliente ${client_id} no exige PKCE S256" >&2

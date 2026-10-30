@@ -140,8 +140,10 @@ scripts/check-realm.sh
 El script comprueba:
 
 - el documento de descubrimiento OIDC del realm `acompas` y su `issuer`;
-- el cliente `acompas-frontend` por la Admin API: tipo, flujo, PKCE,
-  redirección, origen, scopes, `fullScopeAllowed` y ausencia de secreto;
+- el cliente `acompas-frontend` por la Admin API con todos los valores de la
+  sección 8: tipo, flujo, PKCE, nombre, estado, `rootUrl`, `baseUrl`,
+  redirección y origen exactos, scopes exactos sin adicionales,
+  `fullScopeAllowed` y ausencia de secreto;
 - una petición de autorización con el cliente y la redirección registrados, que
   debe devolver el formulario de login;
 - una petición con una redirección no registrada, que debe rechazarse.
