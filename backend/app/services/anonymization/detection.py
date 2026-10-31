@@ -125,24 +125,24 @@ def _propagated_role(
             return "PERSON"
         return None
 
-    exact = [source for source in sources if names[source] == name]
-    if exact:
-        exact_roles = {roles[source] for source in exact}
-        return exact_roles.pop() if len(exact_roles) == 1 else "PERSON"
-
-    # Mención parcial: más corta que el nombre con pista y contenida en él.
-    partial = [source for source in sources if set(name) < set(names[source])]
-    if not partial:
+    # Fuente: el mismo nombre (regla 2) o una mención parcial más corta y
+    # contenida en el nombre con pista (regla 4).
+    sources_for_name = [source for source in sources if names[source] == name]
+    if not sources_for_name:
+        sources_for_name = [source for source in sources if set(name) < set(names[source])]
+    if not sources_for_name:
         return None
-    source_roles = {roles[source] for source in partial}
+    source_roles = {roles[source] for source in sources_for_name}
     if len(source_roles) > 1:
         return "PERSON"
     inherited = source_roles.pop()
 
     # «Otra persona»: nombre distinto y no contenido en el de la fuente (regla 4).
-    source_names = [names[source] for source in partial]
+    # También se aplica al mismo nombre (regla 8): una mención más larga con otro
+    # rol o genérica impide la herencia.
+    source_names = [names[source] for source in sources_for_name]
     competitors = _people_with_name(index, name, names, roles)
-    for other_name, other_roles in list(competitors.items()):
+    for other_name in list(competitors):
         if any(set(other_name) <= set(source_name) for source_name in source_names):
             del competitors[other_name]
     if any(

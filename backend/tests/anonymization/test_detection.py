@@ -266,6 +266,22 @@ def test_same_name_ignores_order_case_accents_and_punctuation():
     assert propagated_types(text, detections) == ["PACIENTE", "PACIENTE"]
 
 
+def test_same_name_is_blocked_by_another_person():
+    # Regla 8: el mismo nombre también compite con otra persona más larga.
+    text = "Dra. Ana López. Ana López García es la paciente. Ana López refiere dolor."
+    detections = [
+        detection_at(text, "Ana López", "PERSON"),
+        detection_at(text, "Ana López García", "PACIENTE"),
+        detection_at(text, "Ana López", "PERSON", occurrence=2),
+    ]
+
+    assert propagated_types(text, detections) == [
+        "PERSONAL_SANITARIO",
+        "PACIENTE",
+        "PERSON",
+    ]
+
+
 def test_partial_mention_is_blocked_by_another_person():
     # C-14: la parcial coincide con la paciente y con la hermana.
     text = (
@@ -287,6 +303,17 @@ def test_partial_mention_inherits_without_another_person():
     detections = [
         detection_at(text, "Rosario Albendea Quintanar", "PACIENTE"),
         detection_at(text, "Sra. Albendea Quintanar", "PERSON"),
+    ]
+
+    assert propagated_types(text, detections) == ["PACIENTE", "PACIENTE"]
+
+
+def test_two_word_particle_mention_inherits():
+    # B9: las partículas cuentan como palabras; «de Castro» hereda.
+    text = "Paciente: María de Castro López. La Sra. de Castro acude a revisión."
+    detections = [
+        detection_at(text, "María de Castro López", "PERSON"),
+        detection_at(text, "Sra. de Castro", "PERSON"),
     ]
 
     assert propagated_types(text, detections) == ["PACIENTE", "PACIENTE"]
