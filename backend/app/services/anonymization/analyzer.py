@@ -1,9 +1,101 @@
 """Construcción del AnalyzerEngine de Presidio para español con MEDDOCAN."""
 
+import logging
+import re
+import threading
+import warnings
+from collections import Counter
+from contextlib import contextmanager
+from typing import Iterator
+
 from presidio_analyzer import AnalyzerEngine
-from presidio_analyzer.nlp_engine import TransformersNlpEngine, NerModelConfiguration
+from presidio_analyzer.nlp_engine import (
+    NerModelConfiguration,
+    NlpArtifacts,
+    TransformersNlpEngine,
+)
 
 from .recognizers import build_recognizers
+
+logger = logging.getLogger("app.services.anonymization")
+
+# Presidio registra en DEBUG los lemas del contexto del documento
+# («Context list is: ...»). INFO conserva avisos y errores útiles y corta esa
+# fuga de contenido (R-04, T-04).
+logging.getLogger("presidio-analyzer").setLevel(logging.INFO)
+
+# Motivos normalizados de los avisos del pipeline NLP que incluyen texto del
+# documento. El resumen nunca usa el mensaje original (R-04).
+DISCARD_REASON_ALIGNMENT = "solapamiento o alineación"
+DISCARD_REASON_PROCESSING = "fallo al procesar el texto"
+
+# Prefijos de spacy_huggingface_pipelines en las versiones auditadas de la
+# imagen. Se clasifican en memoria, pero ni el fragmento ni el documento llegan
+# a los registros.
+_KNOWN_WARNING_REASONS = {
+    "Skipping annotation, ": DISCARD_REASON_ALIGNMENT,
+    "Unable to process, skipping annotation for doc ": DISCARD_REASON_PROCESSING,
+}
+
+# warnings.showwarning es estado global del proceso: el lock serializa las
+# llamadas propias al motor mientras dura la sustitución.
+_ANALYSIS_LOCK = threading.Lock()
+
+
+@contextmanager
+def _sanitize_analysis_warnings() -> Iterator[Counter[str]]:
+    """Sustituye showwarning para descontar los avisos que incluyen texto.
+
+    Instala dos filtros globales temporales, exactos y restaurados al salir,
+    con action="always" para que Python no suprima repeticiones antes de
+    contarlas. Los avisos no reconocidos se reenvían al manejador original con
+    los mismos argumentos.
+    """
+    discarded: Counter[str] = Counter()
+    original_showwarning = warnings.showwarning
+
+    def sanitized_showwarning(message, category, filename, lineno, file=None, line=None):
+        if issubclass(category, UserWarning):
+            for prefix, reason in _KNOWN_WARNING_REASONS.items():
+                if str(message).startswith(prefix):
+                    discarded[reason] += 1
+                    return
+        original_showwarning(message, category, filename, lineno, file, line)
+
+    with warnings.catch_warnings():
+        for prefix in _KNOWN_WARNING_REASONS:
+            warnings.filterwarnings(
+                action="always",
+                message=rf"^{re.escape(prefix)}",
+                category=UserWarning,
+            )
+        warnings.showwarning = sanitized_showwarning
+        try:
+            yield discarded
+        finally:
+            warnings.showwarning = original_showwarning
+
+    if discarded:
+        logger.warning(
+            "Anonimización: %s",
+            ", ".join(
+                f"{discarded[reason]} aviso(s) descartado(s) por {reason}"
+                for reason in (DISCARD_REASON_ALIGNMENT, DISCARD_REASON_PROCESSING)
+                if discarded[reason]
+            ),
+        )
+
+
+class SanitizedTransformersNlpEngine(TransformersNlpEngine):
+    """Motor NLP que evita que los avisos del pipeline filtren texto (R-04)."""
+
+    def process_text(self, text: str, language: str) -> NlpArtifacts:
+        # El lock cubre únicamente process_text. No impide que otro código del
+        # proceso manipule warnings durante la ventana: es una mitigación
+        # proporcionada, no una garantía process-wide.
+        with _ANALYSIS_LOCK:
+            with _sanitize_analysis_warnings():
+                return super().process_text(text, language)
 
 MEDDOCAN_MODEL = "BSC-NLP4BIA/bsc-bio-ehr-es-meddocan"
 
@@ -64,7 +156,7 @@ def build_analyzer() -> AnalyzerEngine:
         labels_to_ignore=["O"],
     )
 
-    nlp_engine = TransformersNlpEngine(
+    nlp_engine = SanitizedTransformersNlpEngine(
         models=model_config,
         ner_model_configuration=ner_model_configuration,
     )
@@ -72,6 +164,9 @@ def build_analyzer() -> AnalyzerEngine:
     analyzer = AnalyzerEngine(
         nlp_engine=nlp_engine,
         supported_languages=["es"],
+        # Explícito por privacidad: el trazado de decisiones puede incluir
+        # contenido del documento (R-04).
+        log_decision_process=False,
     )
 
     for name in REPLACED_PREDEFINED_RECOGNIZERS:
