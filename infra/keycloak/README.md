@@ -92,7 +92,14 @@ El cliente de la SPA de ACOMPAS se declara en `import/acompas-realm.json`:
 | Origen web | `http://localhost:5173` |
 | Cierre de sesión | `http://localhost:5173/` |
 | Scopes por defecto | `profile`, `email`, `roles`, `web-origins`, `acr`, `basic` |
+| Scopes opcionales | Ninguno (`[]`); en particular, sin `offline_access` |
 | `fullScopeAllowed` | `true` |
+
+El cliente declara `optionalClientScopes` vacío para que no pueda pedir
+`offline_access` ni obtener un token que sobreviva al cierre de sesión. El rol
+`offline_access` sigue en `default-roles-acompas` y afecta al realm, no a este
+cliente; quitarlo es de ACO-012 (seguimiento). Los clientes integrados de
+Keycloak conservan sus propios scopes opcionales.
 
 El flujo implícito, la concesión directa de contraseña y las cuentas de
 servicio están desactivados. La redirección `/auth/callback` es el contrato con
@@ -142,11 +149,13 @@ El script comprueba:
 - el documento de descubrimiento OIDC del realm `acompas` y su `issuer`;
 - el cliente `acompas-frontend` por la Admin API con todos los valores de la
   sección 8: tipo, flujo, PKCE, nombre, estado, `rootUrl`, `baseUrl`,
-  redirección y origen exactos, scopes exactos sin adicionales,
-  `fullScopeAllowed` y ausencia de secreto;
+  redirección y origen exactos, scopes por defecto exactos sin adicionales,
+  scopes opcionales vacíos, `fullScopeAllowed` y ausencia de secreto;
 - una petición de autorización con el cliente y la redirección registrados, que
   debe devolver el formulario de login;
-- una petición con una redirección no registrada, que debe rechazarse.
+- una petición con una redirección no registrada, que debe rechazarse;
+- una petición con `scope=openid offline_access`, que debe rechazarse con
+  `error=invalid_scope`.
 
 El script obtiene un token de administrador del realm `master` con
 `KEYCLOAK_BOOTSTRAP_ADMIN_USER` y `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD`, del

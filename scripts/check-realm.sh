@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Comprueba el Keycloak local de ACOMPAS: el documento de descubrimiento OIDC
-# del realm acompas, el cliente acompas-frontend y una petición de autorización
-# hasta el formulario de login (ACO-012, ACO-013).
+# del realm acompas, el cliente acompas-frontend, una petición de autorización
+# hasta el formulario de login y el rechazo de offline_access (ACO-012, ACO-013).
 #
 # Uso: scripts/check-realm.sh
 # El puerto de Keycloak se toma de KEYCLOAK_PORT, del entorno o de .env (por
@@ -147,6 +147,12 @@ if [[ "${scopes}" != "${expected_scopes}" ]]; then
   exit 1
 fi
 
+optional_scopes="$(array_values optionalClientScopes)"
+if [[ -n "${optional_scopes}" ]]; then
+  echo "ERROR: optionalClientScopes debe estar vacío, sin offline_access" >&2
+  exit 1
+fi
+
 if ! grep -Eq '"pkce\.code\.challenge\.method"[[:space:]]*:[[:space:]]*"S256"' <<<"${clients_body}"; then
   echo "ERROR: el cliente ${client_id} no exige PKCE S256" >&2
   exit 1
@@ -182,4 +188,15 @@ if [[ "${invalid_code}" != "400" ]] || grep -Eq 'id="kc-form-login"|name="userna
   exit 1
 fi
 
-echo "OK: realm acompas, cliente ${client_id} y autorización verificados en ${base_url}"
+# El cliente no debe poder pedir offline_access. Si lo tuviera asignado, la
+# petición mostraría el formulario de login; sin él, Keycloak redirige con
+# error=invalid_scope.
+offline_query="client_id=${client_id}&response_type=code&scope=openid%20offline_access&state=acompas-check&code_challenge=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&code_challenge_method=S256"
+offline_url="${auth_url}?${offline_query}&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fauth%2Fcallback"
+offline_headers="$(curl -sS -D - -o /dev/null --max-time 5 "${offline_url}" || true)"
+if ! grep -Eiq '^location:.*error=invalid_scope' <<<"${offline_headers}"; then
+  echo "ERROR: el cliente ${client_id} admite el scope offline_access" >&2
+  exit 1
+fi
+
+echo "OK: realm acompas, cliente ${client_id}, autorización y offline_access verificados en ${base_url}"

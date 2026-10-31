@@ -257,6 +257,7 @@
         "acr",
         "basic"
       ],
+      "optionalClientScopes": [],
       "fullScopeAllowed": true
     }
   ],
