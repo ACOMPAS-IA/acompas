@@ -1,10 +1,10 @@
 # ADR-015 — Gestión de secretos y API key de Claude
 
-Estado: propuesto
+Estado: aprobado
 
 Sustituido por: —
 
-Origen: Decisión conjunta #82 (acta de cierre de 28/10/2026), que recoge las precisiones aceptadas en los comentarios de 26/10/2026; ADR pendiente del Plan de Trabajo §9 (gestión de secretos y API key de Claude, ACO-028)
+Origen: Decisión conjunta #82 (acta de cierre de 28/10/2026), que recoge las precisiones aceptadas en los comentarios de 26/10/2026; añadidos aceptados en la revisión de la PR #88: `DefaultHttpxClient(trust_env=False)` y la aclaración de que la clave personal de la demo no se rota al no haber salido del `.env` local; ADR pendiente del Plan de Trabajo §9 (gestión de secretos y API key de Claude, ACO-028)
 
 Relacionados: ADR-006, ADR-008
 
@@ -27,7 +27,7 @@ La demo interna del 27/10/2026 se hizo con una clave personal. La clave del proy
 
 1. **Mecanismo en local y demo.** `ANTHROPIC_API_KEY` se inyecta solo en el servicio `backend` desde un `.env` local no versionado. En Linux/WSL2 el fichero tiene permisos 600. No se copia a la imagen y Compose solo pasa la variable al servicio `backend`. `.env.example` recoge los nombres de las variables de Claude con valores vacíos. Docker secrets y los gestores externos quedan para producción (punto 6).
 
-2. **Titularidad de la clave.** Las claves personales son solo para desarrollo. La demo usa una clave del proyecto, de una cuenta de ACANPAN o de la organización, con titular, acceso a la consola y límite de gasto definidos. La demo interna del 27/10/2026 se hizo con una clave personal como excepción acotada: se rota después de la demo y se sustituye por la clave del proyecto en cuanto ACANPAN o la organización designen titular. La rotación y el incidente dependen de ese titular (punto 7).
+2. **Titularidad de la clave.** Las claves personales son solo para desarrollo. La demo usa una clave del proyecto, de una cuenta de ACANPAN o de la organización, con titular, acceso a la consola y límite de gasto definidos. La demo interna del 27/10/2026 se hizo con una clave personal como excepción acotada. Esa clave no salió del `.env` local del titular y no se rota; queda limitada a desarrollo, conforme al párrafo anterior. Se sustituye por la clave del proyecto en cuanto ACANPAN o la organización designen titular, cuenta y límite de gasto. La rotación y el incidente dependen de ese titular (punto 7).
 
 3. **Variables que puede leer el SDK.** El proveedor construye el cliente con `api_key`, `base_url` explícito en el endpoint oficial, `open_telemetry=False` y `http_client=anthropic.DefaultHttpxClient(trust_env=False)`. Así se conservan los valores por defecto del SDK para `limits`, `timeout` y `follow_redirects`, y se desactivan los proxies y certificados del entorno. El `timeout` y `max_retries` siguen pasándose a `Anthropic`.
 
@@ -44,11 +44,11 @@ La demo interna del 27/10/2026 se hizo con una clave personal. La clave del proy
 5. **Verificación en ACO-028.** Dos niveles, sin dependencias nuevas:
 
    - **Repositorio:** buscar el patrón `sk-ant-` en los ficheros versionados y en el historial (`git log -S'sk-ant-' --all` o `git grep` sobre `git rev-list --all`), comprobar que `.env` está ignorado y que `.env.example` no contiene valores. Puede ser un script, una comprobación de CI o una revisión documentada; no un test de aplicación.
-   - **Aplicación:** una clave centinela no aparece en logs con el logger raíz en DEBUG, en respuestas HTTP (cuando exista ACO-030) ni en el código del frontend; solo el backend recibe la variable.
+   - **Aplicación:** una clave centinela no aparece en logs con el logger raíz en DEBUG, en las respuestas HTTP de `POST /api/conversation` (ACO-030) ni en el código del frontend; solo el backend recibe la variable.
 
 6. **Producción.** Este ADR declara que `.env` es solo para local y demo y no se autoriza en producción. El mecanismo de producción se decide en un ADR del Sprint 2: claves distintas por entorno y Docker secrets o un gestor gestionado, con rotación. El VPS es Sprint 2 y el proveedor puede condicionar la herramienta.
 
-7. **Rotación e incidente.** Procedimiento manual para el Sprint 1: revocar y rotar la clave en Anthropic, actualizar `.env` o el almacén, reiniciar el backend y revisar logs y commits. Se documenta en el README. La rotación automática queda fuera de alcance.
+7. **Rotación e incidente.** Procedimiento manual para el Sprint 1: revocar y rotar la clave en Anthropic, actualizar `.env` o el almacén, reiniciar el backend y revisar logs y commits. Se documenta en el README. Se aplica a la clave del proyecto y a cualquier incidente; no obliga a rotar la clave personal de la demo, que no salió del `.env` local. La rotación automática queda fuera de alcance.
 
 8. **Alcance y secuencia.** Este ADR decide el mecanismo y los controles y se mergea antes de ampliar la ficha de ACO-028. La PR del ADR cierra #82. La ampliación de la ficha es el primer commit de la PR de ACO-028, y esa PR cierra #33. ACO-028 solo implementa y verifica lo decidido aquí, sin gestor nuevo ni dependencias. ACO-028 no entra en el hito del 27/10/2026.
 
@@ -74,7 +74,7 @@ La demo interna del 27/10/2026 se hizo con una clave personal. La clave del proy
 - Cualquier variable `ANTHROPIC_*` nueva que el SDK lea y no esté permitida hará que el gateway falle con `not_configured` hasta que se revise. Es intencionado: obliga a decidir antes de aceptar una vía nueva de configuración.
 - El guard se evalúa en cada llamada, no al importar, y registra solo el nombre de la variable. La clave sigue leyéndose únicamente en `get_api_key()`.
 - La aplicación sigue arrancando sin clave y `/health` sigue respondiendo; el gateway falla con `not_configured` sin llamar al proveedor.
-- La rotación de la clave personal debe confirmarse y documentarse como acción operativa; la PR de ACO-028 documentará el procedimiento. El README, el README del gateway, `.env.example` y `docker-compose.yml` se actualizan en ACO-028 si la implementación lo requiere.
+- La clave del proyecto sigue pendiente: ACANPAN o la organización deben designar titular, cuenta y límite de gasto antes de la próxima demo; se sigue en una issue aparte. La clave personal de la demo no se rota: no salió del `.env` local y queda limitada a desarrollo. El README, el README del gateway, `.env.example` y `docker-compose.yml` se actualizan en ACO-028 si la implementación lo requiere.
 - El mecanismo de producción, la rotación automática y el escáner de secretos quedan pendientes de decisiones posteriores.
 
 ## Fuera de esta decisión
