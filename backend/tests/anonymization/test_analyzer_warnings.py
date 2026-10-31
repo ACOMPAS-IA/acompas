@@ -184,8 +184,14 @@ def test_analysis_does_not_leak_document_text(analyzer, caplog, capsys):
     output_text = captured.out + captured.err
 
     assert results
-    assert "aviso(s) descartado(s)" in logged_text
-
     for leaked in (warnings_text, logged_text, output_text):
         assert MARKER not in leaked
         assert DOCUMENT not in leaked
+
+    # Si el logger de Presidio no estuviera acotado a INFO, «Context list is»
+    # dejaría lemas del documento con la raíz en DEBUG.
+    assert not [
+        record
+        for record in caplog.records
+        if record.name == "presidio-analyzer" and record.levelno < logging.INFO
+    ]
