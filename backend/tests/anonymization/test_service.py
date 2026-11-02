@@ -1,5 +1,7 @@
 """Tests del servicio de anonimización (ACO-023, AC-13 a AC-16)."""
 
+import re
+import unicodedata
 from types import SimpleNamespace
 
 import pytest
@@ -13,7 +15,65 @@ from app.services.anonymization.models import (
     REASON_LOW_CONFIDENCE,
     AnonymizationStatus,
 )
-from tests.synthetic_data import load_document
+from tests.synthetic_data import load_document, load_manifest
+
+# Categorías del manifiesto que ADR-013 garantiza. Las demás no se comprueban:
+# hospital y territorio se anonimizan pero no cuentan para la confianza, y
+# edad, sexo y fechas clínicas se conservan a propósito.
+IDENTIFIER_CATEGORIES = {
+    "ES_DNI",
+    "ES_NIE",
+    "ES_HISTORIA_CLINICA",
+    "ID_ASEGURAMIENTO",
+    "ID_CONTACTO_ASISTENCIAL",
+    "ID_EMPLEO_PERSONAL_SANITARIO",
+    "ID_TITULACION_PERSONAL_SANITARIO",
+    "PHONE_NUMBER",
+}
+TEXT_CATEGORIES = {"EMAIL_ADDRESS", "CALLE"}
+BIRTH_DATE = "14/03/1958"
+
+
+def digits(value):
+    return re.sub(r"\D", "", value)
+
+
+def normalize(value):
+    decomposed = unicodedata.normalize("NFKD", value)
+    without_marks = "".join(
+        char for char in decomposed if not unicodedata.combining(char)
+    )
+    return " ".join(without_marks.casefold().split())
+
+
+def contains_word(haystack, needle):
+    return re.search(rf"(?<!\w){re.escape(needle)}(?!\w)", haystack) is not None
+
+
+def assert_no_guaranteed_leak(document_name, anonymized_text):
+    """Comprueba el manifiesto de ACO-051 contra el texto anonimizado (D-06)."""
+    document = next(
+        item for item in load_manifest()["documents"] if item["file"] == document_name
+    )
+    normalized_text = normalize(anonymized_text)
+    text_digits = digits(anonymized_text)
+
+    for entity in document["entities"]:
+        category = entity["category"]
+        value = entity["text"]
+        if category in IDENTIFIER_CATEGORIES:
+            expected = digits(value)
+            assert expected and expected not in text_digits, (category, value)
+        elif category == "PERSON":
+            for token in re.findall(r"[^\W\d_]{4,}", value):
+                assert not contains_word(normalized_text, normalize(token)), (
+                    category,
+                    token,
+                )
+        elif category in TEXT_CATEGORIES:
+            assert normalize(value) not in normalized_text, (category, value)
+        elif category == "DATE_TIME" and value == BIRTH_DATE:
+            assert normalize(value) not in normalized_text, (category, value)
 
 
 class FakeAnalyzer:
@@ -202,6 +262,35 @@ def model_service():
 
 
 @pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("informe_patologia_01.txt", AnonymizationStatus.VALIDADO),
+        # La confianza por dato retiene el documento por un falso positivo
+        # PERSON sobre el identificador de petición. No es una fuga y no se
+        # baja el umbral para forzarlo (ficha, §8.7).
+        ("analitica_01.txt", AnonymizationStatus.RETENIDO),
+        ("carta_oncologia_01.txt", AnonymizationStatus.VALIDADO),
+    ],
+)
+def test_synthetic_corpus_calibration(model_service, name, expected):
+    settings = load_settings()
+    text = load_document(name)
+
+    output = model_service.anonymize(text)
+
+    assert output.confidence is not None
+    assert output.status == expected
+    if expected == AnonymizationStatus.VALIDADO:
+        assert output.confidence >= settings.document_threshold
+        assert output.anonymized_text is not None
+        assert_no_guaranteed_leak(name, output.anonymized_text)
+    else:
+        assert output.confidence < settings.document_threshold
+        assert output.anonymized_text is None
+        assert output.reason == REASON_LOW_CONFIDENCE
+
+
+@pytest.mark.parametrize(
     "name",
     [
         "informe_patologia_01.txt",
@@ -209,16 +298,11 @@ def model_service():
         "carta_oncologia_01.txt",
     ],
 )
-def test_synthetic_corpus_is_validated_with_the_initial_configuration(model_service, name):
-    settings = load_settings()
+def test_token_probabilities_cover_documents_longer_than_the_model_window(
+    model_service, name
+):
     text = load_document(name)
+    tokens = confidence_module._token_person_probabilities(text, model_service.analyzer)
 
-    output = model_service.anonymize(text)
-
-    assert output.status == AnonymizationStatus.VALIDADO
-    assert output.confidence is not None
-    assert output.confidence >= settings.document_threshold
-    assert output.anonymized_text is not None
-    assert "12345678Z" not in output.anonymized_text
-    assert "Rosario Albendea Quintanar" not in output.anonymized_text
-    assert "ALBENDEA QUINTANAR" not in output.anonymized_text
+    assert tokens
+    assert max(end for _, end, _ in tokens) >= len(text.rstrip()) - 2

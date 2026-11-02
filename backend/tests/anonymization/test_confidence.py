@@ -2,6 +2,8 @@
 
 import logging
 
+import pytest
+
 from app.services.anonymization import confidence as confidence_module
 from app.services.anonymization.confidence import document_confidence
 from app.services.anonymization.policy import Finding
@@ -50,16 +52,77 @@ def test_not_guaranteed_categories_do_not_lower_confidence():
     assert document_confidence("texto de prueba", findings, object()) == 0.95
 
 
-def test_fragments_of_one_category_use_the_best_support():
+def test_contiguous_fragments_of_one_datum_use_the_best_support():
+    findings = [
+        finding("ES_HISTORIA_CLINICA", 0, 4, 0.95),
+        finding("ES_HISTORIA_CLINICA", 4, 8, 0.55),
+    ]
+
+    assert document_confidence("12345678", findings, object()) == 0.95
+
+
+def test_fragments_separated_only_by_spaces_are_one_datum():
     findings = [
         finding("ES_HISTORIA_CLINICA", 0, 4, 0.95),
         finding("ES_HISTORIA_CLINICA", 5, 9, 0.55),
     ]
 
-    assert document_confidence("texto de prueba", findings, object()) == 0.95
+    assert document_confidence("1234 5678", findings, object()) == 0.95
 
 
-def test_confidence_is_the_weakest_guaranteed_category(monkeypatch):
+@pytest.mark.parametrize("separator", [" y ", "\n", ", "])
+def test_two_distinct_data_of_one_category_use_the_weakest(separator):
+    text = f"1234{separator}5678"
+    findings = [
+        finding("ES_HISTORIA_CLINICA", 0, 4, 0.95),
+        finding("ES_HISTORIA_CLINICA", 4 + len(separator), 8 + len(separator), 0.55),
+    ]
+
+    assert document_confidence(text, findings, object()) == 0.55
+
+
+def test_same_value_repeated_in_two_places_is_one_datum():
+    text = "12345678Z y 12345678Z"
+    findings = [
+        finding("ES_DNI", 0, 9, 0.9),
+        finding("ES_DNI", 12, 21, 0.6),
+    ]
+
+    assert document_confidence(text, findings, object()) == 0.9
+
+
+def test_two_distinct_persons_use_the_weakest(monkeypatch):
+    text = "Ana Pérez y Luis Gómez"
+    findings = [
+        finding("PACIENTE", 0, 9, 0.99),
+        finding("PERSON", 12, 22, 0.99),
+    ]
+    monkeypatch.setattr(
+        confidence_module,
+        "_token_person_probabilities",
+        lambda text, analyzer: [(0, 9, 0.9), (12, 22, 0.3)],
+    )
+
+    # Dos personas distintas son dos datos: la débil rebaja la confianza.
+    assert document_confidence(text, findings, object()) == 0.3
+
+
+def test_repeated_mentions_of_the_same_person_use_the_best_support(monkeypatch):
+    text = "Ana Pérez y Ana Pérez"
+    findings = [
+        finding("PACIENTE", 0, 9, 0.4),
+        finding("PACIENTE", 12, 21, 0.5),
+    ]
+    monkeypatch.setattr(
+        confidence_module,
+        "_token_person_probabilities",
+        lambda text, analyzer: [(0, 9, 0.6), (12, 21, 0.95)],
+    )
+
+    assert document_confidence(text, findings, object()) == 0.95
+
+
+def test_confidence_is_the_weakest_guaranteed_data(monkeypatch):
     text = "Rosario Albendea Quintanar y 600 123 456"
     findings = [
         finding("PACIENTE", 0, 26, 0.99),

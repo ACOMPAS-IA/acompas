@@ -3,7 +3,8 @@
 Las etiquetas de persona siguen ACO-022 (B4) y se numeran por documento. La
 agrupación reutiliza la normalización de nombres de ACO-022 y sus reglas
 básicas: mismo nombre, o mención parcial de dos o más palabras contenida en
-un único nombre completo.
+un único nombre completo. La agrupación es pública porque la confianza por
+dato de ACO-023 la reutiliza.
 """
 
 from collections import Counter
@@ -12,7 +13,7 @@ from .detection import normalize_name
 from .policy import PERSON_TYPES, Finding, label_for
 
 
-def _group_person_findings(text: str, findings: list[Finding]) -> list[list[int]]:
+def group_person_findings(text: str, findings: list[Finding]) -> list[list[int]]:
     person_indices = [
         index
         for index, finding in enumerate(findings)
@@ -78,7 +79,7 @@ def _group_type(findings: list[Finding], group: list[int]) -> str:
 def _person_labels(
     text: str, findings: list[Finding]
 ) -> dict[int, str]:
-    groups = _group_person_findings(text, findings)
+    groups = group_person_findings(text, findings)
     labels: dict[int, str] = {}
 
     patients = [group for group in groups if _group_type(findings, group) == "PACIENTE"]
