@@ -70,7 +70,7 @@ def _cue_role(text: str, start: int, end: int) -> str | None:
     return None
 
 
-def _normalize_name(fragment: str) -> tuple[str, ...]:
+def normalize_name(fragment: str) -> tuple[str, ...]:
     """Palabras del nombre para comparar menciones (ficha ACO-022, B9).
 
     Quita tildes, pasa a minúsculas, separa por puntuación e ignora los
@@ -172,7 +172,7 @@ def assign_roles(text: str, detections: list[Detection]) -> list[Detection]:
         for detection, cue, person in zip(detections, cues, is_person)
     ]
     names = [
-        _normalize_name(text[detection.start : detection.end]) if person else ()
+        normalize_name(text[detection.start : detection.end]) if person else ()
         for detection, person in zip(detections, is_person)
     ]
     sources = [

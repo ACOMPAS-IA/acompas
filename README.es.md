@@ -229,6 +229,20 @@ es responsable de la rotación. Para rotar la clave o atender un incidente:
 Las claves personales son solo para desarrollo y la demo usa la clave del
 proyecto (ADR-015 §2). La rotación automática queda fuera del Sprint 1.
 
+### Umbrales de anonimización
+
+El servicio de anonimización lee dos umbrales del entorno en cada llamada:
+
+- `ANONYMIZATION_FINDING_THRESHOLD` (0,35): una detección por debajo se
+  descarta como ruido y no se anonimiza.
+- `ANONYMIZATION_DOCUMENT_THRESHOLD` (0,70): si la confianza del documento
+  queda por debajo, el documento se retiene y no se devuelve texto anonimizado.
+
+Ambos deben ser números entre 0 y 1, y el umbral de hallazgo no puede superar
+al de documento; un valor inválido impide procesar. Se calibran con el corpus
+sintético de ACO-051, así que ningún test fija su valor. En Docker, actualiza
+`.env` y recrea el backend para cambiarlos.
+
 ### Detener el entorno
 
 Para detener los servicios:

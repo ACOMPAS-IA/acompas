@@ -137,6 +137,17 @@ DEFAULT_ENTITIES = sorted(
 REPLACED_PREDEFINED_RECOGNIZERS = ["EsNifRecognizer", "EsNieRecognizer"]
 
 
+def get_token_pipeline(analyzer: AnalyzerEngine):
+    """Devuelve el pipeline de token classification ya cargado.
+
+    Es un accesor de lectura: no cambia el modelo ni la configuración del motor.
+    ACO-023 lo usa para obtener las probabilidades de todas las etiquetas de
+    persona, que Presidio no expone en su resultado agregado.
+    """
+    nlp = analyzer.nlp_engine.nlp["es"]
+    return nlp.get_pipe("hf_token_pipe").hf_pipeline
+
+
 def build_analyzer() -> AnalyzerEngine:
     """Construye un AnalyzerEngine configurado con MEDDOCAN."""
     model_config = [
