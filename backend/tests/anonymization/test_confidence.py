@@ -1,10 +1,12 @@
 """Tests de la confianza del documento (ACO-023, AC-03)."""
 
 import logging
+from types import SimpleNamespace
 
 import pytest
 
 from app.services.anonymization import confidence as confidence_module
+from app.services.anonymization.analyzer import get_token_pipeline
 from app.services.anonymization.confidence import document_confidence
 from app.services.anonymization.policy import Finding
 
@@ -135,6 +137,22 @@ def test_confidence_is_the_weakest_guaranteed_data(monkeypatch):
     )
 
     assert document_confidence(text, findings, object()) == 0.8
+
+
+class _TokenComponent:
+    def __init__(self):
+        self.hf_pipeline = object()
+
+
+def test_token_pipeline_is_found_by_attribute_not_by_component_name():
+    # El nombre cambia entre versiones: en CI es `presidio_hf_token_pipe`.
+    component = _TokenComponent()
+    nlp = SimpleNamespace(
+        pipeline=[("tok2vec", object()), ("presidio_hf_token_pipe", component)]
+    )
+    analyzer = SimpleNamespace(nlp_engine=SimpleNamespace(nlp={"es": nlp}))
+
+    assert get_token_pipeline(analyzer) is component.hf_pipeline
 
 
 def test_degraded_mode_uses_the_finding_score_and_warns_without_content(monkeypatch, caplog):

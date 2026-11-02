@@ -142,10 +142,19 @@ def get_token_pipeline(analyzer: AnalyzerEngine):
 
     Es un accesor de lectura: no cambia el modelo ni la configuración del motor.
     ACO-023 lo usa para obtener las probabilidades de todas las etiquetas de
-    persona, que Presidio no expone en su resultado agregado.
+    persona, que Presidio no expone en su resultado agregado. El nombre del
+    componente cambia entre versiones de spacy_huggingface_pipelines
+    (`hf_token_pipe` o `presidio_hf_token_pipe`), así que se localiza por su
+    atributo `hf_pipeline`, no por el nombre.
     """
     nlp = analyzer.nlp_engine.nlp["es"]
-    return nlp.get_pipe("hf_token_pipe").hf_pipeline
+    for _, component in nlp.pipeline:
+        pipeline = getattr(component, "hf_pipeline", None)
+        if pipeline is not None:
+            return pipeline
+    raise RuntimeError(
+        "El motor NLP no expone el pipeline de token classification"
+    )
 
 
 def build_analyzer() -> AnalyzerEngine:
