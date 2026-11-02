@@ -244,3 +244,78 @@ Se proponen con la etiqueta «pendiente documental», igual que en §4. Las Issu
 - Rama `docs/arnes-regeneracion-adr013`, HEAD = `22004f1cebee17787826e2cbec8107e6a320e99e` antes del commit, sin cambios previos.
 - Solo cambian `AGENTS.md`, `docs/arnes/02` a `09`, `MANIFIESTO.md` y este informe. `01-PRODUCTO.md`, `docs/adr/`, `docs/aco/` y el código no cambian.
 - `~/projects/acompas-fuentes`: los SHA-256 coinciden antes y después de la regeneración.
+
+## Regeneración (modo B) — ADR-014 y calendario del Sprint 1 (2026-11-02)
+
+Regeneración según la Estrategia v0.8 §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-11-02. Rama: `docs/arnes-adr014-adr015-calendario`. Fuentes, versiones y commit: `MANIFIESTO.md`.
+
+Motivo: el hito del Sprint 1 pasa al 9 de noviembre de 2026 (Plan de Proyecto v0.21, Plan de Trabajo v0.11, Documento Operativo v0.5 y Estrategia v0.8), la cuestión 7 de la Arquitectura §16 queda cerrada por ADR-014 y la gestión de la API key, decidida por ADR-015. Se aprovecha para alinear el estado de las fichas en 08-PLAN §5 con el commit del manifiesto.
+
+### C.1 Fuentes e instantáneas
+
+| Fuente | Cambio (control de cambios o diff) | Secciones con cambio de contenido |
+|---|---|---|
+| Plan de Trabajo v0.10 → v0.11 | ADR-014 en el registro; el hito del Sprint 1 pasa al 9 de noviembre y las secciones 8, 11 y 14 dejan de fijar la fecha | §8, §9, §11, §14 |
+| Arquitectura del Sistema v0.8 → v0.9 | Se retira la cuestión 7, resuelta por ADR-014, sin renumerar las demás | §16 |
+| Plan de Proyecto v0.20 → v0.21 | Hito del Sprint 1 el 9 de noviembre; celda S1 «sep–nov 26»; Figura 1 regenerada | §4, §7, Figura 1 |
+| Documento Operativo Sprint 1 v0.4 → v0.5 | Sprint ampliado a 8 semanas; §9 con S7 y S8 y el reparto real; checkpoint el 3 de noviembre y ensayo general el 6 | §5, §9, §14 |
+| Estrategia v0.7 → v0.8 | La Pasada B se dispara tras el hito del Sprint 1, no tras una fecha | §6, §10 |
+| `docs/adr/` (`22004f1` → `a1df03b`) | ADR-014 y ADR-015, nuevos y aprobados | — |
+| `docs/aco/` (`22004f1` → `a1df03b`) | Fichas de ACO-013, 021, 022, 027, 029 y 030 ampliadas; ACO-018, 031 y 032 con criterios móviles a 360 px, y ACO-031 y 032 con el pie de `AppShell` y las pantallas de subida y de validación; estado de revisión de 011, 012, 016 y 017 confirmado | — |
+
+Las dos instantáneas son distintas y no se mezclan: los documentos de `~/projects/acompas-fuentes/` se congelan en `f716366` (1 de noviembre) y `docs/adr/` y `docs/aco/`, en `a1df03b` (2 de noviembre). ADR-015 se aprobó el 2 de noviembre a las 08:01Z, después de la instantánea documental; por eso el Plan de Trabajo v0.11 todavía lo lista como pendiente (PD-24).
+
+### C.2 Piezas regeneradas
+
+| Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
+|---|---|---|---|
+| 01-PRODUCTO | Sí | Plan de Proyecto §4 | La fila S1 pasa a «sep–nov 2026» y el hito, al 9 de noviembre |
+| 02-DOMINIO | Sí | ADR-014 | Concepto «Propagación del rol»; fuera la cuestión de la agrupación de variantes |
+| 03-REGLAS | Sí | ADR-014; ADR-015 | Nuevas R-53 (propagación del rol) y R-54 (gestión de la API key); R-24 remite a ADR-015; fuera la cuestión de la agrupación y la de secretos, que pasa a «secretos en producción» |
+| 04-INTERFAZ | No | ADR-014 y ADR-015 no cambian la interfaz. ACO-031 sí fija el punto del disclaimer (pie de `AppShell`, slot `disclaimer`), pero 04 no se regenera en esta pasada (PD-27) | — |
+| 05-DISEÑO | Sí | ADR-014; ADR-015 | La propagación entra en el pipeline de anonimización; el gateway lee la clave con los controles de R-54 |
+| 06-SEMILLA | No | No cambia el corpus ni los catálogos iniciales | — |
+| 07-INTERCAMBIO | Sí | ADR-014; ADR-015 | La propagación queda definida en «Etiquetas»; la fila «Secretos» recoge el mecanismo de ADR-015; ACO-027 pasa a criterios confirmados |
+| 08-PLAN | Sí | Plan de Proyecto §4; Documento Operativo §9, §14; fichas | Hito del 9 de noviembre y ensayo del 6; planificación semanal S3–S8; estado de las fichas alineado con `a1df03b` |
+| 09-TESTS | Sí | ADR-014; ADR-015 | Nuevas T-38 (propagación) y T-39 (controles de la API key); traza inversa de R-53 y R-54. T-39 verifica R-54/ACO-028, que no es criterio de demo, así que no se enlaza a D-07 |
+| `AGENTS.md` | No | Sus fuentes (Plan de Trabajo §4, §8, §9 y §10; Estrategia §4.1) no cambian de contenido | — |
+
+Los identificadores R y T se conservan y los nuevos continúan la numeración. 04 y 08 no tienen ADR entre sus fuentes: lo que procede de ADR-013, ADR-014 y ADR-015 se remite a 03 y 09.
+
+**Corrección tras la revisión:** la primera versión de esta sección enlazaba T-39 con D-07. El Documento Operativo §9 dice que ACO-028 «no es criterio de demo» y ADR-015 tampoco lo incorpora al hito; D-07 se queda con T-19, T-28 y T-32, y T-39 vuelve a ser solo verificación de R-54.
+
+### C.3 Cuestiones abiertas (MANIFIESTO §5)
+
+- **Salen:** «Agrupación de variantes de un nombre dentro de un documento» (la resuelve ADR-014) y «Gestión de secretos y API key de Claude (ADR pendiente)» (la resuelve ADR-015).
+- **Entra:** «Gestión de secretos en producción, rotación automática y escáner de secretos en CI», que ADR-015 deja fuera de esta decisión.
+- **Se reformula:** «Criterios pendientes de revisión de ACO-027, 029, 030, 031 y 052» pasa a «Criterios pendientes en la ficha de ACO-013, 022, 030, 031 y 052», porque 027 y 029 ya están confirmados y 013, 022 y 030 tienen la PR mergeada sin actualizar la ficha.
+
+### C.4 Pendientes que cierran y pendientes nuevos
+
+| Nº | Situación |
+|---|---|
+| PD-12 (cuestiones 7 a 10 de la Arquitectura §16) | La cuestión 7 se cierra por ADR-014; las 8 a 10 siguen abiertas |
+| PD-24 | Plan de Trabajo v0.12: añadir ADR-015 al registro de ADR y retirarlo de la lista de pendientes. La v0.11 es del 1 de noviembre y ADR-015 se aprobó el 2 |
+| PD-25 | Fichas de ACO-013, 022 y 030: la PR está mergeada y la línea de estado sigue diciendo «pendientes de confirmar en la revisión de la PR». Corregir en la ficha antes de que el arnés pueda describirlas como confirmadas |
+| PD-26 | ADR-015 afirma que la demo interna del 27/10/2026 se celebró, y no se celebró. Un ADR aprobado no se edita: requiere sustitución o errata acordada. El arnés no compila esa premisa |
+| PD-27 | 04-INTERFAZ: ACO-031 ya fija el punto del disclaimer en el pie permanente de `AppShell` (slot `disclaimer`), pero 04 mantiene la cuestión abierta porque no se regenera en esta pasada. Recogerlo en la próxima regeneración de 04 |
+| PD-28 | ACO-027 §0 y §13 siguen diciendo que la gestión de secretos es un ADR pendiente; ADR-015 ya está aprobado y confirma el punto P7. Corregir en la ficha antes de describirla como cerrada |
+
+### C.5 Hallazgos
+
+- **01-PRODUCTO cita el hito en la tabla de fases**: la fila S1 llevaba «sep–oct 2026» y el 27 de octubre. El Plan de Proyecto v0.21 cambia la celda a «sep–nov 26» y el hito al 9 de noviembre, así que 01 sí se regenera (solo esa fila). La nota anterior del manifiesto, que lo daba por no afectado, era incorrecta.
+- **La fila S7 del Documento Operativo dice «pendientes de merge»**, y #89, #90 y #94 se mergearon el 2 de noviembre, dentro de la propia S7. La fuente está fechada el 1 de noviembre, así que era correcta en su instante documental; el arnés la copia literal y no la reinterpreta.
+- **ADR-015 cita el hito del 27/10/2026**, sustituido por el del 9 de noviembre. Es un ADR aprobado: no se edita y el arnés no propaga la fecha.
+- **ACO-027 ya tiene los criterios confirmados** (PR #70) y aparecía como pendiente en 07 y 08; se corrige en esta regeneración a partir de la ficha, no por inferencia.
+- **ACO-021 conserva su ficha sin línea de estado**, aunque tiene criterios y tests; se mantiene la descripción de 08-PLAN §5.
+- **Las fichas de ACO-018, 031 y 032 cambiaron en `3fc56f1` (#79) después de la última regeneración del arnés**, con criterios móviles a 360 px, el pie de `AppShell` para el disclaimer y las pantallas de subida y de validación de ACO-032. 08-PLAN §5 conservaba los resúmenes anteriores; se corrigen aquí a partir de la ficha, sin inferencia.
+- **04-INTERFAZ mantiene abierta la cuestión del punto del disclaimer**, y ACO-031 ya lo fija en el pie permanente de `AppShell`, slot `disclaimer`. Como 04 no se regenera en esta pasada y no cita las fichas entre sus fuentes, no se toca: queda como PD-27 y se anota en el MANIFIESTO §5.
+- **ACO-013, 022 y 030 están ampliadas y mergeadas, pero su línea de estado sigue diciendo «pendientes de confirmar en la revisión de la PR»**. No se infiere la confirmación: 08-PLAN §5 las describe con ese estado literal y el MANIFIESTO lo recoge como PD-25.
+- **ACO-027 todavía presenta la gestión de secretos como ADR pendiente** en §0 y §13, aunque ADR-015 la ha resuelto y confirma su punto P7. El arnés aplica el ADR (07 y 03 remiten a ADR-015) y deja la corrección de la ficha como PD-28.
+
+### C.6 Verificación de integridad
+
+- Rama `docs/arnes-adr014-adr015-calendario`, HEAD = `a1df03b` antes del commit, sin cambios previos.
+- Solo cambian `docs/arnes/01`, `02`, `03`, `05`, `07`, `08`, `09`, `MANIFIESTO.md` y este informe. `04-INTERFAZ.md`, `06-SEMILLA.md`, `AGENTS.md`, `docs/adr/`, `docs/aco/` y el código no cambian.
+- Los SHA-256 del manifiesto se comprueban contra `SHA256SUMS` de `acompas-fuentes` en `f716366`; ADR y fichas, contra `a1df03b`.
+- `~/projects/acompas-fuentes`: los SHA-256 coinciden antes y después de la regeneración.

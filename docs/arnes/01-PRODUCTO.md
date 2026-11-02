@@ -75,7 +75,7 @@ Inventario de los casos de uso. La columna «Fase» de los Casos de Uso es orien
 | Fase o sprint | Objetivo | Hito |
 |---|---|---|
 | Fase 0 (jun–sep 2026) | Bases técnicas, legales y humanas | Acuerdo con ACANPAN e infraestructura lista |
-| **S1 (sep–oct 2026)** | **Primera versión funcional: conversación con Claude sobre un informe oncológico sintético, con autenticación y anonimización básica** | **27 oct 2026: demo interna. Claude responde correctamente sobre un documento oncológico sintético** |
+| **S1 (sep–nov 2026)** | **Primera versión funcional: conversación con Claude sobre un informe oncológico sintético, con autenticación y anonimización básica** | **9 nov 2026: demo interna. Claude responde correctamente sobre un documento oncológico sintético** |
 | S2 (oct–dic 2026) | Anonimización completa y controles obligatorios (derecho al olvido y auditoría) antes de usar datos reales; prompt refinado; trabajo preparatorio del RAG | Demo ACANPAN 1 (dic 2026), con documentos reales por primera vez; plan B: documentos ya anonimizados externamente |
 | S3 (dic 2026–ene 2027) | Historial persistente (varias sesiones con título y tema), preguntas sugeridas, cita de fuente, panel básico; integración inicial del RAG | — |
 | S4 (ene–mar 2027) | Motor de contexto optimizado; RAG completo | Demo ACANPAN 2 (mar 2027) |

@@ -14,7 +14,7 @@ Reglas de negocio, privacidad, seguridad, arquitectura y proceso que debe cumpli
 
 ## Fuentes
 
-- **Normativas:** ADR-001 a ADR-013; Arquitectura del Sistema (§2, §3, §4, §5, §6, §8, §9, §10, §11, §13, §14, §15); Plan de Proyecto (§1, §2); Plan de Trabajo (§2, §4, §5, §8, §9, §10).
+- **Normativas:** ADR-001 a ADR-015; Arquitectura del Sistema (§2, §3, §4, §5, §6, §8, §9, §10, §11, §13, §14, §15); Plan de Proyecto (§1, §2); Plan de Trabajo (§2, §4, §5, §8, §9, §10).
 - **Derivadas:** Casos de Uso (UC-05, UC-07, UC-09); Fichas ACO de docs/aco/ (restricciones, criterios y BLOQUEO de ACO-014, 015, 021, 022, 023, 024, 025, 028, 031 y 051).
 - **Prevalencia:** las fuentes oficiales prevalecen sobre las derivadas. Una Ficha ACO o el arnés nunca cambian una decisión del Plan de Proyecto, de la Arquitectura del Sistema ni de un ADR aprobado. *(Plan de Trabajo §4, Ejecución con agente)* El orden completo de precedencia está en `AGENTS.md`.
 
@@ -52,6 +52,7 @@ Reglas de negocio, privacidad, seguridad, arquitectura y proceso que debe cumpli
 | R-48 | La confianza del documento mide si los datos personales de las categorías garantizadas se han detectado bien. No la rebajan la duda sobre el rol de una persona (las etiquetas de persona cuentan como una sola categoría) ni las categorías sin garantía. Un documento sin ninguna entidad de categorías garantizadas tiene confianza máxima. ACO-023 define y documenta la fórmula; para que la duda de rol no la rebaje, usa las probabilidades de todas las etiquetas de persona del modelo, no solo la ganadora. | ADR-013 | T-36 |
 | R-49 | **Documento retenido** (confianza por debajo del umbral de documento): no se carga ni pasa a la conversación, y no se guarda ni el original ni el resultado anonimizado. Se informa al paciente de que el documento no se ha podido procesar con garantías y de que puede intentarlo con otra copia. Solo queda un registro para auditoría, sin contenido ni nombre del fichero (fecha, tipo de documento, motivo). Es el comportamiento mientras no exista el Nivel 3. | ADR-013; Arquitectura §4 | T-10 |
 | R-50 | **Documento ilegible** (texto extraído vacío): no se procesa y se avisa al paciente con ese motivo, distinto del de baja confianza. | ADR-013; Arquitectura §4 | T-37 |
+| R-53 | **Propagación del rol entre menciones.** Dentro de un documento, una mención sin pista propia hereda el rol de otra mención del mismo nombre que sí la tiene. Se consideran el mismo nombre las mismas palabras, sin contar orden, mayúsculas, tildes ni puntuación; los tratamientos se ignoran para comparar, pero la pista se evalúa antes de quitarlos. Solo se propaga el rol de una mención con pista (R-47), nunca el que el modelo asigna sin ella. Una mención parcial hereda si tiene al menos dos palabras tras quitar los tratamientos, todas contenidas en el nombre con pista y más corta que él, y no coincide con otra persona distinta de la que hereda, cualquiera que sea su rol, incluida la genérica (no cuentan las menciones del mismo nombre ni las que están contenidas en él). La palabra suelta y la mención más larga no heredan. Una mención con pista propia conserva su rol. Si coincide con dos o más personas y todas tienen el mismo rol, se propaga ese rol sin agrupar; si son de roles distintos o alguna es genérica, no se propaga y queda `[PERSONA_n]`. La propagación no detecta nombres nuevos, no fusiona hallazgos y no cambia posiciones ni puntuaciones; la etiqueta final y la numeración son de ACO-023. No se guardan nombres ni valores originales. | ADR-014; ACO-022 P12, B9 | T-38 |
 
 ## 3. Identidad y acceso
 
@@ -67,12 +68,13 @@ Reglas de negocio, privacidad, seguridad, arquitectura y proceso que debe cumpli
 | ID | Regla | Fuente | Verificación |
 |---|---|---|---|
 | R-23 | Toda llamada a Claude API pasa por el LLM gateway. Ningún módulo llama a Claude API directamente. | ADR-006; Arquitectura §8 | T-18 |
-| R-24 | Los secretos y credenciales nunca se almacenan en Git. La API key del proveedor LLM no aparece en el código fuente, en las respuestas HTTP, en los logs ni en el navegador. | Plan de Trabajo §10; ACO-028 | T-19 |
+| R-24 | Los secretos y credenciales nunca se almacenan en Git. La API key del proveedor LLM no aparece en el código fuente, en las respuestas HTTP, en los logs ni en el navegador. | Plan de Trabajo §10; ADR-015; ACO-028 | T-19, T-39 |
 | R-25 | Prompt de sistema restringido al ámbito oncológico: el modelo declina educadamente las preguntas fuera de ese ámbito. | Arquitectura §3, §11 | T-20 |
 | R-26 | Control de prompt injection: el prompt de sistema se estructura para rechazar instrucciones incrustadas en los documentos o en las preguntas, separando las instrucciones del sistema del contenido del usuario. | Arquitectura §11, §15 | T-20 |
 | R-27 | Disclaimer permanente en la interfaz y en las respuestas: ACOMPAS no diagnostica ni sustituye al médico. | Arquitectura §11; Plan de Proyecto §1–2; ACO-031 | T-21 |
 | R-28 | La respuesta indica su origen: la fuente recuperada en que se basa o, si no la hay, que procede del conocimiento interno del LLM (D7). Esta vía no amplía el ámbito permitido. | Arquitectura §6, §11; UC-09 | T-20 |
 | R-29 | Control de gasto en el gateway: tope diario y mensual, crédito acumulado, uso del crédito con aviso, desbloqueo solo manual del administrador, modo pruebas (contabiliza sin bloquear, con crédito infinito) y marcas individuales. *(Posterior a S1: no lo exige ninguna ficha del Sprint 1.)* | Arquitectura §8; ADR-006 | T-25 (revisión) |
+| R-54 | **Gestión de la API key de Claude.** En local y en la demo, `ANTHROPIC_API_KEY` se inyecta solo en el servicio `backend` desde un `.env` local no versionado (permisos 600 en Linux/WSL2), y `.env.example` recoge solo los nombres, con valores vacíos. La demo usa una clave del proyecto, con titular, cuenta y límite de gasto definidos; las claves personales son solo para desarrollo; Docker secrets y los gestores externos quedan para producción (Sprint 2). El proveedor construye el cliente con `api_key`, `base_url` explícito, `open_telemetry=False` y `DefaultHttpxClient(trust_env=False)`, y `load_settings()` rechaza cualquier variable `ANTHROPIC_*` distinta de `ANTHROPIC_API_KEY`, registrando solo el nombre y nunca el valor. Los loggers del SDK que puedan emitir contenido (`anthropic`, `httpx2`, `httpcore2` y sus hijos) quedan en nivel efectivo INFO o superior. La rotación es manual y el procedimiento se documenta en el README. | ADR-015; ACO-028 | T-39 |
 
 ## 5. Arquitectura y tecnología
 
@@ -115,11 +117,10 @@ Están previstos para el Sprint 2 *(Arquitectura §11, §14)*, y ningún ACO del
 | Objetivo de cobertura de Presidio. Más del 85% es objetivo de los Niveles 1–2, no criterio del Sprint 1. | ADR-003 (Fuera de esta decisión); Arquitectura §4 |
 | Lista concreta de reconocedores, filtros de falsos positivos y términos permitidos: la fijan las fichas de ACO-022 y ACO-023 al ampliarse. | ADR-013 (Fuera de esta decisión); ACO-022; ACO-023 |
 | Texto de los avisos al paciente (documento retenido e ilegible). | ADR-013 (Fuera de esta decisión) |
-| Agrupación de las variantes de un mismo nombre dentro de un documento. | Arquitectura §16 nº 7; ADR-012 y ADR-013 (Fuera de esta decisión) |
 | Comprobación de que el documento es de tipo clínico antes de procesarlo. | Arquitectura §16 nº 8; ADR-013 (Fuera de esta decisión) |
 | Uso de la confianza del OCR para detectar documentos ilegibles, y si los umbrales cambian en los Niveles 2 y 3 o con documentos reales. | Arquitectura §16 nº 9; ADR-013 (Fuera de esta decisión) |
 | Diseño del Nivel 3 (marcado y ocultación en el momento de la carga, almacenamiento temporal durante la revisión, marcado posterior). Cuando exista, el documento retenido pasará a revisión obligatoria en lugar de descartarse. | Arquitectura §16 nº 10; ADR-013 (Fuera de esta decisión) |
-| Gestión de secretos y de la API key de Claude (ADR pendiente). | Plan de Trabajo §9; ACO-028 |
+| Gestión de secretos en producción, rotación automática y escáner de secretos en CI. | ADR-015 (Fuera de esta decisión) |
 | Encaje mínimo y alcance del LLM gateway en el Sprint 1. | Plan de Trabajo §8, §9; Documento Operativo §13; ACO-027 |
 | Modelo de Claude a usar y política de versiones. | Plan de Trabajo §9 |
 | Sprint del clasificador de intención. | Arquitectura §16 nº 1; Plan de Trabajo §8, §9 |
