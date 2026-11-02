@@ -277,10 +277,12 @@ Las dos instantáneas son distintas y no se mezclan: los documentos de `~/projec
 | 06-SEMILLA | No | No cambia el corpus ni los catálogos iniciales | — |
 | 07-INTERCAMBIO | Sí | ADR-014; ADR-015 | La propagación queda definida en «Etiquetas»; la fila «Secretos» recoge el mecanismo de ADR-015; ACO-027 pasa a criterios confirmados |
 | 08-PLAN | Sí | Plan de Proyecto §4; Documento Operativo §9, §14; fichas | Hito del 9 de noviembre y ensayo del 6; planificación semanal S3–S8; estado de las fichas alineado con `a1df03b` |
-| 09-TESTS | Sí | ADR-014; ADR-015 | Nuevas T-38 (propagación) y T-39 (controles de la API key); traza inversa de R-53 y R-54; T-39 entra en D-07 |
+| 09-TESTS | Sí | ADR-014; ADR-015 | Nuevas T-38 (propagación) y T-39 (controles de la API key); traza inversa de R-53 y R-54. T-39 verifica R-54/ACO-028, que no es criterio de demo, así que no se enlaza a D-07 |
 | `AGENTS.md` | No | Sus fuentes (Plan de Trabajo §4, §8, §9 y §10; Estrategia §4.1) no cambian de contenido | — |
 
 Los identificadores R y T se conservan y los nuevos continúan la numeración. 04 y 08 no tienen ADR entre sus fuentes: lo que procede de ADR-013, ADR-014 y ADR-015 se remite a 03 y 09.
+
+**Corrección tras la revisión:** la primera versión de esta sección enlazaba T-39 con D-07. El Documento Operativo §9 dice que ACO-028 «no es criterio de demo» y ADR-015 tampoco lo incorpora al hito; D-07 se queda con T-19, T-28 y T-32, y T-39 vuelve a ser solo verificación de R-54.
 
 ### C.3 Cuestiones abiertas (MANIFIESTO §5)
 

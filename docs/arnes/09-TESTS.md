@@ -27,9 +27,11 @@ Verificaciones objetivas de las reglas (03-REGLAS) y de los criterios de aceptac
 | D-04 No persistencia del original | T-03, T-04 |
 | D-05 Conversación | T-01, T-18, T-21 |
 | D-06 Calidad mínima | T-31 |
-| D-07 Ingeniería | T-19, T-28, T-32, T-39 |
+| D-07 Ingeniería | T-19, T-28, T-32 |
 
 Hito *(Documento Operativo §14)*: lo cubre el conjunto D-01…D-07 ejecutado sobre el flujo de ACO-032 (T-32).
+
+T-39 verifica los controles de R-54 en ACO-028. El Documento Operativo §9 excluye ACO-028 del hito («no es criterio de demo»), así que no se enlaza con D-01…D-07; la parte de D-07 «sin secretos en Git» la comprueba T-19.
 
 ## 2. Verificaciones
 
@@ -73,7 +75,7 @@ Hito *(Documento Operativo §14)*: lo cubre el conjunto D-01…D-07 ejecutado so
 | T-36 | Confianza del documento: un documento sin entidades de categorías garantizadas tiene confianza máxima y no se retiene; ni la duda sobre el rol ni las categorías sin garantía la rebajan. | Automatizable con la fórmula que documenta ACO-023 (el umbral se lee de la configuración) | R-45, R-48 | 023, 026 |
 | T-37 | Un documento con texto extraído vacío no se procesa, y el aviso al paciente lleva un motivo distinto del de baja confianza. | Automatizable (unitario y E2E) | R-50 · D-03 | 023, 026, 033 |
 | T-38 | Una mención de una persona sin pista propia hereda el rol de otra mención del mismo nombre con pista, dentro del documento y con las condiciones de ADR-014: la mención parcial de dos o más palabras hereda; la palabra suelta y la mención más larga no; la ambigüedad entre roles distintos o con una persona genérica deja `[PERSONA_n]`; los roles coincidentes propagan sin agrupar. | Automatizable con detecciones construidas a mano y los casos C-13 a C-18 de la ficha de ACO-022 (B9) | R-53 | 022, 026 |
-| T-39 | Los controles de la API key de ADR-015 se cumplen: solo el servicio `backend` recibe la variable; `.env` está ignorado y `.env.example` no contiene valores; `load_settings()` rechaza las variables `ANTHROPIC_*` no permitidas sin registrar su valor; el cliente usa `base_url` explícito, `open_telemetry=False` y `trust_env=False`; los loggers del SDK quedan en INFO o superior; una clave centinela no aparece en logs con el logger raíz en DEBUG ni en las respuestas; el procedimiento de rotación está documentado. | Automatizable para la lista de permitidas, el cliente y el logging; búsqueda de `sk-ant-` en el historial y revisión para el resto | R-24, R-54 · D-07 | 028 |
+| T-39 | Los controles de la API key de ADR-015 se cumplen: solo el servicio `backend` recibe la variable; `.env` está ignorado y `.env.example` no contiene valores; `load_settings()` rechaza las variables `ANTHROPIC_*` no permitidas sin registrar su valor; el cliente usa `base_url` explícito, `open_telemetry=False` y `trust_env=False`; los loggers del SDK quedan en INFO o superior; una clave centinela no aparece en logs con el logger raíz en DEBUG ni en las respuestas; el procedimiento de rotación está documentado. | Automatizable para la lista de permitidas, el cliente y el logging; búsqueda de `sk-ant-` en el historial y revisión para el resto | R-24, R-54 (ACO-028, no criterio de demo) | 028 |
 
 ## 3. Trazabilidad inversa (regla → verificación)
 
