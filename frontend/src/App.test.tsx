@@ -1,11 +1,12 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from './App.tsx'
+import { DISCLAIMER_TEXT } from './components/disclaimer/Disclaimer.tsx'
 
 afterEach(cleanup)
 
 describe('App', () => {
-  it('monta AppShell con la conversación activa y contenido neutro', () => {
+  it('monta AppShell con la conversación activa, contenido neutro y el aviso en el pie', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: 'ACOMPAS' })).toBeDefined()
@@ -17,8 +18,8 @@ describe('App', () => {
     ).toBe('page')
     expect(screen.getByRole('main')).toBeDefined()
     expect(screen.getByText('Contenido de prueba')).toBeDefined()
-    expect(
-      screen.queryByRole('contentinfo', { name: 'Aviso legal' }),
-    ).toBeNull()
+
+    const footer = screen.getByRole('contentinfo', { name: 'Aviso legal' })
+    expect(within(footer).getByText(DISCLAIMER_TEXT)).toBeDefined()
   })
 })
