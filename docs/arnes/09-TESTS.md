@@ -14,7 +14,7 @@ Verificaciones objetivas de las reglas (03-REGLAS) y de los criterios de aceptac
 
 ## Fuentes
 
-- **Normativas:** Plan de Proyecto (§1, §2, §4); Arquitectura del Sistema (§4, §8, §11, §13); ADR-001 a ADR-013; Documento Operativo del Sprint 1 (§3, §10, §14).
+- **Normativas:** Plan de Proyecto (§1, §2, §4); Arquitectura del Sistema (§4, §8, §11, §13); ADR-001 a ADR-015; Documento Operativo del Sprint 1 (§3, §10, §14).
 - **Derivadas:** Casos de Uso (UC-01, UC-03, UC-05, UC-06, UC-09); Modelo E/R (DOCUMENTO, ETIQUETA_ANONIMIZACION); Wireframes (pantallas 1, 4 y 5); Fichas ACO (criterios de aceptación y tests esperados: 014, 015, 019–026, 028–033, 051, 052); criterios de la demo D-01…D-07, que se toman de 08-PLAN.
 
 ## 1. Criterios de la demo del Sprint 1 → verificaciones
@@ -27,7 +27,7 @@ Verificaciones objetivas de las reglas (03-REGLAS) y de los criterios de aceptac
 | D-04 No persistencia del original | T-03, T-04 |
 | D-05 Conversación | T-01, T-18, T-21 |
 | D-06 Calidad mínima | T-31 |
-| D-07 Ingeniería | T-19, T-28, T-32 |
+| D-07 Ingeniería | T-19, T-28, T-32, T-39 |
 
 Hito *(Documento Operativo §14)*: lo cubre el conjunto D-01…D-07 ejecutado sobre el flujo de ACO-032 (T-32).
 
@@ -72,6 +72,8 @@ Hito *(Documento Operativo §14)*: lo cubre el conjunto D-01…D-07 ejecutado so
 | T-35 | Las personas reciben la etiqueta de su rol cuando se puede determinar (con prevalencia del contexto sobre el modelo) y la genérica `[PERSONA_n]` cuando no. | Automatizable con los casos sintéticos de la ficha de ACO-022. El acierto de rol es un indicador de calidad: se mide y no bloquea | R-47 | 022, 026 |
 | T-36 | Confianza del documento: un documento sin entidades de categorías garantizadas tiene confianza máxima y no se retiene; ni la duda sobre el rol ni las categorías sin garantía la rebajan. | Automatizable con la fórmula que documenta ACO-023 (el umbral se lee de la configuración) | R-45, R-48 | 023, 026 |
 | T-37 | Un documento con texto extraído vacío no se procesa, y el aviso al paciente lleva un motivo distinto del de baja confianza. | Automatizable (unitario y E2E) | R-50 · D-03 | 023, 026, 033 |
+| T-38 | Una mención de una persona sin pista propia hereda el rol de otra mención del mismo nombre con pista, dentro del documento y con las condiciones de ADR-014: la mención parcial de dos o más palabras hereda; la palabra suelta y la mención más larga no; la ambigüedad entre roles distintos o con una persona genérica deja `[PERSONA_n]`; los roles coincidentes propagan sin agrupar. | Automatizable con detecciones construidas a mano y los casos C-13 a C-18 de la ficha de ACO-022 (B9) | R-53 | 022, 026 |
+| T-39 | Los controles de la API key de ADR-015 se cumplen: solo el servicio `backend` recibe la variable; `.env` está ignorado y `.env.example` no contiene valores; `load_settings()` rechaza las variables `ANTHROPIC_*` no permitidas sin registrar su valor; el cliente usa `base_url` explícito, `open_telemetry=False` y `trust_env=False`; los loggers del SDK quedan en INFO o superior; una clave centinela no aparece en logs con el logger raíz en DEBUG ni en las respuestas; el procedimiento de rotación está documentado. | Automatizable para la lista de permitidas, el cliente y el logging; búsqueda de `sk-ant-` en el historial y revisión para el resto | R-24, R-54 · D-07 | 028 |
 
 ## 3. Trazabilidad inversa (regla → verificación)
 
@@ -107,6 +109,8 @@ Hito *(Documento Operativo §14)*: lo cubre el conjunto D-01…D-07 ejecutado so
 | | | | R-50 | T-37 |
 | | | | R-51 | T-28 |
 | | | | R-52 | T-29 |
+| | | | R-53 | T-38 |
+| | | | R-54 | T-39 |
 
 ## Cuestiones abiertas
 

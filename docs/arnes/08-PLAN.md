@@ -20,7 +20,7 @@ Orden de ejecución por ACO, dependencias y aceptación del sprint en curso (Spr
 ## 1. Objetivo e hito del Sprint 1
 
 - **Objetivo:** primera versión funcional, con conversación con Claude sobre un informe oncológico sintético, autenticación y anonimización básica. *(Plan de Proyecto §4)*
-- **Hito, 27 de octubre de 2026 (demo interna):** un usuario autorizado accede, usa la interfaz mínima, aporta un documento oncológico sintético, el sistema lo procesa con el flujo de anonimización previsto y obtiene una respuesta de Claude basada en el documento. Sin datos reales de pacientes. *(Documento Operativo §14)*
+- **Hito, 9 de noviembre de 2026 (demo interna):** un usuario autorizado accede, usa la interfaz mínima, aporta un documento oncológico sintético, el sistema lo procesa con el flujo de anonimización previsto y obtiene una respuesta de Claude basada en el documento. Sin datos reales de pacientes. *(Documento Operativo §14)* El ensayo general es el 6 de noviembre, con el mismo guion y la misma checklist, y `main` se congela esa noche; la demo se ejecuta desde un commit etiquetado.
 - **Criterios de la demo** *(Plan de Trabajo §11)*. La demo se supera si se cumplen todos. Su verificación está en 09-TESTS §1.
 
 | ID | Criterio | Qué debe ocurrir |
@@ -80,7 +80,18 @@ Quedan fuera de la demo: los Niveles 2 y 3, el RAG, el historial, el VPS, y el d
 - Demo: 051 + 052 alimentan la validación del flujo 032/033.
 - **Puntos de entrega entre personas:** el cliente de API (019, Miguel) y la conversación (030, Luis) acuerdan el contrato de API antes de integrarse en 032. Lo mismo ocurre con la API de anonimización (024) y la conversación.
 
-**Planificación semanal orientativa** *(Documento Operativo §9)*: S3 (29 sep–5 oct) 020, 011, 012, 016, 017 · 027 e inicio de 029. S4 (6–12 oct) 021, 013, 014, 015, 018, 028 · fin de 029 y 051. S5 (13–19 oct) 022, 023, 024, 019 y la primera mitad de 026 · 030. S6 (20–27 oct) 025, segunda mitad de 026, 032, 033 · 031, 052 e integración. **Si hay desviación, el primer recorte es ACO-052, y después se aplaza a S6 parte de ACO-026.**
+**Planificación semanal orientativa** *(Documento Operativo §9)*. Las semanas 1–2, del 15 al 28 de septiembre, se dedicaron a la base técnica; S3 a S6 recogen lo integrado en `main` y S7 y S8, lo que queda hasta la demo:
+
+| Semana | Miguel | Luis |
+|---|---|---|
+| **S3** 29 sep–5 oct | ACO-020 y 021 | — |
+| **S4** 6–12 oct | ADR-013, fichas ACO y arnés (documentación) | ACO-051 |
+| **S5** 13–19 oct | ACO-011, 016 y 022 | ACO-027 y 029 |
+| **S6** 20–27 oct | ACO-012 y 017 | ACO-030 |
+| **S7** 28 oct–2 nov | ACO-013 (#90), 022 (#89) y 021 (#94), pendientes de merge; #85 (ADR-014 en el Plan de Trabajo y cierre de la cuestión 7 en la Arquitectura); ACO-014, 015, 018 y 023 | ACO-031 y revisión de las PR de Miguel |
+| **S8** 3–9 nov | ACO-019, 024, 025, 026, 032 y 033; ACO-028 si ADR-015; ensayo general el 6 | ACO-052, revisión de 019–033 y ensayo |
+
+Checkpoint del 3 de noviembre: ACO-019 y ACO-024 integrados o en revisión; sin ellos no arranca ACO-032. Ensayo general el 6 de noviembre, con el mismo guion y la misma checklist que la demo, y congelación de `main` esa noche; la demo del 9 se ejecuta desde un commit etiquetado. **No hay recorte de alcance:** ACO-052 y ACO-026 se mantienen completos. La única flexibilidad es ACO-028, que depende de ADR-015 y no es criterio de demo.
 
 ## 4. Alcance del Sprint 1
 
@@ -101,10 +112,11 @@ Estado de las fichas en el commit del manifiesto:
 
 | Estado de la ficha | ACO |
 |---|---|
-| Ficha ejecutable con criterios confirmados en la revisión de su PR | 051 |
+| Ficha ejecutable con criterios confirmados en la revisión de su PR | 011, 012, 016, 017, 027, 029, 051 |
 | Ficha ejecutable (criterios AC-01…AC-09, tests, componentes y BLOQUEO), sin indicación expresa de estado | 021 |
-| Ficha de alcance (objetivo, incluye, fuera de alcance y criterio de revisión), con criterios **pendientes de revisión** por Miguel y Luis | 027, 029, 030, 031, 052 |
-| Ficha de alcance | 011–020, 022–026, 028, 032, 033 |
+| Ficha ampliada con criterios declarados **pendientes** en la propia ficha, con la PR ya mergeada | 013, 022, 030 |
+| Ficha de alcance con criterios **pendientes de revisión** por Miguel y Luis | 031, 052 |
+| Ficha de alcance | 014, 015, 018, 019, 020, 023, 024, 025, 026, 028, 032, 033 |
 
 Resumen de alcance de cada ACO *(fichas, §Objetivo, §Incluye y §Fuera de alcance; el texto completo está en cada ficha)*:
 
@@ -117,11 +129,11 @@ Resumen de alcance de cada ACO *(fichas, §Objetivo, §Incluye y §Fuera de alca
 | 015 | Acceso del usuario autorizado; rechazo del no autorizado; sin correspondencia email↔UUID en ACOMPAS | Sustituir Keycloak; gestión completa de usuarios |
 | 016 | React ejecutable en local con la estructura inicial | Layout y login (017–018) |
 | 017 | Layout navegable para el login y la conversación, sin funciones fuera del Sprint 1 | Autenticación (018) |
-| 018 | Login con el flujo configurado; resultado compatible con el backend; errores básicos | Cliente de API (019) |
+| 018 | Login sobre `AuthShell` (sin cabecera, navegación, pie ni disclaimer) con el flujo configurado; resultado compatible con el backend; errores básicos; utilizable a 360 px sin scroll horizontal | Cliente de API (019); layout y `AuthShell` (017) |
 | 019 | Cliente centralizado con autenticación; contrato documentado para 032 | API de anonimización (024) |
 | 020 | Contrato de entrada y salida sobre texto, invocable desde Python, sin persistencia del original, con tests unitarios | Presidio, reconocedores, umbral, API HTTP |
 | 021 | `AnalyzerEngine` en español con MEDDOCAN y puntuaciones; mapeo explícito | Reconocedores propios, política, umbral, anonimización, API, persistencia |
-| 022 | Reconocedores específicos para identificadores clínicos españoles; cobertura de los identificadores del Sprint 1; separación detección/decisión | Umbral y política (023) |
+| 022 | Reconocedores específicos para identificadores clínicos españoles; cobertura de los identificadores del Sprint 1; asignación de rol por pistas de contexto y propagación entre las menciones del mismo nombre (R-53); separación detección/decisión | Umbral y política (023) |
 | 023 | Umbral configurable y documentado; filtros de falsos positivos; separación detectado/anonimizado; no pasan documentos que no validen | API HTTP (024); persistencia; olvido |
 | 024 | Endpoint interno documentado; texto → anonimizado según 020; errores; no devuelve el original | Persistencia del original (025) |
 | 025 | Original fuera de la BD, del almacenamiento y de los logs; respuesta mínima; tests de ausencia de persistencia | Olvido y auditoría completos |
@@ -130,13 +142,13 @@ Resumen de alcance de cada ACO *(fichas, §Objetivo, §Incluye y §Fuera de alca
 | 028 | Clave por configuración segura del backend; fuera del código, de las respuestas HTTP y del navegador; pruebas o revisión | Gateway completo (027) |
 | 029 | Prompt versionado: comprensión, no diagnóstico; restricciones de seguridad; control inicial de prompt injection | Flujo conversacional (030) |
 | 030 | Consulta sobre el documento; contexto controlado; respuesta visible; sin documentos reales | Disclaimer (031); RAG |
-| 031 | Disclaimer visible donde lo defina UX; aclara que no sustituye al profesional; respuestas no presentadas como diagnóstico | Cambiar el contenido clínico o los controles técnicos |
-| 032 | Login → acceso autorizado → documento sintético → anonimización → conversación → respuesta; contratos integrados; ejecutable en local | Funciones de producción; datos reales |
+| 031 | Disclaimer en el pie permanente de `AppShell`, slot `disclaimer` (el punto definido por UX); aclara que no sustituye al profesional; respuestas no presentadas como diagnóstico; legible a 360 px | Cambiar el contenido clínico, los controles técnicos, el layout o `AppShell` |
+| 032 | Login → acceso autorizado → subida (pantalla 3) → anonimización → resultado de la validación (pantalla 4) → conversación → respuesta, todo dentro de `AppShell`; utilizable a 360 px; contratos integrados; ejecutable en local | Funciones de producción; datos reales; revisión manual de la pantalla 4 (S2); contenido del disclaimer (031) |
 | 033 | E2E: caso feliz, usuario no autorizado y documento que no valida (si el flujo lo contempla); CI o dependencia documentada | Sustituir los tests de 026 |
 | 051 | Corpus sintético y manifiesto (ver 06-SEMILLA) | Ver ficha §5 |
 | 052 | Casos de consulta, fuera de alcance, disclaimer y seguridad conversacional, preparados para la demo | Ampliar el alcance funcional |
 
-**Política de anonimización del Nivel 1** (ADR-013, en el registro del Plan de Trabajo §9, que resuelve el umbral y el documento retenido de ACO-023): las reglas que aplican ACO-022, ACO-023 y ACO-026 están en 03-REGLAS (R-13, R-44…R-50), y sus verificaciones, en 09-TESTS.
+**Política de anonimización del Nivel 1** (ADR-013, en el registro del Plan de Trabajo §9, que resuelve el umbral y el documento retenido de ACO-023): las reglas que aplican ACO-022, ACO-023 y ACO-026 están en 03-REGLAS (R-13, R-44…R-50, R-53), y sus verificaciones, en 09-TESTS. La propagación del rol entre menciones del mismo nombre la fija ADR-014; la gestión de la API key, ADR-015 (R-54).
 
 **Criterio de revisión común de las fichas de alcance:** la persona revisora comprueba que el código implementa el objetivo de la ficha, que se respetan las dependencias, que hay pruebas cuando el comportamiento es verificable y que no se introducen datos reales, persistencia ni secretos fuera del alcance. *(Fichas ACO, §Criterio de revisión)*
 
@@ -158,7 +170,7 @@ Resumen de alcance de cada ACO *(fichas, §Objetivo, §Incluye y §Fuera de alca
 | Cuestión | Fuente |
 |---|---|
 | ACO-014 depende de «007» en la matriz, pero en docs/aco/ no hay ficha de ACO-007 (es anterior al Sprint 1). Qué entrega debe darse por cumplida no está documentado. | Documento Operativo §6; docs/aco/ |
-| Criterios de aceptación de ACO-027, 029, 030, 031 y 052 pendientes de revisión: hasta que se confirmen, el alcance ejecutable es el de la ficha de alcance. | Fichas ACO-027, 029, 030, 031, 052 |
+| Criterios de aceptación pendientes en la ficha de ACO-013, 022, 030, 031 y 052: en 013, 022 y 030 la PR ya está mergeada y la ficha no se ha actualizado. | Fichas ACO-013, 022, 030, 031, 052 |
 | Lista concreta de reconocedores, filtros de falsos positivos y términos permitidos de ACO-022 y ACO-023: la fijan sus fichas al ampliarse. | ADR-013 (Fuera de esta decisión); ACO-022; ACO-023 |
-| Gestión de secretos, encaje del gateway y modelo de Claude: ADR pendientes del Sprint 1. | Plan de Trabajo §9 |
+| Encaje del gateway y modelo de Claude: ADR pendientes del Sprint 1. | Plan de Trabajo §9 |
 | ADR del entorno de desarrollo (decisión ya adoptada, ADR sin redactar). | Plan de Trabajo §9 |

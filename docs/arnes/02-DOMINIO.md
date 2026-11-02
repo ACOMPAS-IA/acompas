@@ -15,7 +15,7 @@ Conceptos del dominio, entidades, identificadores y relaciones. El agente lo usa
 
 ## Fuentes
 
-- **Normativas:** Plan de Proyecto (§1, §2); Arquitectura del Sistema (§1, §4, §6, §7, §8, §9); ADR-001, ADR-002, ADR-003, ADR-005, ADR-006, ADR-007, ADR-009, ADR-010, ADR-011, ADR-012 y ADR-013.
+- **Normativas:** Plan de Proyecto (§1, §2); Arquitectura del Sistema (§1, §4, §6, §7, §8, §9); ADR-001, ADR-002, ADR-003, ADR-005, ADR-006, ADR-007, ADR-009, ADR-010, ADR-011, ADR-012, ADR-013 y ADR-014.
 - **Derivadas:** Casos de Uso (§1–§3); Modelo E/R (§1 Visión general, §2 Definición de entidades —tipos y restricciones según el MANIFIESTO—, §3 Relaciones, §4 Notas de implementación).
 - **Prevalencia (Estrategia §4.6):** el Modelo E/R aporta la estructura. En identificadores, identidad y límites técnicos prevalecen los ADR y la Arquitectura.
 
@@ -33,6 +33,7 @@ Conceptos del dominio, entidades, identificadores y relaciones. El agente lo usa
 | Hash del fichero | Hash criptográfico del fichero original, único por paciente, para detectar subidas repetidas. | ADR-012 |
 | Etiqueta de anonimización | Reemplazo de una entidad identificativa, numerado **por documento** (`[SANITARIO_1]` en un documento no tiene relación con `[SANITARIO_1]` en otro). No guarda el valor original. Ejemplos de la Arquitectura: `[PACIENTE]`, `[SANITARIO_1]`, `[FAMILIAR_1]`, `[PERSONA_1]`, `[HOSPITAL]`, `[FECHA_NACIMIENTO]`. | ADR-012; Arquitectura §4 |
 | Etiqueta de persona por rol | La etiqueta de una persona indica su rol (paciente, personal sanitario o familiar: `[PACIENTE]`, `[SANITARIO_n]`, `[FAMILIAR_n]`) cuando se puede determinar, sin garantía. Si el rol no está claro, se usa la etiqueta genérica de persona numerada (`[PERSONA_n]`). Un rol erróneo no es una fuga: el nombre se sustituye igualmente. | ADR-013; Arquitectura §4 |
+| Propagación del rol | Dentro de un documento, una mención de una persona sin pista propia hereda el rol de otra mención del mismo nombre que sí la tiene, con las condiciones de ADR-014: solo desde una mención con pista, solo para el mismo nombre o una mención parcial de dos o más palabras, y sin propagar cuando coincide con otra persona de rol distinto o genérica. No detecta nombres nuevos, no fusiona menciones y no cambia posiciones ni puntuaciones; la etiqueta y la numeración finales son de ACO-023. | ADR-014; ACO-022 |
 | Categorías garantizadas | Se anonimizan siempre: nombres de personas (sea cual sea su rol); identificadores (DNI, NIE, número de historia clínica, tarjeta sanitaria y otros de aseguramiento, de episodio asistencial y del personal sanitario); teléfono, fax y correo electrónico; dirección (vía, número, piso, código postal y localidad); fecha de nacimiento. | ADR-013; Arquitectura §4 |
 | Categorías sin garantía | Hospital, centro de salud e institución: se sustituyen si se detectan, pero no cuentan para la confianza del documento ni para las comprobaciones de fuga. | ADR-013; Arquitectura §4 |
 | Datos que no se anonimizan | Las demás fechas del documento (informe, extracción, consulta), la edad, el sexo, la profesión y el país: son contexto clínico. | ADR-013; Arquitectura §4 |
@@ -107,7 +108,6 @@ NN = NOT NULL.
 | Almacenamiento del documento anonimizado (tecnología de ruta_almacen) | Arquitectura §16 nº 2; ADR-010 |
 | Modelo del registro de auditoría: eventos e identificador | Arquitectura §16 nº 4 |
 | Modelo de embeddings, dimensionalidad y chunking | ADR-007 (Fuera de esta decisión); Plan de Trabajo §9 |
-| Agrupación de variantes de un mismo nombre dentro de un documento | Arquitectura §16 nº 7; ADR-012 y ADR-013 (Fuera de esta decisión) |
 | Algoritmo del hash y formato exacto del nombre genérico | ADR-012 (Fuera de esta decisión) |
 | Nombre exacto de la etiqueta genérica de persona y catálogo de etiquetas (TIPO_ETIQUETA) | ADR-013 (Fuera de esta decisión) |
 | Diseño del Nivel 3: marcado de datos escapados y ocultación de contenido en el momento de la carga, almacenamiento temporal durante la revisión y marcado posterior. Cuando exista, el documento retenido pasará a revisión obligatoria en lugar de descartarse. | Arquitectura §16 nº 10; ADR-013 (Fuera de esta decisión) |

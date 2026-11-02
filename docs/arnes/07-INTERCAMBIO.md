@@ -13,7 +13,7 @@ Contratos entre módulos, APIs y datos que se necesitan para integrar. Solo reco
 
 ## Fuentes
 
-- **Normativas:** Arquitectura del Sistema (§3, §4, §5, §8, §9, §11, §13); ADR-001, ADR-003, ADR-004, ADR-005, ADR-006, ADR-009, ADR-011, ADR-012 y ADR-013.
+- **Normativas:** Arquitectura del Sistema (§3, §4, §5, §8, §9, §11, §13); ADR-001, ADR-003, ADR-004, ADR-005, ADR-006, ADR-009, ADR-011, ADR-012, ADR-013, ADR-014 y ADR-015.
 - **Derivadas:** Modelo E/R (§2, §3, §4); Casos de Uso (UC-03, UC-07, UC-09); Fichas ACO-014, 019, 020, 021, 023, 024, 025, 027, 028, 030, 032 y 051.
 
 ## 1. Contratos transversales (definidos)
@@ -25,7 +25,7 @@ Contratos entre módulos, APIs y datos que se necesitan para integrar. Solo reco
 | Lista blanca | Antes de que Keycloak resuelva o cree el UUID, se comprueba que el email está en EMAIL_AUTORIZADO. La comprobación es aplicativa (sin FK). El mecanismo concreto está abierto. | ADR-009; Modelo E/R §3; UC-03 |
 | Paso obligatorio por el gateway | Conversación → LLM gateway → Claude API. Ninguna otra ruta llama a Claude API. Cada llamada genera un registro de consumo (paciente, tokens, fecha). | ADR-006; Arquitectura §8; Modelo E/R CONSUMO_LLM |
 | Datos que recibe el LLM | Solo el texto **anonimizado** del documento, nunca el original. | ADR-005; Arquitectura §3, §4 |
-| Secretos | La API key del proveedor LLM se obtiene de la configuración segura del backend y nunca viaja al navegador ni aparece en las respuestas HTTP o en los logs. | ACO-028 |
+| Secretos | La API key del proveedor LLM se obtiene de la configuración segura del backend y nunca viaja al navegador ni aparece en las respuestas HTTP o en los logs. Solo el servicio `backend` recibe la variable, desde un `.env` local no versionado; `load_settings()` rechaza cualquier variable `ANTHROPIC_*` distinta de la clave, y el cliente desactiva el entorno (`trust_env=False`) y la telemetría de contenido. | ADR-015; ACO-028 |
 | Origen de la respuesta | La respuesta indica la fuente recuperada (fragmento del documento, glosario o publicación) o que procede del conocimiento interno del LLM. | Arquitectura §6, §11; UC-09 |
 
 ## 2. Pipeline de anonimización (Sprint 1)
@@ -34,17 +34,17 @@ Contratos entre módulos, APIs y datos que se necesitan para integrar. Solo reco
 |---|---|---|---|
 | Servicio de anonimización (ACO-020) | Contrato de entrada y salida **sobre texto**, invocable desde Python y con pruebas unitarias. No introduce persistencia del original. | Forma concreta del contrato: la fija ACO-020 en el repositorio. | ACO-020 |
 | Analizador (ACO-021) | Función de construcción del `AnalyzerEngine` reutilizable (Presidio + `TransformersNlpEngine`, modelo `BSC-NLP4BIA/bsc-bio-ehr-es-meddocan`, idioma `es`). Devuelve detecciones con la **puntuación** de Presidio. Mapeo explícito entre categorías MEDDOCAN y tipos de entidad, distinguiendo lo detectable de lo que se anonimiza. ACO-022 corrige el mapeo para conservar el rol de las personas y añade la asignación de rol por contexto, con la etiqueta genérica como caída, y los reconocedores propios (DNI y NIE con letra de control, número de historia por contexto, nombres tras etiqueta, dirección completa, firmas). | Lista concreta de reconocedores, filtros y términos permitidos (fichas de ACO-022 y ACO-023). | ACO-021 §3, §7–§9; ADR-013 |
-| Política y umbrales (ACO-023) | Separa lo detectado de lo anonimizado según la política de ADR-013 (03-REGLAS R-44…R-48). Dos umbrales configurables: el de hallazgo y el de documento (R-13). Los tests leen los valores de la configuración. Un documento retenido no pasa al flujo posterior ni se guarda; un documento ilegible no se procesa; los dos producen un aviso al paciente con motivos distintos (R-49, R-50). | Fórmula de la confianza del documento: la define y documenta ACO-023. Texto de los avisos. | ACO-023; ADR-013; ADR-003; Arquitectura §4 |
+| Política y umbrales (ACO-023) | Separa lo detectado de lo anonimizado según la política de ADR-013 (03-REGLAS R-44…R-48) y numera con la agrupación de menciones de ADR-014 (R-53), salvo las que no se agrupan, que reciben número propio; la asignación y la propagación del rol son de ACO-022. Dos umbrales configurables: el de hallazgo y el de documento (R-13). Los tests leen los valores de la configuración. Un documento retenido no pasa al flujo posterior ni se guarda; un documento ilegible no se procesa; los dos producen un aviso al paciente con motivos distintos (R-49, R-50). | Fórmula de la confianza del documento: la define y documenta ACO-023. Texto de los avisos. | ACO-023; ADR-013; ADR-014; ADR-003; Arquitectura §4 |
 | API de anonimización (ACO-024) | Interfaz HTTP **interna** del backend: entrada de texto y salida anonimizada conforme al contrato de ACO-020, con errores y validaciones básicas. **No devuelve el texto original.** | Ruta, método y esquema: los define y documenta ACO-024. | ACO-024 |
 | No persistencia (ACO-025) | El original no se escribe en la base de datos ni en almacenamiento persistente, ni en logs. La interfaz devuelve solo lo necesario para continuar el flujo. | — | ACO-025; ADR-005 |
-| Etiquetas | Etiquetas `[TIPO_n]` numeradas por documento (p. ej. `[PACIENTE]`, `[SANITARIO_1]`, `[FAMILIAR_1]`, `[PERSONA_1]`, `[HOSPITAL]`, `[FECHA_NACIMIENTO]`), sin valor original. Por rol cuando se puede determinar; si no, la genérica de persona. | Agrupación de variantes de un nombre dentro del documento; nombre exacto de la etiqueta genérica y catálogo de TIPO_ETIQUETA. | ADR-012; ADR-013; Arquitectura §4 |
+| Etiquetas | Etiquetas `[TIPO_n]` numeradas por documento (p. ej. `[PACIENTE]`, `[SANITARIO_1]`, `[FAMILIAR_1]`, `[PERSONA_1]`, `[HOSPITAL]`, `[FECHA_NACIMIENTO]`), sin valor original. Por rol cuando se puede determinar; si no, la genérica de persona. El rol se propaga entre las menciones del mismo nombre dentro del documento (R-53). | Nombre exacto de la etiqueta genérica y catálogo de TIPO_ETIQUETA. | ADR-012; ADR-013; ADR-014; Arquitectura §4 |
 
 ## 3. Integración del Sprint 1
 
 | Interfaz | Qué está definido | Fuente |
 |---|---|---|
 | Cliente de API del frontend (ACO-019) | Cliente centralizado que incluye la autenticación. Su **contrato de integración se documenta para ACO-032**. | ACO-019 |
-| LLM gateway v0 (ACO-027) | **Contrato mínimo entre la conversación y el proveedor LLM**, con una integración mínima con Claude para la demo y gestión de configuración y secretos compatible con ACO-028. | ACO-027 (criterios pendientes de revisión) |
+| LLM gateway v0 (ACO-027) | **Contrato mínimo entre la conversación y el proveedor LLM**, con una integración mínima con Claude para la demo y gestión de configuración y secretos conforme a ADR-015. | ACO-027 (criterios confirmados en la revisión de la PR #70) |
 | Conversación (ACO-030) | El contexto documental llega al LLM de forma controlada, y la respuesta se muestra en la interfaz prevista. | ACO-030 (criterios pendientes de revisión) |
 | Flujo E2E (ACO-032) | Integra los contratos entre frontend, API, anonimización y conversación: login → acceso autorizado → documento sintético → anonimización → conversación → respuesta. | ACO-032 |
 | Datos sintéticos (ACO-051) | `load_document(nombre)`, `load_manifest()` y `count_occurrences(...)` en `backend/tests/synthetic_data/__init__.py`. Formato del manifiesto en 06-SEMILLA. | ACO-051 §3, §7, B4 |
@@ -76,7 +76,6 @@ Los puntos de entrega entre personas y el orden en que deben acordarse estos con
 | Contrato de la API de conversación entre el cliente (019) y la conversación (030), y entre la API de anonimización (024) y la conversación: deben acordarse antes de 032 y no están definidos en ninguna fuente | ACO-019; ACO-032; Documento Operativo §11 |
 | Texto de los avisos al paciente (documento retenido e ilegible) | ADR-013 (Fuera de esta decisión) |
 | Lista concreta de reconocedores, filtros de falsos positivos y términos permitidos | ADR-013 (Fuera de esta decisión); ACO-022; ACO-023 |
-| Agrupación de variantes de un mismo nombre dentro de un documento | Arquitectura §16 nº 7; ADR-012 y ADR-013 (Fuera de esta decisión) |
 | Nombre exacto de la etiqueta genérica de persona y catálogo de etiquetas (TIPO_ETIQUETA) | ADR-013 (Fuera de esta decisión) |
 | Formatos de entrada del Sprint 1 (texto frente a PDF o imagen) | ACO-020; ACO-051 P1; Wireframes, pantalla 3 |
 | Mecanismo de la lista blanca y su conexión con Keycloak; Admin API y su autenticación | ADR-009, ADR-001 (Fuera de esta decisión) |
