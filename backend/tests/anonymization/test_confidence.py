@@ -155,6 +155,19 @@ def test_token_pipeline_is_found_by_attribute_not_by_component_name():
     assert get_token_pipeline(analyzer) is component.hf_pipeline
 
 
+def test_token_pipeline_is_found_in_the_pipe_bundled_with_presidio():
+    # Presidio 2.2.366 sustituye HFTokenPipe por su propio componente, que
+    # expone el pipeline en `pipeline` en lugar de `hf_pipeline`.
+    pipeline = SimpleNamespace(tokenizer=object())
+    component = SimpleNamespace(pipeline=pipeline)
+    nlp = SimpleNamespace(
+        pipeline=[("tok2vec", object()), ("presidio_hf_token_pipe", component)]
+    )
+    analyzer = SimpleNamespace(nlp_engine=SimpleNamespace(nlp={"es": nlp}))
+
+    assert get_token_pipeline(analyzer) is pipeline
+
+
 def test_degraded_mode_uses_the_finding_score_and_warns_without_content(monkeypatch, caplog):
     text = "Rosario Albendea Quintanar"
     findings = [finding("PACIENTE", 0, len(text), 0.77)]
