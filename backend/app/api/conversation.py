@@ -1,16 +1,17 @@
 """Endpoint de conversación sobre documento (ACO-030).
 
-La validación del JWT la añade ACO-014 a este router.
+El router está protegido por la validación del JWT de ACO-014.
 """
 
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.auth import get_current_user
 from app.services.conversation import ConversationRequest, ConversationResponse, ConversationService
 from app.services.llm_gateway import LLMErrorCode, LLMGateway, LLMGatewayError
 
-router = APIRouter(prefix="/api")
+router = APIRouter(prefix="/api", dependencies=[Depends(get_current_user)])
 
 # Código propio por error del gateway (ficha ACO-030, sección 8.3). Nunca se
 # devuelve el mensaje del gateway, el código HTTP del proveedor ni el

@@ -1,10 +1,13 @@
 import logging
+import uuid
 
 import pytest
 from fastapi.testclient import TestClient
 
+from app.api.auth import get_current_user
 from app.api.conversation import get_llm_gateway
 from app.main import app
+from app.services.auth import Principal
 from app.services.llm_gateway import LLMErrorCode, LLMGateway, LLMGatewayError
 from app.services.prompts import load_system_prompt
 
@@ -13,6 +16,18 @@ from .conftest import ANSWER, DOCUMENT_TEXT, QUESTION, FakeProvider
 URL = "/api/conversation"
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def authenticated_user():
+    """El endpoint está protegido (ACO-014); estas pruebas cubren la conversación."""
+    app.dependency_overrides[get_current_user] = lambda: Principal(
+        user_id=uuid.UUID("00000000-0000-4000-8000-000000000001"),
+        email="paciente@example.com",
+        roles=frozenset({"paciente"}),
+    )
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 def payload(documents=None, messages=None):

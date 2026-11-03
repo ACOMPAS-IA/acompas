@@ -27,6 +27,8 @@ services:
       LLM_MAX_OUTPUT_TOKENS: ${LLM_MAX_OUTPUT_TOKENS:-}
       LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-}
       LLM_MAX_RETRIES: ${LLM_MAX_RETRIES:-}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:-http://localhost:8080/realms/acompas}
+      KEYCLOAK_JWKS_URL: ${KEYCLOAK_JWKS_URL:-http://keycloak:8080/realms/acompas/protocol/openid-connect/certs}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
