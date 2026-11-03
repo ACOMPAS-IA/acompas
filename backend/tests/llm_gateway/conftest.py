@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 # Valores evidentemente falsos: no imitan el formato de una clave ni de un modelo reales.
@@ -15,8 +17,14 @@ LLM_ENV_VARS = (
 
 @pytest.fixture
 def no_llm_env(monkeypatch):
-    """Borra las variables de la sección 8.4: los tests no dependen del contenedor."""
-    for name in LLM_ENV_VARS:
+    """Borra la configuración del gateway: los tests no dependen del contenedor.
+
+    Incluye cualquier ANTHROPIC_* presente, no solo las cinco conocidas: la
+    lista de permitidas de ACO-028 rechaza las demás.
+    """
+    names = {name for name in os.environ if name.startswith("ANTHROPIC_")}
+    names.update(LLM_ENV_VARS)
+    for name in names:
         monkeypatch.delenv(name, raising=False)
     return monkeypatch
 

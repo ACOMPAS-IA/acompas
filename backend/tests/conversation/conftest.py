@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from app.services.llm_gateway import LLMResponse
@@ -43,8 +45,14 @@ class FakeProvider:
 
 @pytest.fixture
 def no_llm_env(monkeypatch):
-    """Borra las variables del gateway: los tests no dependen del contenedor."""
-    for name in LLM_ENV_VARS:
+    """Borra la configuración del gateway: los tests no dependen del contenedor.
+
+    Incluye cualquier ANTHROPIC_* presente, no solo las cinco conocidas: la
+    lista de permitidas de ACO-028 rechaza las demás.
+    """
+    names = {name for name in os.environ if name.startswith("ANTHROPIC_")}
+    names.update(LLM_ENV_VARS)
+    for name in names:
         monkeypatch.delenv(name, raising=False)
     return monkeypatch
 

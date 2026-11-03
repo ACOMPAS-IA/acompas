@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import anthropic
 import httpx
+import httpx2
 import pytest
 
 from app.services.llm_gateway import (
@@ -68,6 +69,34 @@ def make_request(**kwargs):
     )
 
 
+def mock_response(text="Respuesta inventada"):
+    return httpx2.Response(
+        200,
+        json={
+            "id": "msg_test",
+            "type": "message",
+            "role": "assistant",
+            "model": "modelo-que-responde",
+            "content": [{"type": "text", "text": text}],
+            "stop_reason": "end_turn",
+            "usage": {"input_tokens": 13, "output_tokens": 8},
+        },
+    )
+
+
+def mock_client_factory(handler, captured):
+    """Construye el cliente real con MockTransport, conservando los kwargs del proveedor."""
+
+    def factory(**kwargs):
+        captured.update(kwargs)
+        kwargs["http_client"] = anthropic.DefaultHttpxClient(
+            trust_env=False, transport=httpx2.MockTransport(handler)
+        )
+        return anthropic.Anthropic(**kwargs)
+
+    return factory
+
+
 def test_sends_configuration_and_request_to_sdk(llm_env):
     llm_env.setenv("LLM_MAX_OUTPUT_TOKENS", "300")
     llm_env.setenv("LLM_TIMEOUT_SECONDS", "15")
@@ -76,11 +105,22 @@ def test_sends_configuration_and_request_to_sdk(llm_env):
 
     AnthropicProvider(factory).complete(make_request(), load_settings())
 
-    assert factory.client_kwargs == {
-        "api_key": FAKE_API_KEY,
-        "timeout": 15.0,
-        "max_retries": 1,
+    client_kwargs = factory.client_kwargs
+    assert set(client_kwargs) == {
+        "api_key",
+        "base_url",
+        "open_telemetry",
+        "http_client",
+        "timeout",
+        "max_retries",
     }
+    assert client_kwargs["api_key"] == FAKE_API_KEY
+    assert client_kwargs["base_url"] == "https://api.anthropic.com"
+    assert client_kwargs["open_telemetry"] is False
+    assert client_kwargs["timeout"] == 15.0
+    assert client_kwargs["max_retries"] == 1
+    assert isinstance(client_kwargs["http_client"], anthropic.DefaultHttpxClient)
+    assert client_kwargs["http_client"].trust_env is False
     assert factory.create_kwargs == {
         "model": FAKE_MODEL,
         "system": SYSTEM,
@@ -91,6 +131,63 @@ def test_sends_configuration_and_request_to_sdk(llm_env):
         ],
         "max_tokens": 300,
     }
+
+
+def test_uses_official_endpoint_and_api_key_header(llm_env):
+    captured = {}
+    seen = {}
+
+    def handler(request):
+        seen["url"] = str(request.url)
+        seen["headers"] = dict(request.headers)
+        return mock_response()
+
+    response = AnthropicProvider(mock_client_factory(handler, captured)).complete(
+        make_request(), load_settings()
+    )
+
+    assert seen["url"] == "https://api.anthropic.com/v1/messages"
+    assert seen["headers"]["x-api-key"] == FAKE_API_KEY
+    assert "authorization" not in seen["headers"]
+    assert response.text == "Respuesta inventada"
+    assert captured["base_url"] == "https://api.anthropic.com"
+    assert captured["open_telemetry"] is False
+    assert isinstance(captured["http_client"], anthropic.DefaultHttpxClient)
+    assert captured["http_client"].trust_env is False
+
+
+# Señuelos inventados: no apuntan a ningún proxy ni certificado real.
+PROXY_DECOYS = {
+    "HTTP_PROXY": "http://proxy-inventado.example:3128",
+    "HTTPS_PROXY": "http://proxy-inventado.example:3128",
+    "ALL_PROXY": "socks5://proxy-inventado.example:1080",
+    "NO_PROXY": "api.anthropic.com",
+    "SSL_CERT_FILE": "/tmp/certificado-inventado.pem",
+    "SSL_CERT_DIR": "/tmp/certificados-inventados",
+}
+
+
+@pytest.mark.parametrize("variable, value", list(PROXY_DECOYS.items()))
+def test_environment_network_decoys_do_not_alter_request(llm_env, variable, value):
+    llm_env.setenv(variable, value)
+    captured = {}
+    seen = {}
+
+    def handler(request):
+        seen["url"] = str(request.url)
+        seen["headers"] = dict(request.headers)
+        return mock_response()
+
+    AnthropicProvider(mock_client_factory(handler, captured)).complete(
+        make_request(), load_settings()
+    )
+
+    assert seen["url"] == "https://api.anthropic.com/v1/messages"
+    assert seen["headers"]["x-api-key"] == FAKE_API_KEY
+    assert captured["http_client"].trust_env is False
+    # El SDK 1.17.0 crea mounts de proxy desde el entorno aunque trust_env=False;
+    # el transporte explícito debe dejar el cliente sin mounts.
+    assert captured["http_client"]._mounts == {}
 
 
 def test_request_max_output_tokens_overrides_configuration(llm_env):
