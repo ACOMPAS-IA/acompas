@@ -1,0 +1,6 @@
+/* El pie, su espaciado, color y tamaño de letra son de AppShell (ACO-017). */
+.disclaimer {
+  margin: 0;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
