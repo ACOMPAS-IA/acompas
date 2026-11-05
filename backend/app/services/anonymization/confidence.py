@@ -8,8 +8,7 @@ cuatro etiquetas del modelo, no solo la ganadora.
 """
 
 import logging
-
-import numpy as np
+import math
 
 from .analyzer import get_token_pipeline
 from .detection import PERSON_TYPES
@@ -81,16 +80,16 @@ def _token_person_probabilities(text: str, analyzer) -> list[tuple[int, int, flo
 
         # _forward necesita estos campos, igual que en el pipeline de Presidio.
         outputs = pipe.forward(window_inputs)
-        logits = outputs["logits"][0].detach().cpu().numpy()
-        shifted = np.exp(logits - logits.max(axis=-1, keepdims=True))
-        probabilities = shifted / shifted.sum(axis=-1, keepdims=True)
+        logits = outputs["logits"][0].detach().cpu().tolist()
 
         for index, (start, end) in enumerate(offsets[window]):
             if special_tokens[window][index] or start == end:
                 continue
-            probability = float(
-                sum(probabilities[index][label_id] for label_id in person_ids)
-            )
+            row = logits[index]
+            peak = max(row)
+            exps = [math.exp(value - peak) for value in row]
+            total = sum(exps)
+            probability = sum(exps[label_id] for label_id in person_ids) / total
             # Las ventanas se solapan: se conserva la mayor probabilidad.
             by_span[(start, end)] = max(by_span.get((start, end), 0.0), probability)
 

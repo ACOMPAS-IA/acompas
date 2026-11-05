@@ -94,15 +94,21 @@ def test_same_value_repeated_in_two_places_is_one_datum():
 
 
 def test_two_distinct_persons_use_the_weakest(monkeypatch):
-    text = "Ana Pérez y Luis Gómez"
+    first = "Rosario Albendea Quintanar"
+    second = "Inés Carrascal Ochoa"
+    text = f"{first} y {second}"
+    second_start = text.index(second)
     findings = [
-        finding("PACIENTE", 0, 9, 0.99),
-        finding("PERSON", 12, 22, 0.99),
+        finding("PACIENTE", 0, len(first), 0.99),
+        finding("PERSON", second_start, len(text), 0.99),
     ]
     monkeypatch.setattr(
         confidence_module,
         "_token_person_probabilities",
-        lambda text, analyzer: [(0, 9, 0.9), (12, 22, 0.3)],
+        lambda text, analyzer: [
+            (0, len(first), 0.9),
+            (second_start, len(text), 0.3),
+        ],
     )
 
     # Dos personas distintas son dos datos: la débil rebaja la confianza.
@@ -110,15 +116,20 @@ def test_two_distinct_persons_use_the_weakest(monkeypatch):
 
 
 def test_repeated_mentions_of_the_same_person_use_the_best_support(monkeypatch):
-    text = "Ana Pérez y Ana Pérez"
+    name = "Rosario Albendea Quintanar"
+    text = f"{name} y {name}"
+    second_start = text.index(name, 1)
     findings = [
-        finding("PACIENTE", 0, 9, 0.4),
-        finding("PACIENTE", 12, 21, 0.5),
+        finding("PACIENTE", 0, len(name), 0.4),
+        finding("PACIENTE", second_start, second_start + len(name), 0.5),
     ]
     monkeypatch.setattr(
         confidence_module,
         "_token_person_probabilities",
-        lambda text, analyzer: [(0, 9, 0.6), (12, 21, 0.95)],
+        lambda text, analyzer: [
+            (0, len(name), 0.6),
+            (second_start, second_start + len(name), 0.95),
+        ],
     )
 
     assert document_confidence(text, findings, object()) == 0.95

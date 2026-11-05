@@ -235,7 +235,7 @@ El servicio de anonimización lee dos umbrales del entorno en cada llamada:
 
 - `ANONYMIZATION_FINDING_THRESHOLD` (0,35): una detección por debajo se
   descarta como ruido y no se anonimiza.
-- `ANONYMIZATION_DOCUMENT_THRESHOLD` (0,70): si la confianza del documento
+- `ANONYMIZATION_DOCUMENT_THRESHOLD` (0,85): si la confianza del documento
   queda por debajo, el documento se retiene y no se devuelve texto anonimizado.
 
 Ambos deben ser números entre 0 y 1, y el umbral de hallazgo no puede superar

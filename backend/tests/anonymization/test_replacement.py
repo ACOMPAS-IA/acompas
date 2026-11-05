@@ -115,6 +115,18 @@ def test_family_roles_are_numbered():
     assert assign_labels(text, findings) == ["[FAMILIAR_1]", "[FAMILIAR_2]"]
 
 
+def test_person_without_normalizable_name_gets_its_own_number():
+    # «D.» es un tratamiento suelto: no se agrupa con nadie, pero recibe un
+    # número propio en lugar de la plantilla con la «n» literal (P12, AC-11).
+    text = "D. y Rosario Albendea Quintanar"
+    findings = [
+        make(text, "PERSON", "D."),
+        make(text, "PERSON", "Rosario Albendea Quintanar"),
+    ]
+
+    assert assign_labels(text, findings) == ["[PERSONA_1]", "[PERSONA_2]"]
+
+
 def test_substitution_replaces_values_and_keeps_the_rest():
     text = "Paciente: Rosario Albendea Quintanar. Teléfono: 600 123 456."
     findings = [

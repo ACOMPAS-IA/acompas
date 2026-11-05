@@ -80,6 +80,19 @@ def _person_labels(
     text: str, findings: list[Finding]
 ) -> dict[int, str]:
     groups = group_person_findings(text, findings)
+    grouped = {index for group in groups for index in group}
+    # Una persona sin nombre normalizable (un tratamiento suelto o un fragmento
+    # sin palabras) no se agrupa, pero sigue siendo un dato y recibe su número
+    # propio (ficha, P12 y AC-11).
+    groups = sorted(
+        groups
+        + [
+            [index]
+            for index, finding in enumerate(findings)
+            if finding.entity_type in PERSON_TYPES and index not in grouped
+        ],
+        key=min,
+    )
     labels: dict[int, str] = {}
 
     patients = [group for group in groups if _group_type(findings, group) == "PACIENTE"]

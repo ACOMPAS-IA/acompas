@@ -1,5 +1,6 @@
 """Tests del servicio de anonimización (ACO-023, AC-13 a AC-16)."""
 
+import logging
 import re
 import unicodedata
 from types import SimpleNamespace
@@ -272,12 +273,17 @@ def model_service():
         ("carta_oncologia_01.txt", AnonymizationStatus.VALIDADO),
     ],
 )
-def test_synthetic_corpus_calibration(model_service, name, expected):
+def test_synthetic_corpus_calibration(model_service, name, expected, caplog):
     settings = load_settings()
     text = load_document(name)
 
-    output = model_service.anonymize(text)
+    with caplog.at_level(logging.WARNING, logger="app.services.anonymization"):
+        output = model_service.anonymize(text)
 
+    # La calibración no es válida si se hace en modo degradado: la confianza
+    # tendría que salir de las probabilidades por etiqueta, no de la puntuación
+    # del hallazgo (ficha, §8.7).
+    assert "probabilidades por etiqueta" not in caplog.text
     assert output.confidence is not None
     assert output.status == expected
     if expected == AnonymizationStatus.VALIDADO:

@@ -233,7 +233,7 @@ call:
 
 - `ANONYMIZATION_FINDING_THRESHOLD` (0.35): a detection below it is discarded
   as noise and is not anonymized.
-- `ANONYMIZATION_DOCUMENT_THRESHOLD` (0.70): if the document confidence is
+- `ANONYMIZATION_DOCUMENT_THRESHOLD` (0.85): if the document confidence is
   below it, the document is retained and no anonymized text is returned.
 
 Both must be numbers between 0 and 1, and the finding threshold cannot exceed

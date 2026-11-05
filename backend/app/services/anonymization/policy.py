@@ -109,6 +109,11 @@ ALLOW_LIST = frozenset(
     }
 )
 
+# Tratamientos que pueden aparecer solos como fragmento detectado. No forman
+# parte de un nombre utilizable: si se conservaran, la etiqueta de persona
+# quedaría sin número o duplicada junto al dato real (ficha, P7 y P12).
+TREATMENT_LABELS = frozenset({"sr", "sra", "d", "dna"})
+
 # Etiquetas de rol que el modelo puede detectar como si fueran el valor. Solo
 # se descarta el hallazgo cuando todo su fragmento es la etiqueta (ficha, P7).
 # Incluye las mismas pistas que usa ACO-022 para asignar el rol.
@@ -174,6 +179,9 @@ _NORMALIZED_ALLOW_LIST = frozenset(_normalize_term(term) for term in ALLOW_LIST)
 _NORMALIZED_ROLE_LABELS = frozenset(
     _normalize_term(label) for label in ROLE_LABELS
 )
+_NORMALIZED_TREATMENT_LABELS = frozenset(
+    _normalize_term(label) for label in TREATMENT_LABELS
+)
 
 
 def is_allowlisted(fragment: str) -> bool:
@@ -190,9 +198,18 @@ def is_role_label(fragment: str) -> bool:
     return _normalize_term(fragment) in _NORMALIZED_ROLE_LABELS
 
 
+def is_treatment(fragment: str) -> bool:
+    """El fragmento entero es un tratamiento suelto, sin nombre que lo siga."""
+    return _normalize_term(fragment) in _NORMALIZED_TREATMENT_LABELS
+
+
 def is_noise(fragment: str) -> bool:
     """Fragmentos que el modelo detecta pero no son datos personales."""
-    return is_punctuation(fragment) or is_role_label(fragment)
+    return (
+        is_punctuation(fragment)
+        or is_role_label(fragment)
+        or is_treatment(fragment)
+    )
 
 
 def is_birth_date(text: str, detection: Detection | Finding) -> bool:
