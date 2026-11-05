@@ -226,6 +226,21 @@ responsible for rotation. To rotate the key or handle an incident:
 Personal keys are for development only and the demo uses the project key
 (ADR-015 §2). Automatic rotation is out of scope for Sprint 1.
 
+### Anonymization thresholds
+
+The anonymization service reads two thresholds from the environment on every
+call:
+
+- `ANONYMIZATION_FINDING_THRESHOLD` (0.35): a detection below it is discarded
+  as noise and is not anonymized.
+- `ANONYMIZATION_DOCUMENT_THRESHOLD` (0.85): if the document confidence is
+  below it, the document is retained and no anonymized text is returned.
+
+Both must be numbers between 0 and 1, and the finding threshold cannot exceed
+the document threshold; an invalid value prevents processing. They are
+calibrated with the synthetic corpus of ACO-051, so no test fixes their value.
+In Docker, update `.env` and recreate the backend to change them.
+
 ### Stopping the environment
 
 To stop the services:

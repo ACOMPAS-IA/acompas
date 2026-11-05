@@ -137,6 +137,31 @@ DEFAULT_ENTITIES = sorted(
 REPLACED_PREDEFINED_RECOGNIZERS = ["EsNifRecognizer", "EsNieRecognizer"]
 
 
+def get_token_pipeline(analyzer: AnalyzerEngine):
+    """Devuelve el pipeline de token classification ya cargado.
+
+    Es un accesor de lectura: no cambia el modelo ni la configuración del motor.
+    ACO-023 lo usa para obtener las probabilidades de todas las etiquetas de
+    persona, que Presidio no expone en su resultado agregado. Según la versión,
+    el componente es el `HFTokenPipe` de spacy_huggingface_pipelines (atributo
+    `hf_pipeline`) o el `HuggingFaceTokenPipe` integrado en Presidio (atributo
+    `pipeline`), y su nombre también cambia (`hf_token_pipe` o
+    `presidio_hf_token_pipe`). Se localiza por el atributo, no por el nombre.
+    """
+    nlp = analyzer.nlp_engine.nlp["es"]
+    for _, component in nlp.pipeline:
+        pipeline = getattr(component, "hf_pipeline", None)
+        if pipeline is None:
+            candidate = getattr(component, "pipeline", None)
+            if candidate is not None and hasattr(candidate, "tokenizer"):
+                pipeline = candidate
+        if pipeline is not None:
+            return pipeline
+    raise RuntimeError(
+        "El motor NLP no expone el pipeline de token classification"
+    )
+
+
 def build_analyzer() -> AnalyzerEngine:
     """Construye un AnalyzerEngine configurado con MEDDOCAN."""
     model_config = [
