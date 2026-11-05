@@ -226,9 +226,8 @@ es responsable de la rotación. Para rotar la clave o atender un incidente:
 6. Revisa `docker compose logs backend` y ejecuta `scripts/check-secrets.sh`
    para revisar logs y commits.
 
-La clave personal de la demo interna del 27/10/2026 no se rota: no salió del
-`.env` local del titular y queda limitada a desarrollo. La rotación automática
-queda fuera del Sprint 1.
+Las claves personales son solo para desarrollo y la demo usa la clave del
+proyecto (ADR-015 §2). La rotación automática queda fuera del Sprint 1.
 
 ### Detener el entorno
 

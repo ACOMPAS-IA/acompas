@@ -223,9 +223,8 @@ responsible for rotation. To rotate the key or handle an incident:
 6. Review `docker compose logs backend` and run `scripts/check-secrets.sh` to
    check the logs and commits.
 
-The personal key used for the 27/10/2026 internal demo is not rotated: it never
-left the owner's local `.env` and is limited to development. Automatic rotation
-is out of scope for Sprint 1.
+Personal keys are for development only and the demo uses the project key
+(ADR-015 §2). Automatic rotation is out of scope for Sprint 1.
 
 ### Stopping the environment
 
