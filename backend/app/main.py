@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 
 from app.api.conversation import router as conversation_router
+from app.logging import configure_logging
+
+# Se configura al importar/arrancar, nunca en cada petición (ADR-015 §4).
+configure_logging()
 
 app = FastAPI(
     title="ACOMPAS API",

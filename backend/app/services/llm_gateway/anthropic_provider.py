@@ -3,10 +3,14 @@
 from collections.abc import Callable
 
 import anthropic
+import httpx2
 
 from .config import LLMSettings
 from .errors import LLMErrorCode, LLMGatewayError
 from .models import LLMRequest, LLMResponse
+
+# Endpoint oficial explícito: no se acepta ANTHROPIC_BASE_URL (ADR-015 §3).
+_BASE_URL = "https://api.anthropic.com"
 
 _INVALID_REQUEST_STATUSES = {400, 404, 413, 422}
 
@@ -63,6 +67,16 @@ class AnthropicProvider:
         try:
             client = self._client_factory(
                 api_key=settings.api_key.get_secret_value(),
+                base_url=_BASE_URL,
+                open_telemetry=False,
+                # Sin proxies ni certificados del entorno (ADR-015 §3).
+                # El DefaultHttpxClient del SDK 1.17.0 construye mounts de proxy
+                # desde el entorno aunque trust_env=False; el transporte
+                # explícito es lo que los desactiva de verdad.
+                http_client=anthropic.DefaultHttpxClient(
+                    trust_env=False,
+                    transport=httpx2.HTTPTransport(trust_env=False),
+                ),
                 timeout=settings.timeout_seconds,
                 max_retries=settings.max_retries,
             )

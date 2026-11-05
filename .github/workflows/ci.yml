@@ -19,6 +19,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # El script de ACO-028 inspecciona el historial completo.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,6 +30,10 @@ jobs:
 
       - name: Install dependencies
         run: pip install ".[dev]"
+
+      - name: Check API key controls
+        working-directory: .
+        run: scripts/check-secrets.sh
 
       - name: Run tests
         run: pytest

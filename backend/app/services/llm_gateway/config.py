@@ -1,13 +1,20 @@
-"""Configuración del LLM gateway (ACO-027, sección 8.4).
+"""Configuración del LLM gateway (ACO-027, sección 8.4; ACO-028).
 
 Se lee del entorno en cada llamada al gateway, no al importar el módulo.
 """
 
+import logging
 import os
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
 
 from .errors import LLMErrorCode, LLMGatewayError
+
+logger = logging.getLogger("app.services.llm_gateway")
+
+# Lista de permitidas, no de prohibidas: el rango del SDK puede añadir variables
+# nuevas y deben rechazarse hasta que se decidan (ADR-015 §3).
+_ALLOWED_ANTHROPIC_VARS = frozenset({"ANTHROPIC_API_KEY"})
 
 
 class LLMSettings(BaseModel):
@@ -37,6 +44,25 @@ def get_api_key() -> SecretStr | None:
     return SecretStr(value) if value is not None else None
 
 
+def _reject_unsupported_anthropic_env() -> None:
+    """Rechaza las variables ANTHROPIC_* no permitidas (ADR-015 §3).
+
+    Registra solo el nombre de la variable: su valor nunca se lee ni se imprime.
+    Se evalúa en cada llamada, no al importar el módulo.
+    """
+    rejected = sorted(
+        name
+        for name in os.environ
+        if name.startswith("ANTHROPIC_") and name not in _ALLOWED_ANTHROPIC_VARS
+    )
+    if not rejected:
+        return
+
+    for name in rejected:
+        logger.warning("unsupported_anthropic_env variable=%s", name)
+    raise LLMGatewayError(LLMErrorCode.NOT_CONFIGURED)
+
+
 _OPTIONAL_FIELDS = {
     "LLM_MAX_OUTPUT_TOKENS": "max_output_tokens",
     "LLM_TIMEOUT_SECONDS": "timeout_seconds",
@@ -45,6 +71,7 @@ _OPTIONAL_FIELDS = {
 
 
 def load_settings() -> LLMSettings:
+    _reject_unsupported_anthropic_env()
     api_key = get_api_key()
     model = _read_env("LLM_MODEL")
     if api_key is None or model is None:

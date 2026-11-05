@@ -32,6 +32,12 @@ Se lee del entorno en cada llamada, no al importar ni al arrancar la aplicación
 
 `config.get_api_key()` es la única función que lee la clave. Sin clave o sin modelo, la aplicación arranca igual y solo falla la llamada al gateway, con `not_configured`.
 
+`load_settings()` aplica una lista de permitidas (ADR-015): cualquier variable de entorno `ANTHROPIC_*` distinta de `ANTHROPIC_API_KEY` hace que la llamada falle con `not_configured`, sin llamar al proveedor. Se registra solo el nombre de la variable, nunca su valor. La comprobación se hace en cada llamada, no al importar.
+
+## Cliente
+
+El cliente se construye con `api_key`, `base_url="https://api.anthropic.com"`, `open_telemetry=False` y `http_client=anthropic.DefaultHttpxClient(trust_env=False, transport=httpx2.HTTPTransport(trust_env=False))`, conservando `timeout` y `max_retries`. El transporte explícito es necesario porque el `DefaultHttpxClient` de `anthropic` 1.17.0 construye mounts de proxy desde el entorno aunque reciba `trust_env=False`; con él se desactivan de verdad los proxies y los certificados del entorno. No se aceptan `ANTHROPIC_BASE_URL` ni cabeceras alternativas.
+
 ## Errores
 
 Todo fallo llega como `LLMGatewayError`, con `code` (`LLMErrorCode`), `status_code` y `request_id` del proveedor si existen. El mensaje es fijo para cada código y no incluye la clave, el contenido de la petición ni el mensaje del proveedor. La excepción original no se encadena.
@@ -54,6 +60,14 @@ Logger `app.services.llm_gateway`, nivel INFO, una línea por llamada:
 - fallida: código, código HTTP e identificador de petición.
 
 Nunca el contenido de `system`, de los mensajes ni de la respuesta. No se activa el registro de depuración del SDK (`ANTHROPIC_LOG`).
+
+Al arrancar, `app.logging.configure_logging()` deja el logger de la aplicación en INFO y los loggers `anthropic`, `httpx2` y `httpcore2` en nivel efectivo INFO o superior, con `propagate=True`. Así se ve la línea INFO del gateway y los avisos y errores del SDK siguen llegando, pero el cuerpo de las peticiones se queda en DEBUG y no se emite.
+
+## Verificación y rotación
+
+`scripts/check-secrets.sh` comprueba que el prefijo de las claves de Anthropic no está en los archivos rastreados, el índice ni el historial, con la excepción explícita de las menciones documentales de ADR-015 y 09-TESTS; además busca cadenas con forma de clave real sin excepciones, comprueba `.env`, `.env.example`, Compose y el frontend. No lee archivos no versionados.
+
+El procedimiento manual de rotación está en el `README.md` y el `README.es.md` de la raíz.
 
 ## Proveedor simulado
 

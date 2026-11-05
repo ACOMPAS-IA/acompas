@@ -68,10 +68,11 @@ git clone git@github.com:ACOMPAS-IA/acompas.git
 cd acompas
 ```
 
-Crea el archivo de entorno local:
+Crea el archivo de entorno local y mantenlo privado:
 
 ```bash
 cp .env.example .env
+chmod 600 .env
 ```
 
 Inicia el entorno de desarrollo:
@@ -202,11 +203,31 @@ Para activarlas, rellena en tu `.env` local (la clave nunca se sube al repositor
 - Opcionales: `LLM_MAX_OUTPUT_TOKENS` (1024), `LLM_TIMEOUT_SECONDS` (60) y
   `LLM_MAX_RETRIES` (2).
 
+Solo se permite `ANTHROPIC_API_KEY` entre las variables `ANTHROPIC_*`. El
+gateway rechaza cualquier otra con `not_configured` y registra solo su nombre.
+
 Después recrea el backend para que las reciba:
 
 ```bash
 docker compose up -d backend
 ```
+
+### Rotación de la API key
+
+La clave se gestiona manualmente (ADR-015). El titular de la clave del proyecto
+es responsable de la rotación. Para rotar la clave o atender un incidente:
+
+1. Revoca la clave en la consola de Anthropic.
+2. Crea una clave nueva con el titular, la cuenta y el límite de gasto definidos.
+3. Actualiza `ANTHROPIC_API_KEY` en tu `.env` local y mantén el archivo privado
+   (`chmod 600 .env`). No lo subas nunca al repositorio.
+4. Recrea el backend: `docker compose up -d backend`.
+5. Comprueba `/health` y haz una llamada al gateway.
+6. Revisa `docker compose logs backend` y ejecuta `scripts/check-secrets.sh`
+   para revisar logs y commits.
+
+Las claves personales son solo para desarrollo y la demo usa la clave del
+proyecto (ADR-015 §2). La rotación automática queda fuera del Sprint 1.
 
 ### Detener el entorno
 

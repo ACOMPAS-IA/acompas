@@ -66,10 +66,11 @@ git clone git@github.com:ACOMPAS-IA/acompas.git
 cd acompas
 ```
 
-Create the local environment file:
+Create the local environment file and keep it private:
 
 ```bash
 cp .env.example .env
+chmod 600 .env
 ```
 
 Start the development environment:
@@ -199,11 +200,31 @@ To enable them, fill in your local `.env` (the key is never committed):
 - Optional: `LLM_MAX_OUTPUT_TOKENS` (1024), `LLM_TIMEOUT_SECONDS` (60) and
   `LLM_MAX_RETRIES` (2).
 
+Only `ANTHROPIC_API_KEY` is allowed among the `ANTHROPIC_*` variables. The
+gateway rejects any other one with `not_configured` and logs only its name.
+
 Then recreate the backend so it receives them:
 
 ```bash
 docker compose up -d backend
 ```
+
+### API key rotation
+
+The key is managed manually (ADR-015). The owner of the project key is
+responsible for rotation. To rotate the key or handle an incident:
+
+1. Revoke the key in the Anthropic console.
+2. Create a new key with the owner, account and spending limit defined.
+3. Update `ANTHROPIC_API_KEY` in your local `.env` and keep the file private
+   (`chmod 600 .env`). Never commit it.
+4. Recreate the backend: `docker compose up -d backend`.
+5. Check `/health` and make a gateway call.
+6. Review `docker compose logs backend` and run `scripts/check-secrets.sh` to
+   check the logs and commits.
+
+Personal keys are for development only and the demo uses the project key
+(ADR-015 §2). Automatic rotation is out of scope for Sprint 1.
 
 ### Stopping the environment
 
