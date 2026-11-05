@@ -1,12 +1,16 @@
 """Exposición de la API key en respuestas HTTP (ACO-028, T-39)."""
 
+import uuid
+
 import anthropic
 import httpx2
 import pytest
 from fastapi.testclient import TestClient
 
+from app.api.auth import get_current_user
 from app.api.conversation import get_llm_gateway
 from app.main import app
+from app.services.auth import Principal
 from app.services.llm_gateway import LLMGateway
 from app.services.llm_gateway.anthropic_provider import AnthropicProvider
 
@@ -49,6 +53,18 @@ def mock_factory(handler):
         return anthropic.Anthropic(**kwargs)
 
     return factory
+
+
+@pytest.fixture(autouse=True)
+def authenticated_user():
+    """El endpoint está protegido (ACO-014); estas pruebas cubren la clave (ACO-028)."""
+    app.dependency_overrides[get_current_user] = lambda: Principal(
+        user_id=uuid.UUID("00000000-0000-4000-8000-000000000001"),
+        email="paciente@example.com",
+        roles=frozenset({"paciente"}),
+    )
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 @pytest.fixture
