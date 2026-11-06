@@ -110,9 +110,10 @@ def payload() -> dict[str, Any]:
 
 @pytest.fixture
 def auth_env(monkeypatch):
-    """Configuración local de la ficha (sección 8.1)."""
+    """Configuración local de la ficha (ACO-014, sección 8.1; ACO-015)."""
     monkeypatch.setenv("KEYCLOAK_ISSUER", ISSUER)
     monkeypatch.setenv("KEYCLOAK_JWKS_URL", JWKS_URL)
+    monkeypatch.setenv("EMAILS_AUTORIZADOS", EMAIL)
     return monkeypatch
 
 
@@ -120,6 +121,7 @@ def auth_env(monkeypatch):
 def no_auth_env(monkeypatch):
     monkeypatch.delenv("KEYCLOAK_ISSUER", raising=False)
     monkeypatch.delenv("KEYCLOAK_JWKS_URL", raising=False)
+    monkeypatch.delenv("EMAILS_AUTORIZADOS", raising=False)
     return monkeypatch
 
 
