@@ -26,6 +26,7 @@ export type AuthService = {
   getAccessToken: () => Promise<string | null>
   getUser: () => Promise<User | null>
   logout: () => Promise<void>
+  clearSession: () => Promise<void>
 }
 
 export function buildUserManagerSettings(
@@ -136,7 +137,12 @@ export function createAuthService(
     })
   }
 
-  return { login, handleCallback, getAccessToken, getUser, logout }
+  // Vuelta al login sin redirigir a Keycloak (ACO-019, P3).
+  async function clearSession(): Promise<void> {
+    await manager.removeUser()
+  }
+
+  return { login, handleCallback, getAccessToken, getUser, logout, clearSession }
 }
 
 export const authService = createAuthService(createUserManager())
