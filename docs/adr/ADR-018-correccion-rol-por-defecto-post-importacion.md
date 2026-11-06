@@ -68,6 +68,8 @@ Es un cambio de seguridad: decisión conjunta y ADR (Plan de Trabajo §8 y §9).
 
    El script corrige también un realm vivo sin recrear usuarios. Para partir del JSON y dejar el entorno reproducible se puede recrear el volumen de Keycloak y volver a crear los usuarios locales no versionados (ADR-016 D1-A). Los usuarios siguen siendo sintéticos y no se versionan (ADR-008).
 
+   La retirada del composite impide emitir **nuevos** refresh tokens offline, pero no revoca los ya emitidos: un token offline existente sigue siendo válido hasta su caducidad. En local/demo se parte de un realm sin usuarios con tokens offline o se recrea el volumen; la revocación de tokens ya emitidos en otros entornos queda fuera de esta decisión.
+
 6. **Datos y seguridad.** No se usan datos reales ni secretos en el repositorio. Los usuarios de la comprobación son locales y sintéticos. El script no registra credenciales, emails ni contenido de `.env`.
 
 ## Alternativas consideradas
