@@ -1,5 +1,10 @@
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 
+from app.api.anonymization import (
+    anonymization_validation_handler,
+    router as anonymization_router,
+)
 from app.api.conversation import router as conversation_router
 from app.logging import configure_logging
 
@@ -11,7 +16,9 @@ app = FastAPI(
     version="0.1.0",
 )
 
+app.include_router(anonymization_router)
 app.include_router(conversation_router)
+app.add_exception_handler(RequestValidationError, anonymization_validation_handler)
 
 
 @app.get("/health")
