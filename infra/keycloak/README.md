@@ -37,6 +37,12 @@ Keycloak no los incluye. El rol `administrador` no concede acceso a la consola
 de administración de Keycloak. La asignación del rol se hace en el alta del
 usuario (ACO-015).
 
+El rol por defecto `default-roles-acompas` se declara en el JSON como compuesto
+por `uma_authorization` y por los roles de cliente `view-profile` y
+`manage-account` del cliente `account`, sin `offline_access` (ACO-012 P16;
+ADR-016). El rol `offline_access` sigue existiendo en el realm, pero ningún
+usuario lo hereda: solo se obtiene por asignación expresa.
+
 ### 2FA
 
 El segundo factor es TOTP obligatorio para todos los usuarios del realm:
@@ -97,9 +103,9 @@ El cliente de la SPA de ACOMPAS se declara en `import/acompas-realm.json`:
 
 El cliente declara `optionalClientScopes` vacío para que no pueda pedir
 `offline_access` ni obtener un token que sobreviva al cierre de sesión. El rol
-`offline_access` sigue en `default-roles-acompas` y afecta al realm, no a este
-cliente; quitarlo es de ACO-012 (seguimiento). Los clientes integrados de
-Keycloak conservan sus propios scopes opcionales.
+`offline_access` ya no está en `default-roles-acompas`: se retiró en ACO-012
+P16 (ADR-016) y ningún usuario lo hereda. Los clientes integrados de Keycloak
+conservan sus propios scopes opcionales; sin el rol, el scope queda inerte.
 
 El flujo implícito, la concesión directa de contraseña y las cuentas de
 servicio están desactivados. La redirección `/auth/callback` es el contrato con
@@ -136,6 +142,11 @@ El prefijo del volumen es el nombre del directorio del proyecto (`acompas` por
 defecto). Borrar el volumen elimina también los usuarios y los secretos TOTP
 que se hayan creado a mano; en desarrollo no contiene datos reales.
 
+Este procedimiento es el que aplica los cambios del JSON, como la retirada de
+`offline_access` del rol por defecto (ACO-012 P16; ADR-016). La comprobación
+funcional de que una petición con `scope=openid offline_access` no devuelve un
+refresh token offline requiere un usuario con TOTP y se ejecuta en ACO-015.
+
 ## Comprobación
 
 Con Keycloak en marcha y el realm reimportado:
@@ -151,6 +162,10 @@ El script comprueba:
   sección 8: tipo, flujo, PKCE, nombre, estado, `rootUrl`, `baseUrl`,
   redirección y origen exactos, scopes por defecto exactos sin adicionales,
   scopes opcionales vacíos, `fullScopeAllowed` y ausencia de secreto;
+- los composites de `default-roles-acompas` por la Admin API: sin
+  `offline_access` y con `uma_authorization`, `view-profile` y
+  `manage-account`, sin exigir igualdad exacta del conjunto;
+- que el rol `offline_access` sigue existiendo en el realm;
 - una petición de autorización con el cliente y la redirección registrados, que
   debe devolver el formulario de login;
 - una petición con una redirección no registrada, que debe rechazarse;

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Comprueba el Keycloak local de ACOMPAS: el documento de descubrimiento OIDC
-# del realm acompas, el cliente acompas-frontend, una petición de autorización
-# hasta el formulario de login y el rechazo de offline_access (ACO-012, ACO-013).
+# del realm acompas, el cliente acompas-frontend, los composites del rol por
+# defecto, una petición de autorización hasta el formulario de login y el
+# rechazo de offline_access (ACO-012, ACO-013).
 #
 # Uso: scripts/check-realm.sh
 # El puerto de Keycloak se toma de KEYCLOAK_PORT, del entorno o de .env (por
@@ -168,6 +169,48 @@ if grep -Eq '"secret"[[:space:]]*:[[:space:]]*"[^"]+"' <<<"${clients_body}"; the
   exit 1
 fi
 
+# Rol por defecto del realm: sin offline_access y con los composites que
+# conserva. Se consulta el realm en marcha, no solo el JSON (ADR-016, P16).
+default_role="default-roles-acompas"
+composites_url="${base_url}/admin/realms/acompas/roles/${default_role}/composites"
+if ! composites_body="$(curl -fsS --max-time 5 \
+  -H "Authorization: Bearer ${access_token}" "${composites_url}")"; then
+  echo "ERROR: no se pudieron consultar los composites de ${default_role} por la Admin API" >&2
+  exit 1
+fi
+
+# Extrae solo los nombres de la respuesta de composites. No se reutiliza el
+# cuerpo de otra consulta y la comparación es exacta por línea, para no
+# confundir offline_access con un rol de nombre parecido.
+role_names() {
+  grep -Eo '"name"[[:space:]]*:[[:space:]]*"[^"]*"' <<<"$1" \
+    | sed 's/^"name"[[:space:]]*:[[:space:]]*"//;s/"$//' | sort -u
+}
+
+default_role_names="$(role_names "${composites_body}")"
+
+if grep -Fxq 'offline_access' <<<"${default_role_names}"; then
+  echo "ERROR: ${default_role} incluye offline_access" >&2
+  exit 1
+fi
+
+for required_role in uma_authorization view-profile manage-account; do
+  if ! grep -Fxq "${required_role}" <<<"${default_role_names}"; then
+    echo "ERROR: ${default_role} no incluye el composite ${required_role}" >&2
+    exit 1
+  fi
+done
+
+# El rol offline_access debe seguir existiendo en el realm aunque ya no se
+# herede por defecto.
+offline_role_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 \
+  -H "Authorization: Bearer ${access_token}" \
+  "${base_url}/admin/realms/acompas/roles/offline_access" || true)"
+if [[ "${offline_role_status}" != "200" ]]; then
+  echo "ERROR: el rol offline_access no existe en el realm (HTTP ${offline_role_status})" >&2
+  exit 1
+fi
+
 # Petición de autorización con el cliente y la redirección registrados. El
 # code_challenge es sintético y válido como base64url de 43 caracteres.
 query="client_id=${client_id}&response_type=code&scope=openid&state=acompas-check&code_challenge=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&code_challenge_method=S256"
@@ -199,4 +242,4 @@ if ! grep -Eiq '^location:.*error=invalid_scope' <<<"${offline_headers}"; then
   exit 1
 fi
 
-echo "OK: realm acompas, cliente ${client_id}, autorización y offline_access verificados en ${base_url}"
+echo "OK: realm acompas, cliente ${client_id}, rol por defecto, autorización y offline_access verificados en ${base_url}"
