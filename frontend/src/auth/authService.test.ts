@@ -236,6 +236,20 @@ describe('authentication service', () => {
       post_logout_redirect_uri: 'http://localhost:5173/',
     })
   })
+
+  it('clearSession elimina la sesión local sin redirigir', async () => {
+    const removeUser = vi.fn(async () => {})
+    const signoutRedirect = vi.fn(async () => {})
+    const service = createAuthService(
+      createManager({ removeUser, signoutRedirect }),
+      config,
+    )
+
+    await service.clearSession()
+
+    expect(removeUser).toHaveBeenCalledTimes(1)
+    expect(signoutRedirect).not.toHaveBeenCalled()
+  })
 })
 
 describe('margen de renovación', () => {
