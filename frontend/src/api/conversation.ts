@@ -1,5 +1,16 @@
 // Contrato de POST /api/conversation (ficha ACO-030, sección 8).
-// ACO-019 puede pasar a ConversationPage su propia función de envío, autenticada.
+// ACO-019 autentica el envío a través del cliente centralizado.
+
+import { ApiError, SessionExpiredError, apiRequest } from './client.ts'
+
+// Códigos documentados del endpoint de conversación (ACO-030, sección 8.3).
+const CONVERSATION_ALLOWED_DETAILS = [
+  'llm_not_configured',
+  'llm_busy',
+  'llm_unavailable',
+  'llm_timeout',
+  'llm_error',
+] as const
 
 export type ConversationDocument = {
   text: string
@@ -37,34 +48,23 @@ export class ConversationError extends Error {
   }
 }
 
-async function readDetail(response: Response): Promise<string> {
-  try {
-    const body: unknown = await response.json()
-    if (
-      typeof body === 'object' &&
-      body !== null &&
-      'detail' in body &&
-      typeof body.detail === 'string'
-    ) {
-      return body.detail
-    }
-  } catch {
-    // Cuerpo vacío o no JSON.
-  }
-  // Un 422 trae una lista de errores, no un código.
-  return 'request_failed'
-}
-
 export async function sendConversation(
   request: ConversationRequest,
 ): Promise<ConversationResponse> {
-  const response = await fetch('/api/conversation', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(request),
-  })
-  if (!response.ok) {
-    throw new ConversationError(await readDetail(response))
+  try {
+    return await apiRequest<ConversationResponse>(
+      '/api/conversation',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+      },
+      { allowedDetails: CONVERSATION_ALLOWED_DETAILS },
+    )
+  } catch (error) {
+    // La sesión caducada no se oculta: la gestiona useAuthSession.
+    if (error instanceof SessionExpiredError) throw error
+    if (error instanceof ApiError) throw new ConversationError(error.detail)
+    throw error
   }
-  return (await response.json()) as ConversationResponse
 }

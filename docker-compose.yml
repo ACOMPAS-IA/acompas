@@ -42,6 +42,9 @@ services:
     restart: unless-stopped
     environment:
       VITE_KEYCLOAK_URL: http://localhost:${KEYCLOAK_PORT:-8080}
+      # Solo servidor de desarrollo: Vite reenvía /api al backend por la red
+      # de Compose. No se expone al bundle del navegador.
+      API_PROXY_TARGET: http://backend:8000
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-5173}:5173"
     volumes:
