@@ -196,6 +196,43 @@ docker compose stop keycloak
 `docker compose up -d --build backend` no lo arranca;
 `docker compose up -d` sí.
 
+### Lista blanca del piloto (ACO-015)
+
+El piloto solo admite a los usuarios autenticados cuyo email está en la lista.
+Configúrala en tu `.env` local no versionado, separada por comas; no subas
+nunca direcciones reales:
+
+```bash
+EMAILS_AUTORIZADOS=paciente@example.com,otro@example.com
+```
+
+`docker-compose.yml` pasa la variable al servicio `backend`. La lista se lee en
+cada petición, se le aplican `trim` y minúsculas y se compara de forma exacta:
+no hay comodines ni patrones de dominio, y `*` es un carácter literal. Si la
+variable falta o está vacía, el backend arranca igualmente pero rechaza todas
+las peticiones protegidas con 403 `{"detail": "forbidden"}`; nunca permite a
+todos.
+
+Después de cambiar la lista, recrea el servicio para que Compose vuelva a leer
+`.env`; un `restart` no basta:
+
+```bash
+docker compose up -d backend
+```
+
+Al arrancar, el backend solo registra el número de direcciones autorizadas,
+nunca sus valores. Un rechazo no registra el email ni el `sub`.
+
+La comprobación manual usa solo usuarios locales no versionados:
+`paciente@example.com` en la lista y `paciente-sintetico@example.com` fuera de
+ella, ambos con rol `paciente` y TOTP y sin `offline_access`.
+`scripts/check-realm.sh` debe confirmar que solo el administrador puede editar
+el email de un usuario; si falla, ejecuta `scripts/apply-user-profile.sh` y
+repítelo. Con los usuarios creados, comprueba a mano que el autorizado no puede
+editar su email en la consola de cuenta y que una petición con
+`offline_access` contra un cliente que ofrezca el scope no devuelve un token
+offline.
+
 ### Claude API (LLM gateway)
 
 El backend solo llama a Claude API a través de `backend/app/services/llm_gateway/`.

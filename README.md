@@ -193,6 +193,41 @@ docker compose stop keycloak
 `docker compose up -d --build backend` does not start it;
 `docker compose up -d` does.
 
+### Pilot whitelist (ACO-015)
+
+The pilot only admits authenticated users whose email is on the whitelist.
+Set it in your unversioned `.env`, comma-separated; never commit real
+addresses:
+
+```bash
+EMAILS_AUTORIZADOS=paciente@example.com,otro@example.com
+```
+
+`docker-compose.yml` passes the variable to `backend`. The list is read on
+every request, trimmed and lowercased, and compared exactly: there are no
+wildcards or domain patterns, and `*` is a literal character. If the variable
+is missing or empty, the backend still starts but rejects every protected
+request with 403 `{"detail": "forbidden"}`; it never allows everyone.
+
+After changing the list, recreate the service so Compose reads `.env` again;
+a `restart` is not enough:
+
+```bash
+docker compose up -d backend
+```
+
+At startup the backend logs only the number of authorized addresses, never
+their values. A rejected request logs neither the email nor the `sub`.
+
+The manual check uses local, unversioned users only: `paciente@example.com`
+on the list and `paciente-sintetico@example.com` outside it, both with role
+`paciente` and TOTP and without `offline_access`. `scripts/check-realm.sh`
+must confirm that only the administrator can edit a user's email; if it
+fails, run `scripts/apply-user-profile.sh` and repeat it. Once the users
+exist, check by hand that the authorized user cannot edit their email in the
+account console and that an `offline_access` request against a client that
+offers the scope returns no offline token.
+
 ### Claude API (LLM gateway)
 
 The backend only calls Claude API through `backend/app/services/llm_gateway/`.
