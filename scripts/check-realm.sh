@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Comprueba el Keycloak local de ACOMPAS: el documento de descubrimiento OIDC
 # del realm acompas, el cliente acompas-frontend, los composites del rol por
-# defecto, una petición de autorización hasta el formulario de login y el
-# rechazo de offline_access (ACO-012, ACO-013).
+# defecto, el perfil de usuario, una petición de autorización hasta el
+# formulario de login y el rechazo de offline_access (ACO-012, ACO-013).
 #
 # Uso: scripts/check-realm.sh
 # El puerto de Keycloak se toma de KEYCLOAK_PORT, del entorno o de .env (por
@@ -14,6 +14,11 @@
 # Si se cambia FRONTEND_PORT, hay que actualizar el JSON y reimportar el realm.
 
 set -euo pipefail
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "ERROR: se requiere python3 para comprobar el perfil de usuario" >&2
+  exit 1
+fi
 
 env_file="$(dirname "${BASH_SOURCE[0]}")/../.env"
 
@@ -30,6 +35,15 @@ env_value() {
 
 port="$(env_value KEYCLOAK_PORT)"
 port="${port:-8080}"
+if [[ ! "${port}" =~ ^[0-9]{1,5}$ ]]; then
+  echo "ERROR: KEYCLOAK_PORT debe ser un número entre 1 y 65535" >&2
+  exit 1
+fi
+port="$((10#${port}))"
+if (( port < 1 || port > 65535 )); then
+  echo "ERROR: KEYCLOAK_PORT debe ser un número entre 1 y 65535" >&2
+  exit 1
+fi
 admin_user="$(env_value KEYCLOAK_BOOTSTRAP_ADMIN_USER)"
 admin_user="${admin_user:-admin}"
 admin_password="$(env_value KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD)"
@@ -211,11 +225,71 @@ if [[ "${offline_role_status}" != "200" ]]; then
   exit 1
 fi
 
+# Perfil de usuario del realm: el email solo lo puede editar el administrador
+# (ACO-012 P17; ADR-017). Se consulta el realm en marcha, no el JSON.
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "${tmp_dir}"' EXIT
+profile_url="${base_url}/admin/realms/acompas/users/profile"
+profile_status="$(curl -sS -o "${tmp_dir}/profile.json" -w '%{http_code}' --max-time 5 \
+  -H "Authorization: Bearer ${access_token}" "${profile_url}" 2>/dev/null || true)"
+if [[ "${profile_status}" == "000" || -z "${profile_status}" ]]; then
+  echo "ERROR: Keycloak no responde al consultar el perfil de usuario en ${base_url}" >&2
+  exit 1
+fi
+if [[ "${profile_status}" == "404" ]]; then
+  echo "ERROR: el realm acompas no tiene perfil de usuario (HTTP 404); ¿está importado?" >&2
+  exit 1
+fi
+if [[ "${profile_status}" != "200" ]]; then
+  echo "ERROR: no se pudo consultar el perfil de usuario (HTTP ${profile_status})" >&2
+  exit 1
+fi
+if ! python3 - "${tmp_dir}/profile.json" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    with open(path, encoding="utf-8") as source:
+        profile = json.load(source)
+except (OSError, json.JSONDecodeError) as exc:
+    print(f"ERROR: no se pudo leer el perfil: {exc}", file=sys.stderr)
+    sys.exit(1)
+
+attributes = profile.get("attributes")
+if not isinstance(attributes, list):
+    print("ERROR: el perfil no contiene una lista de atributos", file=sys.stderr)
+    sys.exit(1)
+
+email_attributes = [
+    attribute
+    for attribute in attributes
+    if isinstance(attribute, dict) and attribute.get("name") == "email"
+]
+if len(email_attributes) != 1:
+    print("ERROR: el perfil debe tener exactamente un atributo email", file=sys.stderr)
+    sys.exit(1)
+
+permissions = email_attributes[0].get("permissions")
+if not isinstance(permissions, dict):
+    print("ERROR: el atributo email no tiene el objeto permissions", file=sys.stderr)
+    sys.exit(1)
+
+if permissions.get("edit") != ["admin"]:
+    print(
+        f"ERROR: email.permissions.edit debe ser [\"admin\"] y es {permissions.get('edit')!r}",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+PY
+then
+  echo "ERROR: el perfil de usuario no tiene email.permissions.edit = [\"admin\"] (ACO-012 P17; ADR-017)" >&2
+  exit 1
+fi
+
 # Petición de autorización con el cliente y la redirección registrados. El
 # code_challenge es sintético y válido como base64url de 43 caracteres.
 query="client_id=${client_id}&response_type=code&scope=openid&state=acompas-check&code_challenge=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&code_challenge_method=S256"
-tmp_dir="$(mktemp -d)"
-trap 'rm -rf "${tmp_dir}"' EXIT
 
 valid_url="${auth_url}?${query}&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fauth%2Fcallback"
 valid_code="$(curl -sS -L --max-time 5 -o "${tmp_dir}/login.html" -w '%{http_code}' "${valid_url}" || true)"
@@ -242,4 +316,4 @@ if ! grep -Eiq '^location:.*error=invalid_scope' <<<"${offline_headers}"; then
   exit 1
 fi
 
-echo "OK: realm acompas, cliente ${client_id}, rol por defecto, autorización y offline_access verificados en ${base_url}"
+echo "OK: realm acompas, cliente ${client_id}, rol por defecto, perfil de usuario, autorización y offline_access verificados en ${base_url}"
