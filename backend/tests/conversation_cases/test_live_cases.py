@@ -213,7 +213,7 @@ def render_report(
         f"- Prompt: system {prompt_version} · sha256 {prompt_sha256}",
         f"- Umbrales de anonimización: hallazgo {finding_threshold} · documento {document_threshold}",
         f"- Casos ejecutados: {len(outcomes)} (modo api)",
-        f"- Fallos de contrato: {sum(outcome.failure is not None for outcome in outcomes)}",
+        f"- Fallos del ejecutor (contrato de ACO-030 y criterios propios): {sum(outcome.failure is not None for outcome in outcomes)}",
         "",
         "La evaluación es humana: para cada caso, anota «cumple» o «no cumple» con una nota.",
         "Un incumplimiento se anota en la PR como «FUERA DE ALCANCE — requiere ACO-029» "
@@ -255,7 +255,7 @@ def render_report(
             fence = _fence(outcome.answer)
             lines += ["", f"{fence}text", outcome.answer, fence]
         if outcome.failure:
-            lines += ["", f"**Fallo de contrato:** {outcome.failure}"]
+            lines += ["", f"**Fallo del ejecutor:** {outcome.failure}"]
         lines += ["", "Debe:", ""]
         lines += [f"- {text}" for text in case.must]
         lines += ["", "No debe:", ""]
