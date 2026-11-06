@@ -99,6 +99,8 @@ Se evalúan en todos los casos, además de los suyos:
 ### Preparación
 
 - La aplicación levantada con el flujo integrado de ACO-032 (inicio de sesión, subida, validación y conversación).
+- La configuración del gateway con la que se validaron los casos (PR #112, AC-06): `LLM_MODEL=claude-sonnet-5-5` y `LLM_MAX_OUTPUT_TOKENS=4096`. Con otro modelo, hay que volver a ejecutar los casos; con el valor por defecto de 1024 tokens pueden salir respuestas truncadas (#87).
+- La anonimización precargada. Los modelos de anonimización (spaCy y MEDDOCAN, unos 510 MB) no están en la imagen: se descargan en la primera anonimización y se pierden al recrear el contenedor. En la ejecución de AC-06 esa primera carga tardó unos 11 minutos. Antes de empezar, con el entorno levantado, se sube `carta_oncologia_01.txt` y se comprueba que se valida. Después no se recrean los contenedores (`--build`, `down`/`up`); `restart` sí conserva los modelos.
 - Un usuario de la lista blanca con 2FA y el usuario sintético fuera de la lista (ADR-017), creados en Keycloak por ACO-015.
 - Los documentos a mano: `informe_patologia_01.txt`, `carta_oncologia_01.txt` y `analitica_01.txt` (de `tests/synthetic_data/documents/`) y los tres de `tests/conversation_cases/documents/`.
 - Un navegador de escritorio y otro (o las herramientas de desarrollo) a 360 px de ancho para C14.
