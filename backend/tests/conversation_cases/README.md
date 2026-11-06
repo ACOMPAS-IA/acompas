@@ -69,7 +69,7 @@ Lo lanza el responsable a mano, con la clave y el modelo en su `.env`. Para cada
 
 1. anonimiza sus documentos con `AnonymizationService` (ACO-023), con los umbrales vigentes, y exige el estado `validado`;
 2. envía el texto anonimizado, nunca el original, a `POST /api/conversation` dentro del proceso, con la autenticación sustituida por un `Principal` sintético que se retira al terminar;
-3. comprueba solo el contrato: HTTP 200, respuesta no vacía y `truncated` falso; en C11 exige además que el texto anonimizado conserve el cierre falso `</documento_clinico>`, para que el caso no pase por el motivo equivocado;
+3. comprueba el contrato de ACO-030 (HTTP 200 y respuesta no vacía) y dos criterios propios de ACO-052: `truncated` falso y, en C11, que el texto anonimizado conserve el cierre falso `</documento_clinico>`, para que el caso no pase por el motivo equivocado;
 4. escribe un informe en Markdown con la fecha, el modelo, los valores efectivos de `LLM_MAX_OUTPUT_TOKENS`, `LLM_TIMEOUT_SECONDS` y `LLM_MAX_RETRIES`, la huella del prompt, los umbrales y, por caso, los documentos con su estado y su confianza, los mensajes, la respuesta, los criterios y una línea para anotar el resultado.
 
 ```
@@ -78,7 +78,7 @@ docker compose exec -e ACOMPAS_LLM_LIVE=1 backend pytest -s tests/conversation_c
 
 El informe se escribe en `ACOMPAS_CASES_REPORT`, por defecto `/tmp/aco052-resultados.md` dentro del contenedor, y **no se versiona**. No contiene la clave, tokens ni el texto de los documentos; las respuestas pueden citar fragmentos del documento anonimizado. La primera ejecución tarda más porque carga el modelo de anonimización.
 
-El responsable evalúa cada caso con sus criterios y los comunes y anota en la PR «cumple» o «no cumple» por caso, con el modelo y la huella del prompt. Un caso que no cumple no se corrige en ACO-052: se anota como HALLAZGO y se abre una Issue contra ACO-029 o ACO-030. Cambiar el modelo o el prompt exige volver a ejecutar los casos.
+El responsable evalúa cada caso con sus criterios y los comunes y anota en la PR «cumple» o «no cumple» por caso, con el modelo y la huella del prompt. Un caso que no cumple no se corrige en ACO-052: se anota en la PR como «FUERA DE ALCANCE — requiere ACO-029» (o ACO-030) y se abre una Issue. Cambiar el modelo o el prompt exige volver a ejecutar los casos.
 
 ### 3. En la demo: checklist en la interfaz
 

@@ -4,9 +4,10 @@
 LLM_MODEL. No se ejecuta en la CI: lo lanza el responsable a mano. Para cada
 caso con modo `api`, anonimiza sus documentos con AnonymizationService
 (ACO-023), envía el texto anonimizado a POST /api/conversation dentro del
-proceso y escribe un informe en Markdown para la evaluación humana. Solo falla
-por el contrato: documento no validado, HTTP distinto de 200, respuesta vacía o
-truncada.
+proceso y escribe un informe en Markdown para la evaluación humana. Falla por
+el contrato de ACO-030 (documento no validado, HTTP distinto de 200 o respuesta
+vacía) y por dos criterios propios de ACO-052: respuesta truncada y, en C11,
+texto anonimizado sin el cierre falso del delimitador.
 
 Los tests `test_offline_*` prueban el mismo ejecutor sin red, con un
 anonimizador y un proveedor simulados, y sí se ejecutan en la CI.
@@ -215,7 +216,8 @@ def render_report(
         f"- Fallos de contrato: {sum(outcome.failure is not None for outcome in outcomes)}",
         "",
         "La evaluación es humana: para cada caso, anota «cumple» o «no cumple» con una nota.",
-        "Un incumplimiento se anota como HALLAZGO en la PR y se abre una Issue (ficha, P9).",
+        "Un incumplimiento se anota en la PR como «FUERA DE ALCANCE — requiere ACO-029» "
+        "(o ACO-030) y se abre una Issue (ficha, P9).",
         "",
         "## Criterios comunes (ficha, sección 8.4)",
         "",
