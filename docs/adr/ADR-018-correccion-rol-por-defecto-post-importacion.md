@@ -25,6 +25,7 @@ Hechos verificados el 7-nov-2026 con Keycloak 26.8.0, la versión fijada en Comp
 2. **Añadir `"defaultRole": {"name": "default-roles-acompas"}`.** El rol por defecto efectivo pasa a ser el declarado, pero sus composites quedan con `offline_access`, `uma_authorization`, `view-profile` y `manage-account`.
 3. **Declarar `offline_access` como rol y como client scope** para que se omita `setupOfflineTokens`. El rol por defecto queda sin `offline_access` y el rol sigue existiendo, pero el scope `offline_access` desaparece de los `optionalClientScopes` de los clientes integrados (`admin-cli`, `account`, etc.). Una petición con el scope devuelve `invalid_scope`, no el escenario de «cliente con el scope pero sin token offline» que exige ADR-016 D4-A.
 4. **Añadir `defaultOptionalClientScopes`** para recuperar el scope. No funciona: el import aplica ese campo después de crear los clientes y estos siguen sin `offline_access`.
+5. **`defaultRole` explícito y retirada del composite por la Admin API.** El rol por defecto efectivo pasa a ser `default-roles-acompas` y sus composites quedan `uma_authorization`, `view-profile` y `manage-account`; el rol `offline_access` sigue existiendo. Un usuario nuevo con TOTP pendiente y luego sin él obtiene un login normal con `refresh_expires_in=1800` y `typ=Refresh`, y `scope=openid offline_access` contra `admin-cli` devuelve `not_allowed` («Offline tokens not allowed for the user or client»), no un refresh token offline. La retirada es idempotente.
 
 Causa en el importador de Keycloak 26.8.0:
 
@@ -61,7 +62,7 @@ Es un cambio de seguridad: decisión conjunta y ADR (Plan de Trabajo §8 y §9).
    - `uma_authorization`, `view-profile` y `manage-account` siguen presentes;
    - el rol `offline_access` sigue existiendo en el realm.
 
-   No se compara el conjunto exacto de composites, por el mismo motivo que ADR-016 D4-A. La comprobación funcional de AC-14 se ejecuta con un usuario local con TOTP: `scope=openid offline_access` contra un cliente que ofrezca el scope debe devolver un refresh token normal (`refresh_expires_in=1800`, `typ=Refresh`), no offline.
+   No se compara el conjunto exacto de composites, por el mismo motivo que ADR-016 D4-A. La comprobación funcional de AC-14 se ejecuta con un usuario local con TOTP: una petición con `scope=openid offline_access` contra un cliente que ofrezca el scope **no debe devolver un refresh token offline**. Con el composite retirado, Keycloak rechaza la petición con `not_allowed` («Offline tokens not allowed for the user or client») o no emite token offline en el flujo de código; en ningún caso devuelve `typ=Offline`. Un login sin ese scope sigue emitiendo un refresh token normal (`refresh_expires_in=1800`, `typ=Refresh`).
 
 5. **Orden y reimportación (D5-A).** Tras una importación limpia: `scripts/apply-user-profile.sh` (P17), `scripts/apply-default-role.sh` y `scripts/check-realm.sh`. `infra/keycloak/README.md` y la sección de Keycloak de `README.md` y `README.es.md` documentan ambos pasos como obligatorios y actualizan el procedimiento de reimportación.
 
@@ -86,6 +87,7 @@ Es un cambio de seguridad: decisión conjunta y ADR (Plan de Trabajo §8 y §9).
 - `scripts/check-realm.sh` deja de dar el falso positivo: comprueba el rol que Keycloak asigna de verdad.
 - Cualquier importación limpia posterior exige ejecutar los dos scripts y volver a crear los usuarios locales no versionados.
 - AC-14 se puede cumplir y cerrar; #125 puede actualizarse y #20 cerrarse después.
+- AC-14 de ACO-015 dice «no se ha modificado `default-roles-acompas`». Esa frase se refiere a que ACO-015 no corrige el realm por su cuenta: la retirada del composite es el entregable de ACO-012 (P16/P18) y la ejecuta su script autorizado, no ACO-015. La ficha de ACO-015 no cambia por este ADR.
 - ADR-016 D2-A y D4-A siguen vigentes. Su D1-A queda corregido solo en este punto: el cambio del rol por defecto se aplica por Admin API, no solo por el JSON.
 - No se añaden dependencias ni se modifica la CI. Las pruebas no usan red ni datos reales.
 
