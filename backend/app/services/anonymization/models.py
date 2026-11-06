@@ -2,6 +2,9 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
+# Máximo de caracteres del contrato HTTP de anonimización (ficha ACO-024, P2).
+MAX_TEXT_CHARS = 30_000
+
 
 class AnonymizationStatus(str, Enum):
     VALIDADO = "validado"
@@ -14,7 +17,9 @@ REASON_EMPTY_TEXT = "texto_vacio"
 
 
 class AnonymizationRequest(BaseModel):
-    text: str = Field(min_length=1)
+    # El texto vacío es válido: el servicio lo trata como documento ilegible
+    # (ficha ACO-023, P10). El máximo es el del contrato HTTP (ficha ACO-024, P2).
+    text: str = Field(max_length=MAX_TEXT_CHARS)
 
 
 class AnonymizationResult(BaseModel):
