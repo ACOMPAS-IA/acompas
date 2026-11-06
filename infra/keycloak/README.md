@@ -43,6 +43,32 @@ por `uma_authorization` y por los roles de cliente `view-profile` y
 ADR-016). El rol `offline_access` sigue existiendo en el realm, pero ningún
 usuario lo hereda: solo se obtiene por asignación expresa.
 
+### Perfil de usuario (email)
+
+El perfil de usuario por defecto de Keycloak 26.8.0 permite al rol `user`
+editar el email (`email.permissions.edit: ["admin","user"]`). Sin restricción,
+quien pueda autenticarse podría cambiarlo por otro de la lista blanca y eludir
+la comprobación del piloto. ADR-017 lo restringe a `["admin"]` (ACO-012 P17).
+
+El perfil **no viaja en la representación del realm** que importa
+`--import-realm`: no aparece en `GET /admin/realms/acompas` y las variantes
+probadas no lo aplican. Por eso se aplica después de la importación, por la
+Admin API y solo al endpoint del perfil:
+
+```bash
+scripts/apply-user-profile.sh
+```
+
+El script es idempotente, conserva `view` y el resto del perfil, usa las
+credenciales de administrador de desarrollo de `.env` sin imprimir valores y no
+añade dependencias: bash, curl y python3. Construye la URL solo con `localhost`
+y `KEYCLOAK_PORT`; ADR-017 permite también `127.0.0.1`, pero esta implementación
+no acepta otro destino ni una opción para forzarlo.
+
+Una reimportación limpia borra el perfil y hay que volver a ejecutar el script.
+`scripts/check-realm.sh` falla si `email.permissions.edit` no es exactamente
+`["admin"]`.
+
 ### 2FA
 
 El segundo factor es TOTP obligatorio para todos los usuarios del realm:
@@ -147,9 +173,21 @@ Este procedimiento es el que aplica los cambios del JSON, como la retirada de
 funcional de que una petición con `scope=openid offline_access` no devuelve un
 refresh token offline requiere un usuario con TOTP y se ejecuta en ACO-015.
 
+El perfil de usuario no se reconstruye desde el JSON. Tras una importación
+limpia hay que volver a aplicarlo antes de comprobar el realm:
+
+```bash
+scripts/apply-user-profile.sh
+scripts/check-realm.sh
+```
+
+Sin ese paso, `check-realm.sh` falla porque `email.permissions.edit` vuelve a
+`["admin","user"]`. Una reimportación limpia borra el perfil y exige repetir el
+script (ACO-012 P17; ADR-017).
+
 ## Comprobación
 
-Con Keycloak en marcha y el realm reimportado:
+Con Keycloak en marcha, el realm reimportado y el perfil de usuario aplicado:
 
 ```bash
 scripts/check-realm.sh
@@ -166,6 +204,8 @@ El script comprueba:
   `offline_access` y con `uma_authorization`, `view-profile` y
   `manage-account`, sin exigir igualdad exacta del conjunto;
 - que el rol `offline_access` sigue existiendo en el realm;
+- el perfil de usuario por la Admin API: el atributo `email` existe y
+  `email.permissions.edit` es exactamente `["admin"]` (ACO-012 P17; ADR-017);
 - una petición de autorización con el cliente y la redirección registrados, que
   debe devolver el formulario de login;
 - una petición con una redirección no registrada, que debe rechazarse;
@@ -175,8 +215,9 @@ El script comprueba:
 El script obtiene un token de administrador del realm `master` con
 `KEYCLOAK_BOOTSTRAP_ADMIN_USER` y `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD`, del
 entorno o de `.env` (por defecto, los valores de desarrollo de Compose). No
-imprime el token ni la contraseña. No se añade a la CI: la CI actual no levanta
-Keycloak.
+imprime el token ni la contraseña. `scripts/apply-user-profile.sh` usa las
+mismas credenciales y tampoco las imprime. No se añade a la CI: la CI actual no
+levanta Keycloak.
 
 `scripts/check-keycloak.sh` sigue comprobando el realm `master`.
 
