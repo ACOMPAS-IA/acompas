@@ -42,32 +42,35 @@ original. Tampoco se escriben en logs.
 recibe `sendConversation` como función por defecto, así que sus envíos quedan
 autenticados sin cambiar la página.
 
-## Añadir una llamada nueva (ACO-032)
+## Anonimización (ACO-032)
 
-Para la API de anonimización de ACO-024:
+`frontend/src/api/anonymization.ts` es el envoltorio tipado de
+`POST /api/anonymization` (ACO-024). Expone:
 
 ```ts
-import { apiRequest } from './client.ts'
+type AnonymizeText = (text: string) => Promise<AnonymizationResult>
+```
 
+con `AnonymizationResult` formado por `status` (`validado`, `retenido` o
+`ilegible`), `confidence`, `anonymized_text`, `entities_count` y `reason`.
+`anonymizeText` usa `apiRequest` con estos códigos permitidos:
+
+```ts
 const ANONYMIZATION_ALLOWED_DETAILS = [
   'invalid_request',
   'text_too_long',
   'anonymization_not_configured',
 ] as const
-
-const result = await apiRequest<AnonymizationResult>(
-  '/api/anonymization',
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
-  },
-  { allowedDetails: ANONYMIZATION_ALLOWED_DETAILS },
-)
 ```
 
-`AnonymizationResult` y sus estados (`validado`, `retenido`, `ilegible`) son los
-de ACO-024. No hace falta modificar `client.ts` para añadir un endpoint.
+- Un `ApiError` se convierte en `AnonymizationError`, que conserva el `detail`.
+- `SessionExpiredError` se propaga sin convertir para que `useAuthSession`
+  vuelva al login. Se comprueba antes que `ApiError` porque es su subclase.
+- Cualquier otro error se propaga sin convertir.
+- La página de subida recibe `anonymize` como prop opcional para inyectar un
+  doble en los tests; por defecto usa `anonymizeText`.
+- El componente no lee `sessionStorage`, no construye `Authorization` y no
+  llama a `fetch` directamente. No hace falta modificar `client.ts`.
 
 Para los errores de conversación, `conversation.ts` declara los códigos de
 ACO-030: `llm_not_configured`, `llm_busy`, `llm_unavailable`, `llm_timeout` y
