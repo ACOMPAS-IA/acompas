@@ -1,12 +1,38 @@
 import { StrictMode } from 'react'
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { User } from 'oidc-client-ts'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { AnonymizationResult } from '../api/anonymization.ts'
 import { DISCLAIMER_TEXT } from '../components/disclaimer/Disclaimer.tsx'
 import { buildAuthConfig } from './authConfig.ts'
 import { createAuthService, type AuthManager } from './authService.ts'
 import { AuthGate } from './AuthGate.tsx'
+import { SESSION_EXPIRED_EVENT } from './sessionExpiry.ts'
 import { CALLBACK_ERROR } from './useAuthSession.ts'
+
+const { anonymizeTextMock, sendConversationMock } = vi.hoisted(() => ({
+  anonymizeTextMock: vi.fn(),
+  sendConversationMock: vi.fn(),
+}))
+
+vi.mock('../api/anonymization.ts', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../api/anonymization.ts')>()
+  return { ...actual, anonymizeText: anonymizeTextMock }
+})
+
+vi.mock('../api/conversation.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../api/conversation.ts')>()
+  return { ...actual, sendConversation: sendConversationMock }
+})
 
 const config = buildAuthConfig()
 
@@ -46,6 +72,8 @@ function createManager(overrides: Partial<AuthManager> = {}): AuthManager {
 afterEach(() => {
   cleanup()
   window.history.replaceState(null, '', '/')
+  anonymizeTextMock.mockReset()
+  sendConversationMock.mockReset()
   vi.restoreAllMocks()
 })
 
@@ -104,7 +132,14 @@ describe('AuthGate', () => {
     ).toBeDefined()
     expect(screen.getByText('persona@example.test')).toBeDefined()
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeDefined()
-    expect(screen.getByText('Contenido de prueba')).toBeDefined()
+    expect(
+      screen.getByRole('heading', { name: 'Subir documento' }),
+    ).toBeDefined()
+    expect(
+      screen
+        .getByRole('button', { name: 'Documento' })
+        .getAttribute('aria-current'),
+    ).toBe('page')
 
     const footer = screen.getByRole('contentinfo', { name: 'Aviso legal' })
     expect(within(footer).getByText(DISCLAIMER_TEXT)).toBeDefined()
@@ -204,5 +239,186 @@ describe('AuthGate', () => {
     expect(
       screen.getByRole('button', { name: 'Iniciar sesión' }),
     ).toBeDefined()
+  })
+})
+
+function authenticatedService() {
+  return createAuthService(
+    createManager({ getUser: vi.fn(async () => makeUser()) }),
+    config,
+  )
+}
+
+function validResult(
+  overrides: Partial<AnonymizationResult> = {},
+): AnonymizationResult {
+  return {
+    status: 'validado',
+    confidence: 0.93,
+    anonymized_text: 'Paciente: [PACIENTE]. DNI: [DNI].',
+    entities_count: { PERSON: 1, ES_DNI: 1 },
+    reason: null,
+    ...overrides,
+  }
+}
+
+function selectTxt(contents = 'Informe inventado de [PACIENTE].') {
+  fireEvent.change(screen.getByLabelText('Documento (.txt)'), {
+    target: {
+      files: [
+        new File([contents], 'documento-sintetico.txt', {
+          type: 'text/plain',
+        }),
+      ],
+    },
+  })
+}
+
+async function submitUpload(name = 'Subir y anonimizar') {
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name }))
+  })
+}
+
+describe('AuthGate — flujo E2E', () => {
+  it('sube, valida y abre la conversación solo con el texto anonimizado', async () => {
+    const result = validResult()
+    anonymizeTextMock.mockResolvedValue(result)
+    sendConversationMock.mockResolvedValue({
+      answer: 'Respuesta inventada.',
+      truncated: false,
+    })
+
+    render(<AuthGate service={authenticatedService()} />)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Subir documento' }),
+    ).toBeDefined()
+    expect(screen.queryByRole('button', { name: 'Conversación' })).toBeNull()
+
+    selectTxt()
+    await submitUpload()
+
+    expect(
+      await screen.findByRole('heading', { name: 'Documento validado' }),
+    ).toBeDefined()
+    expect(anonymizeTextMock).toHaveBeenCalledWith(
+      'Informe inventado de [PACIENTE].',
+    )
+    expect(
+      screen.getByRole('button', { name: 'Conversación' }),
+    ).toBeDefined()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continuar a la conversación' }),
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'Conversación' }),
+    ).toBeDefined()
+    expect(
+      screen
+        .getByRole('button', { name: 'Conversación' })
+        .getAttribute('aria-current'),
+    ).toBe('page')
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Tu pregunta' }), {
+      target: { value: '¿Qué significa el resultado?' },
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Enviar' }))
+    })
+
+    expect(sendConversationMock).toHaveBeenCalledWith({
+      documents: [{ text: result.anonymized_text }],
+      messages: [{ role: 'user', content: '¿Qué significa el resultado?' }],
+    })
+    expect(await screen.findByText('Respuesta inventada.')).toBeDefined()
+
+    // Volver a «Documento» desmonta la conversación y pierde su hilo.
+    fireEvent.click(screen.getByRole('button', { name: 'Documento' }))
+    expect(
+      screen.getByRole('heading', { name: 'Subir documento' }),
+    ).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: 'Conversación' }),
+    ).toBeDefined()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Conversación' }))
+    expect(
+      await screen.findByRole('heading', { name: 'Conversación' }),
+    ).toBeDefined()
+    expect(screen.queryByText('¿Qué significa el resultado?')).toBeNull()
+  })
+
+  it.each([
+    [
+      'retenido',
+      'Documento retenido',
+      'No se ha podido procesar el documento con garantías. Puedes intentarlo con otra copia.',
+      'baja_confianza',
+    ],
+    [
+      'ilegible',
+      'Documento ilegible',
+      'El documento no contiene texto que se pueda leer. Puedes intentarlo con otro fichero.',
+      'texto_vacio',
+    ],
+  ] as const)(
+    'no ofrece conversación con un resultado %s',
+    async (status, heading, message, reason) => {
+      anonymizeTextMock.mockResolvedValue(
+        validResult({
+          status,
+          confidence: status === 'retenido' ? 0.42 : 1,
+          anonymized_text: null,
+          entities_count: {},
+          reason,
+        }),
+      )
+
+      render(<AuthGate service={authenticatedService()} />)
+      await screen.findByRole('heading', { name: 'Subir documento' })
+
+      selectTxt()
+      await submitUpload()
+
+      expect(await screen.findByRole('heading', { name: heading })).toBeDefined()
+      expect(screen.getByText(message)).toBeDefined()
+      expect(screen.queryByRole('button', { name: 'Conversación' })).toBeNull()
+      expect(
+        screen.queryByRole('button', { name: 'Continuar a la conversación' }),
+      ).toBeNull()
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Probar con otro documento' }),
+      )
+      expect(
+        await screen.findByRole('heading', { name: 'Subir documento' }),
+      ).toBeDefined()
+    },
+  )
+
+  it('descarta el flujo y vuelve al login al caducar la sesión', async () => {
+    anonymizeTextMock.mockResolvedValue(validResult())
+
+    render(<AuthGate service={authenticatedService()} />)
+    await screen.findByRole('heading', { name: 'Subir documento' })
+
+    selectTxt()
+    await submitUpload()
+    expect(
+      await screen.findByRole('heading', { name: 'Documento validado' }),
+    ).toBeDefined()
+
+    act(() => {
+      window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
+    })
+
+    expect(
+      await screen.findByRole('heading', { name: 'Iniciar sesión' }),
+    ).toBeDefined()
+    expect(screen.queryByText('Documento validado')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Documento' })).toBeNull()
   })
 })

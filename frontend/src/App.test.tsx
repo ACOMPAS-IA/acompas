@@ -75,9 +75,13 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'ACOMPAS' })).toBeDefined()
     expect(
       screen
-        .getByRole('button', { name: 'Conversación' })
+        .getByRole('button', { name: 'Documento' })
         .getAttribute('aria-current'),
     ).toBe('page')
+    expect(
+      screen.getByRole('heading', { name: 'Subir documento' }),
+    ).toBeDefined()
+    expect(screen.queryByRole('button', { name: 'Conversación' })).toBeNull()
     expect(screen.getByRole('main')).toBeDefined()
     expect(screen.getByText('persona@example.test')).toBeDefined()
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeDefined()

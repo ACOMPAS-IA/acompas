@@ -1,0 +1,93 @@
+/* Mobile-first (ACO-032, sección 8.7). La página vive dentro del <main> de
+   AppShell, que es el que hace scroll; no añade cabecera, navegación ni pie. */
+
+.upload {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.upload__title {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+
+.upload__intro {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.upload__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+}
+
+.upload__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.upload__input {
+  width: 100%;
+  min-width: 0;
+  /* 16 px como mínimo: los navegadores móviles no hacen zoom al enfocar. */
+  font: inherit;
+  font-size: 1rem;
+}
+
+.upload__input:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.upload__button {
+  align-self: flex-start;
+  /* Área táctil de al menos 44 × 44 px. */
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background-color: #0f766e;
+  color: #ffffff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.upload__button:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.upload__button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.upload__status,
+.upload__error {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.upload__status {
+  color: #4b5563;
+}
+
+.upload__error {
+  color: #b91c1c;
+}
