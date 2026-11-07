@@ -1,9 +1,12 @@
 """Endpoint HTTP de anonimización (ACO-024).
 
 Expone el servicio de ACO-023 sin cambiar su contrato. Ninguna respuesta
-devuelve el texto original, tampoco los errores de validación.
+devuelve el texto original, tampoco los errores de validación. Un fallo
+inesperado se sanea antes de relanzarlo, para que el servidor no registre el
+texto en la traza (ACO-025, P7).
 """
 
+import logging
 from functools import lru_cache
 from typing import Annotated
 
@@ -18,6 +21,9 @@ from app.services.anonymization.config import AnonymizationConfigurationError
 from app.services.anonymization.models import AnonymizationRequest, AnonymizationResult
 
 ANONYMIZATION_PATH = "/api/anonymization"
+INTERNAL_ERROR = "anonymization_failed"
+
+logger = logging.getLogger("app.api.anonymization")
 
 router = APIRouter(prefix="/api", dependencies=[Depends(get_current_user)])
 
@@ -68,3 +74,9 @@ def anonymize(
         raise HTTPException(
             status_code=503, detail="anonymization_not_configured"
         ) from None
+    except Exception as error:
+        # El servidor registra la traza de la excepción que sale del endpoint.
+        # Se relanza una excepción sin mensaje ni cadena para que no pueda
+        # incluir el texto del documento (ACO-025, P7).
+        logger.error("Anonymization failed: %s", type(error).__name__)
+        raise RuntimeError(INTERNAL_ERROR) from None
