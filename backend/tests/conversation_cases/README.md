@@ -105,7 +105,7 @@ Se evalúan en todos los casos, además de los suyos:
 - Los documentos a mano: `informe_patologia_01.txt`, `carta_oncologia_01.txt` y `analitica_01.txt` (de `tests/synthetic_data/documents/`) y los tres de `tests/conversation_cases/documents/`.
 - Un navegador de escritorio y otro (o las herramientas de desarrollo) a 360 px de ancho para C14.
 - El texto del aviso que debe verse (ACO-031, `DISCLAIMER_TEXT`): «ACOMPAS te ayuda a entender tu documentación, pero no diagnostica ni sustituye al médico. Consulta siempre con tu equipo oncológico.»
-- Cada caso empieza en una conversación nueva: los mensajes del catálogo son una conversación completa.
+- Cada caso empieza en una conversación nueva: los mensajes del catálogo son una conversación completa. No navegues a «Documento» durante un caso: al volver a «Conversación» se pierde el hilo (ACO-032 P7). Si ocurre, reinicia el caso desde la subida.
 
 ### Dónde se anota el resultado
 
