@@ -214,6 +214,9 @@
       ]
     }
   ],
+  "defaultRole": {
+    "name": "default-roles-acompas"
+  },
   "roles": {
     "realm": [
       {
