@@ -28,6 +28,7 @@ from app.services.anonymization.config import (
     FINDING_THRESHOLD_ENV,
     load_settings,
 )
+from app.services.anonymization.models import REASON_LOW_CONFIDENCE
 from app.services.auth import Principal
 
 URL = "/api/anonymization"
@@ -193,6 +194,32 @@ def test_retained_response_has_exactly_the_contract_fields_and_no_original(
     assert body["status"] == "retenido"
     assert body["anonymized_text"] is None
     assert_no_forbidden_values(response.text)
+
+
+def test_retained_document_leaves_no_trace(use_service, caplog):
+    # T-10 (parte backend): el retenido no devuelve texto, no incluye el
+    # contenido en el resultado y no lo deja en los logs.
+    service = retained_service(TEXT)
+    caplog.set_level(logging.INFO)
+
+    output = service.anonymize(TEXT)
+
+    assert output.anonymized_text is None
+    assert output.entities_count == {}
+    assert output.reason == REASON_LOW_CONFIDENCE
+    assert_no_forbidden_values(str(output.model_dump()))
+
+    use_service(service)
+    response = client.post(URL, json={"text": TEXT})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "retenido"
+    assert body["anonymized_text"] is None
+    assert body["entities_count"] == {}
+    assert body["reason"] == REASON_LOW_CONFIDENCE
+    assert_no_forbidden_values(response.text)
+    assert_no_forbidden_values(logged_text(caplog))
 
 
 @pytest.mark.parametrize("state", ["validado", "retenido", "ilegible"])

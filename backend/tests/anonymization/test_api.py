@@ -4,6 +4,7 @@ Usan un analyzer falso y un servicio inyectado: no cargan el modelo ni usan
 red. Los valores son sintéticos (ACO-051, ADR-008).
 """
 
+import logging
 import uuid
 from types import SimpleNamespace
 
@@ -136,6 +137,30 @@ def test_retained_document_has_no_text(use_service):
     assert body["entities_count"] == {}
     assert body["reason"] == "baja_confianza"
     assert "12345678Z" not in response.text
+
+
+def test_filename_in_payload_is_not_echoed_or_logged(use_service, caplog):
+    # T-04: el contrato del Sprint 1 recibe solo texto. Un filename extra se
+    # ignora y no puede aparecer ni en la respuesta ni en los logs.
+    filename = "informe_sintetico_rosario.pdf"
+    service, _ = service_with(
+        TEXT, [("PERSON", TEXT, "Rosario Albendea Quintanar")]
+    )
+    use_service(service)
+    caplog.set_level(logging.INFO)
+
+    response = client.post(URL, json={"text": TEXT, "filename": filename})
+
+    assert response.status_code == 200
+    assert filename not in response.text
+    assert filename not in caplog.text
+    assert set(response.json()) == {
+        "status",
+        "confidence",
+        "anonymized_text",
+        "entities_count",
+        "reason",
+    }
 
 
 @pytest.mark.parametrize("text", ["", "   ", "\n\t "])

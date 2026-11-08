@@ -70,6 +70,30 @@ def test_sanitarians_are_numbered_by_first_appearance():
     ]
 
 
+def test_numbering_restarts_in_each_document():
+    # T-07: el mismo sanitario recibe números distintos según el orden en que
+    # aparece en cada documento; no hay estado compartido entre documentos.
+    first = "Dra. Inés Carrascal Ochoa. Dr. Andrés Lozoya Benítez."
+    second = "Dr. Andrés Lozoya Benítez. Dra. Inés Carrascal Ochoa."
+    first_findings = [
+        make(first, "PERSONAL_SANITARIO", "Inés Carrascal Ochoa"),
+        make(first, "PERSONAL_SANITARIO", "Andrés Lozoya Benítez"),
+    ]
+    second_findings = [
+        make(second, "PERSONAL_SANITARIO", "Andrés Lozoya Benítez"),
+        make(second, "PERSONAL_SANITARIO", "Inés Carrascal Ochoa"),
+    ]
+
+    assert assign_labels(first, first_findings) == [
+        "[SANITARIO_1]",
+        "[SANITARIO_2]",
+    ]
+    assert assign_labels(second, second_findings) == [
+        "[SANITARIO_1]",
+        "[SANITARIO_2]",
+    ]
+
+
 def test_partial_mention_shares_the_patient_number():
     text = (
         "Paciente: Rosario Albendea Quintanar. "
