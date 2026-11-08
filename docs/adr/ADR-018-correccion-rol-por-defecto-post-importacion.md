@@ -1,10 +1,10 @@
 # ADR-018 — Corrección del rol por defecto tras la importación del realm
 
-Estado: propuesto
+Estado: aprobado
 
 Sustituido por: —
 
-Origen: Decisión conjunta #126 (7–9 nov 2026; pendiente de objeción al abrir esta PR). Corrige el mecanismo de ADR-016 P16 y abre una excepción acotada a su D1-A; mantiene D2-A (los clientes conservan el scope) y D4-A (comprobación funcional). Implementación en ACO-012.
+Origen: Decisión conjunta #126 (validación explícita de Luis del Olmo el 8-nov-2026, que cierra su plazo de objeción y se compromete a revisar este ADR y la PR de ACO-012 el mismo día). Corrige el mecanismo de ADR-016 P16 y abre una excepción acotada a su D1-A; mantiene D2-A (los clientes conservan el scope) y D4-A (comprobación funcional). Implementación en ACO-012.
 
 Relacionados: ADR-016 (retirada de `offline_access`), ADR-017 (aplicación del perfil de usuario tras la importación), ADR-001 (Keycloak como custodio de la correspondencia email↔UUID); ACO-012 y ACO-015.
 
@@ -40,7 +40,7 @@ Es un cambio de seguridad: decisión conjunta y ADR (Plan de Trabajo §8 y §9).
 
 ## Decisión
 
-1. **Vehículo (D1-A).** Es una corrección de ACO-012, no un ACO nuevo (ADR-016 D3-A). Se amplía `docs/aco/ACO-012.md` (P16 corregido o P18) como primer commit de la PR de implementación. No se toca la matriz del Documento Operativo ni se añade un número de ACO.
+1. **Vehículo (D1-A).** Es una corrección de ACO-012, no un ACO nuevo (ADR-016 D3-A). Se amplía `docs/aco/ACO-012.md` con P18 como primer commit de la PR de implementación. No se toca la matriz del Documento Operativo ni se añade un número de ACO.
 
 2. **Mecanismo (D2-A).** El JSON declara `"defaultRole": {"name": "default-roles-acompas"}` para que el rol por defecto efectivo sea el declarado y no `default-roles-acompas-1`. El importador seguirá añadiendo `offline_access` al rol por defecto; el composite se retira después de la importación con `scripts/apply-default-role.sh` por la Admin API.
 
@@ -51,6 +51,7 @@ Es un cambio de seguridad: decisión conjunta y ADR (Plan de Trabajo §8 y §9).
    - lee el realm, obtiene el nombre del `defaultRole` efectivo y consulta sus composites;
    - si `offline_access` está presente, lo elimina con `DELETE /admin/realms/acompas/roles/{rol}/composites` usando la representación del rol;
    - es idempotente: si ya no está, termina con éxito sin mutar nada;
+   - no admite argumentos ni opciones (incluido `--force`), igual que `scripts/apply-user-profile.sh`;
    - no elimina el rol `offline_access`, no toca ningún otro composite, no cambia `defaultOptionalClientScopes` ni los clientes integrados, y no modifica el resto del realm;
    - solo admite `localhost` o `127.0.0.1`, toma el puerto de `KEYCLOAK_PORT` y las credenciales de administrador de desarrollo de `.env`, y no imprime credenciales ni el contenido de `.env`;
    - no añade dependencias: bash, curl y python3;
@@ -62,11 +63,11 @@ Es un cambio de seguridad: decisión conjunta y ADR (Plan de Trabajo §8 y §9).
    - `uma_authorization`, `view-profile` y `manage-account` siguen presentes;
    - el rol `offline_access` sigue existiendo en el realm.
 
-   No se compara el conjunto exacto de composites, por el mismo motivo que ADR-016 D4-A. La comprobación funcional de AC-14 se ejecuta con un usuario local con TOTP: una petición con `scope=openid offline_access` contra un cliente que ofrezca el scope **no debe devolver un refresh token offline**. Con el composite retirado, Keycloak rechaza la petición con `not_allowed` («Offline tokens not allowed for the user or client») o no emite token offline en el flujo de código; en ningún caso devuelve `typ=Offline`. Un login sin ese scope sigue emitiendo un refresh token normal (`refresh_expires_in=1800`, `typ=Refresh`).
+   No se compara el conjunto exacto de composites, por el mismo motivo que ADR-016 D4-A. La verificación es sobre el **efecto**, no sobre la configuración declarada: `check-realm.sh` comprueba el rol por defecto efectivo y, cuando existan usuarios, AC-14 comprueba el token emitido; que el JSON declare el rol correcto no se considera suficiente. La comprobación funcional de AC-14 se ejecuta con un usuario local con TOTP: una petición con `scope=openid offline_access` contra un cliente que ofrezca el scope **no debe devolver un refresh token offline**. Con el composite retirado, Keycloak rechaza la petición con `not_allowed` («Offline tokens not allowed for the user or client») o no emite token offline en el flujo de código; en ningún caso devuelve `typ=Offline`. Un login sin ese scope sigue emitiendo un refresh token normal (`refresh_expires_in=1800`, `typ=Refresh`).
 
-5. **Orden y reimportación (D5-A).** Tras una importación limpia: `scripts/apply-user-profile.sh` (P17), `scripts/apply-default-role.sh` y `scripts/check-realm.sh`. `infra/keycloak/README.md` y la sección de Keycloak de `README.md` y `README.es.md` documentan ambos pasos como obligatorios y actualizan el procedimiento de reimportación.
+5. **Orden y reimportación (D5-A).** Tras una importación limpia se ejecuta `scripts/apply-realm-config.sh`, que llama en orden a `scripts/apply-user-profile.sh` (P17) y `scripts/apply-default-role.sh`; después, `scripts/check-realm.sh`. Los dos scripts individuales siguen disponibles para ejecutarlos por separado al depurar. `infra/keycloak/README.md` y la sección de Keycloak de `README.md` y `README.es.md` documentan el wrapper como paso obligatorio y actualizan el procedimiento de reimportación.
 
-   El script corrige también un realm vivo sin recrear usuarios. Para partir del JSON y dejar el entorno reproducible se puede recrear el volumen de Keycloak y volver a crear los usuarios locales no versionados (ADR-016 D1-A). Los usuarios siguen siendo sintéticos y no se versionan (ADR-008).
+   El script de rol por defecto corrige también un realm vivo cuyo `defaultRole` efectivo ya sea el rol declarado, sin recrear usuarios. Si el realm se importó antes de fijar `defaultRole` y su rol efectivo es otro (por ejemplo, `default-roles-acompas-1`), ejecutar solo el script retira `offline_access` pero no añade los composites del rol declarado; en ese caso hay que reimportar con el JSON actualizado y volver a crear los usuarios locales no versionados (ADR-016 D1-A). El script no cambia el nombre del `defaultRole` ni añade composites. Los usuarios siguen siendo sintéticos y no se versionan (ADR-008).
 
    La retirada del composite impide emitir **nuevos** refresh tokens offline, pero no revoca los ya emitidos: un token offline existente sigue siendo válido hasta su caducidad. En local/demo se parte de un realm sin usuarios con tokens offline o se recrea el volumen; la revocación de tokens ya emitidos en otros entornos queda fuera de esta decisión.
 
@@ -85,11 +86,11 @@ Es un cambio de seguridad: decisión conjunta y ADR (Plan de Trabajo §8 y §9).
 
 ## Consecuencias
 
-- El realm deja de ser reconstruible solo desde el JSON importado: requiere `scripts/apply-user-profile.sh` y `scripts/apply-default-role.sh`. Es un uso acotado y deliberado de la Admin API, limitado a local/demo, y no reabre el resto de ACO-012 §5.
+- El realm deja de ser reconstruible solo desde el JSON importado: requiere `scripts/apply-realm-config.sh`, que llama a `scripts/apply-user-profile.sh` y `scripts/apply-default-role.sh`. Es un uso acotado y deliberado de la Admin API, limitado a local/demo, y no reabre el resto de ACO-012 §5.
 - `scripts/check-realm.sh` deja de dar el falso positivo: comprueba el rol que Keycloak asigna de verdad.
-- Cualquier importación limpia posterior exige ejecutar los dos scripts y volver a crear los usuarios locales no versionados.
+- Cualquier importación limpia posterior exige ejecutar el wrapper, ejecutar `check-realm.sh` y volver a crear los usuarios locales no versionados.
 - AC-14 se puede cumplir y cerrar; #125 puede actualizarse y #20 cerrarse después.
-- AC-14 de ACO-015 dice «no se ha modificado `default-roles-acompas`». Esa frase se refiere a que ACO-015 no corrige el realm por su cuenta: la retirada del composite es el entregable de ACO-012 (P16/P18) y la ejecuta su script autorizado, no ACO-015. La ficha de ACO-015 no cambia por este ADR.
+- AC-14 de ACO-015 dice «no se ha modificado `default-roles-acompas`». Esa frase se refiere a que ACO-015 no corrige el realm por su cuenta: la retirada del composite es el entregable de ACO-012 (P18) y la ejecuta su script autorizado, no ACO-015. La ficha de ACO-015 no cambia por este ADR.
 - ADR-016 D2-A y D4-A siguen vigentes. Su D1-A queda corregido solo en este punto: el cambio del rol por defecto se aplica por Admin API, no solo por el JSON.
 - No se añaden dependencias ni se modifica la CI. Las pruebas no usan red ni datos reales.
 
@@ -101,14 +102,15 @@ Es un cambio de seguridad: decisión conjunta y ADR (Plan de Trabajo §8 y §9).
 - Desactivar `admin-cli` o la concesión directa de contraseña.
 - Cambios en `acompas-frontend` (ACO-013), en el backend (ACO-014/ACO-015) o en el frontend (ACO-018).
 - La creación de usuarios, la asignación de roles y TOTP (ACO-015).
-- Cualquier otro cambio del realm por Admin API fuera de los dos scripts autorizados.
+- Cualquier otro cambio del realm por Admin API fuera de los scripts autorizados (`apply-user-profile.sh`, `apply-default-role.sh` y el wrapper `apply-realm-config.sh`).
 
 ## Documentos afectados
 
 - `docs/adr/ADR-018-correccion-rol-por-defecto-post-importacion.md` (este ADR)
-- `docs/aco/ACO-012.md` (P16 corregido o P18; excepción a §5)
+- `docs/aco/ACO-012.md` (P18; excepción a §5)
 - `infra/keycloak/import/acompas-realm.json` (`defaultRole`)
 - `scripts/apply-default-role.sh` (nuevo)
+- `scripts/apply-realm-config.sh` (nuevo; llama a los dos scripts)
 - `scripts/check-realm.sh` (rol por defecto efectivo)
 - `infra/keycloak/README.md`
 - `README.md` y `README.es.md` (sección de Keycloak)
