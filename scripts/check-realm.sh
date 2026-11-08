@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Comprueba el Keycloak local de ACOMPAS: el documento de descubrimiento OIDC
 # del realm acompas, el cliente acompas-frontend, los composites del rol por
-# defecto, el perfil de usuario, una petición de autorización hasta el
+# defecto efectivo, el perfil de usuario, una petición de autorización hasta el
 # formulario de login y el rechazo de offline_access (ACO-012, ACO-013).
 #
 # Uso: scripts/check-realm.sh
@@ -183,10 +183,56 @@ if grep -Eq '"secret"[[:space:]]*:[[:space:]]*"[^"]+"' <<<"${clients_body}"; the
   exit 1
 fi
 
-# Rol por defecto del realm: sin offline_access y con los composites que
-# conserva. Se consulta el realm en marcha, no solo el JSON (ADR-016, P16).
-default_role="default-roles-acompas"
-composites_url="${base_url}/admin/realms/acompas/roles/${default_role}/composites"
+# Rol por defecto del realm: se consulta el defaultRole efectivo y se comprueba
+# que no herede offline_access y conserve los composites declarados. No se
+# compara el conjunto exacto (ADR-016 P16; ADR-018 P18).
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "${tmp_dir}"' EXIT
+
+realm_url="${base_url}/admin/realms/acompas"
+realm_status="$(curl -sS -o "${tmp_dir}/realm.json" -w '%{http_code}' --max-time 5 \
+  -H "Authorization: Bearer ${access_token}" "${realm_url}" 2>/dev/null || true)"
+if [[ "${realm_status}" == "000" || -z "${realm_status}" ]]; then
+  echo "ERROR: Keycloak no responde al consultar el realm acompas en ${base_url}" >&2
+  exit 1
+fi
+if [[ "${realm_status}" != "200" ]]; then
+  echo "ERROR: no se pudo consultar el realm acompas (HTTP ${realm_status})" >&2
+  exit 1
+fi
+
+if ! default_role="$(python3 - "${tmp_dir}/realm.json" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    with open(path, encoding="utf-8") as source:
+        realm = json.load(source)
+except (OSError, json.JSONDecodeError) as exc:
+    print(f"ERROR: no se pudo leer el realm: {exc}", file=sys.stderr)
+    sys.exit(1)
+
+default_role = realm.get("defaultRole")
+if not isinstance(default_role, dict) or not isinstance(default_role.get("name"), str) or not default_role["name"]:
+    print("ERROR: el realm no declara un defaultRole con nombre", file=sys.stderr)
+    sys.exit(1)
+
+print(default_role["name"])
+PY
+)"; then
+  echo "ERROR: el realm acompas no tiene un rol por defecto efectivo (ACO-012 P18; ADR-018)" >&2
+  exit 1
+fi
+
+encoded_role="$(python3 - "${default_role}" <<'PY'
+import sys
+import urllib.parse
+
+print(urllib.parse.quote(sys.argv[1], safe=""))
+PY
+)"
+composites_url="${base_url}/admin/realms/acompas/roles/${encoded_role}/composites"
 if ! composites_body="$(curl -fsS --max-time 5 \
   -H "Authorization: Bearer ${access_token}" "${composites_url}")"; then
   echo "ERROR: no se pudieron consultar los composites de ${default_role} por la Admin API" >&2
@@ -227,8 +273,6 @@ fi
 
 # Perfil de usuario del realm: el email solo lo puede editar el administrador
 # (ACO-012 P17; ADR-017). Se consulta el realm en marcha, no el JSON.
-tmp_dir="$(mktemp -d)"
-trap 'rm -rf "${tmp_dir}"' EXIT
 profile_url="${base_url}/admin/realms/acompas/users/profile"
 profile_status="$(curl -sS -o "${tmp_dir}/profile.json" -w '%{http_code}' --max-time 5 \
   -H "Authorization: Bearer ${access_token}" "${profile_url}" 2>/dev/null || true)"
@@ -316,4 +360,4 @@ if ! grep -Eiq '^location:.*error=invalid_scope' <<<"${offline_headers}"; then
   exit 1
 fi
 
-echo "OK: realm acompas, cliente ${client_id}, rol por defecto, perfil de usuario, autorización y offline_access verificados en ${base_url}"
+echo "OK: realm acompas, cliente ${client_id}, rol por defecto efectivo, perfil de usuario, autorización y offline_access verificados en ${base_url}"

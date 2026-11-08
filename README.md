@@ -150,20 +150,22 @@ port is only published on `127.0.0.1`.
   brute-force protection and reimport procedure are documented in
   `infra/keycloak/README.md`.
 
-Once `docker compose ps` shows `keycloak` as `healthy`, apply the user
-profile after a clean import and check that Keycloak responds with:
+Once `docker compose ps` shows `keycloak` as `healthy`, apply the
+post-import configuration after a clean import and check that Keycloak
+responds with:
 
 ```bash
-scripts/apply-user-profile.sh   # required after a clean import
+scripts/apply-realm-config.sh   # required after a clean import
 scripts/check-keycloak.sh
 scripts/check-realm.sh
 ```
 
-The first script is idempotent and restricts email editing to the
-administrator; a clean reimport deletes the profile and the step must be
-repeated. The second script checks the `master` realm; the third checks the
-`acompas` realm. If you change `KEYCLOAK_PORT` in `.env`, the scripts
-read it from there.
+The first script is idempotent: it applies the user profile (email editing
+restricted to the administrator) and removes `offline_access` from the
+effective default role. A clean reimport deletes both changes and the step
+must be repeated. The second script checks the `master` realm; the third
+checks the `acompas` realm, including its effective default role. If you
+change `KEYCLOAK_PORT` in `.env`, the scripts read it from there.
 
 Keycloak data is stored in the `acompas_keycloak_data` volume and is preserved
 across restarts. To start from scratch:
@@ -174,9 +176,10 @@ docker volume rm acompas_keycloak_data
 ```
 
 The volume prefix is the project directory name (`acompas` by
-default). After recreating the volume, run `scripts/apply-user-profile.sh`
-before `scripts/check-realm.sh`; the user profile is not part of the imported
-JSON and a clean reimport deletes it.
+default). After recreating the volume, run `scripts/apply-realm-config.sh`
+before `scripts/check-realm.sh`; the user profile and the removal of
+`offline_access` from the effective default role are not part of the imported
+JSON and a clean reimport deletes both changes.
 
 JSON realms placed in `infra/keycloak/import/` are imported on startup.
 The ACOMPAS realm is defined in
