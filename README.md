@@ -226,7 +226,7 @@ The manual check uses local, unversioned users only: `paciente@example.com`
 on the list and `paciente-sintetico@example.com` outside it, both with role
 `paciente` and TOTP and without `offline_access`. `scripts/check-realm.sh`
 must confirm that only the administrator can edit a user's email; if it
-fails, run `scripts/apply-user-profile.sh` and repeat it. Once the users
+fails, run `scripts/apply-realm-config.sh` and repeat it. Once the users
 exist, check by hand that the authorized user cannot edit their email in the
 account console and that an `offline_access` request against a client that
 offers the scope returns no offline token.

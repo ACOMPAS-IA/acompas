@@ -230,7 +230,7 @@ La comprobación manual usa solo usuarios locales no versionados:
 `paciente@example.com` en la lista y `paciente-sintetico@example.com` fuera de
 ella, ambos con rol `paciente` y TOTP y sin `offline_access`.
 `scripts/check-realm.sh` debe confirmar que solo el administrador puede editar
-el email de un usuario; si falla, ejecuta `scripts/apply-user-profile.sh` y
+el email de un usuario; si falla, ejecuta `scripts/apply-realm-config.sh` y
 repítelo. Con los usuarios creados, comprueba a mano que el autorizado no puede
 editar su email en la consola de cuenta y que una petición con
 `offline_access` contra un cliente que ofrezca el scope no devuelve un token
