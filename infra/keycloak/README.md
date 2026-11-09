@@ -40,8 +40,15 @@ usuario (ACO-015).
 El rol por defecto `default-roles-acompas` se declara en el JSON como compuesto
 por `uma_authorization` y por los roles de cliente `view-profile` y
 `manage-account` del cliente `account`, sin `offline_access` (ACO-012 P16;
-ADR-016). El rol `offline_access` sigue existiendo en el realm, pero ningún
-usuario lo hereda: solo se obtiene por asignación expresa.
+ADR-016). El JSON declara además `defaultRole` para que el rol por defecto
+efectivo sea `default-roles-acompas` y no el `default-roles-acompas-1` que crea
+el importador cuando falta ese campo (ACO-012 P18; ADR-018).
+
+El importador de Keycloak 26.8.0 añade `offline_access` al rol por defecto
+después de importar el JSON, así que el JSON no basta. Tras la importación hay
+que ejecutar `scripts/apply-realm-config.sh`, que retira ese composite del rol
+efectivo por la Admin API. El rol `offline_access` sigue existiendo en el realm,
+pero ningún usuario lo hereda: solo se obtiene por asignación expresa.
 
 ### Perfil de usuario (email)
 
@@ -67,7 +74,9 @@ no acepta otro destino ni una opción para forzarlo.
 
 Una reimportación limpia borra el perfil y hay que volver a ejecutar el script.
 `scripts/check-realm.sh` falla si `email.permissions.edit` no es exactamente
-`["admin"]`.
+`["admin"]`. El procedimiento completo de post-importación, que incluye este
+paso y el del rol por defecto, es `scripts/apply-realm-config.sh` (ver
+«Importación y reimportación»).
 
 ### 2FA
 
@@ -168,22 +177,41 @@ El prefijo del volumen es el nombre del directorio del proyecto (`acompas` por
 defecto). Borrar el volumen elimina también los usuarios y los secretos TOTP
 que se hayan creado a mano; en desarrollo no contiene datos reales.
 
-Este procedimiento es el que aplica los cambios del JSON, como la retirada de
-`offline_access` del rol por defecto (ACO-012 P16; ADR-016). La comprobación
-funcional de que una petición con `scope=openid offline_access` no devuelve un
-refresh token offline requiere un usuario con TOTP y se ejecuta en ACO-015.
+Este procedimiento aplica los cambios del JSON, pero no basta para el rol por
+defecto: el importador añade `offline_access` después de importar (ACO-012 P16 y
+P18; ADR-016 y ADR-018). La comprobación funcional de que una petición con
+`scope=openid offline_access` no devuelve un refresh token offline requiere un
+usuario con TOTP y se ejecuta en ACO-015.
 
-El perfil de usuario no se reconstruye desde el JSON. Tras una importación
-limpia hay que volver a aplicarlo antes de comprobar el realm:
+El perfil de usuario no se reconstruye desde el JSON. Tampoco la retirada de
+`offline_access` del rol por defecto, porque el importador lo añade después de
+importar. Tras una importación limpia hay que aplicar los dos pasos, en este
+orden, y comprobar el realm:
 
 ```bash
-scripts/apply-user-profile.sh
+scripts/apply-realm-config.sh
 scripts/check-realm.sh
 ```
 
-Sin ese paso, `check-realm.sh` falla porque `email.permissions.edit` vuelve a
-`["admin","user"]`. Una reimportación limpia borra el perfil y exige repetir el
-script (ACO-012 P17; ADR-017).
+`scripts/apply-realm-config.sh` llama en orden a
+`scripts/apply-user-profile.sh` (P17) y a `scripts/apply-default-role.sh` (P18),
+no admite argumentos ni opciones y se detiene al primer fallo. No incluye la
+comprobación: por eso `scripts/check-realm.sh` se ejecuta aparte. Los dos
+scripts individuales siguen disponibles para ejecutarlos por separado al
+depurar.
+
+Sin estos pasos, `check-realm.sh` falla: `email.permissions.edit` vuelve a
+`["admin","user"]` y el rol por defecto efectivo sigue heredando
+`offline_access`. Una reimportación limpia borra el perfil y exige repetir el
+wrapper (ACO-012 P17 y P18; ADR-017 y ADR-018).
+
+`scripts/apply-default-role.sh` solo retira el composite `offline_access` del
+rol por defecto efectivo: no elimina el rol `offline_access`, no toca clientes,
+scopes ni otros composites, no cambia el nombre del rol y es idempotente. Si el
+realm se importó antes de fijar `defaultRole`, su rol efectivo puede ser
+`default-roles-acompas-1` y faltarle `uma_authorization`; en ese caso hay que
+reimportar desde un volumen limpio con el JSON actualizado, no basta con
+ejecutar el script.
 
 ## Comprobación
 
@@ -200,7 +228,8 @@ El script comprueba:
   sección 8: tipo, flujo, PKCE, nombre, estado, `rootUrl`, `baseUrl`,
   redirección y origen exactos, scopes por defecto exactos sin adicionales,
   scopes opcionales vacíos, `fullScopeAllowed` y ausencia de secreto;
-- los composites de `default-roles-acompas` por la Admin API: sin
+- los composites del rol por defecto **efectivo** (`GET /admin/realms/acompas`
+  → `defaultRole.name`, no un nombre fijo) por la Admin API: sin
   `offline_access` y con `uma_authorization`, `view-profile` y
   `manage-account`, sin exigir igualdad exacta del conjunto;
 - que el rol `offline_access` sigue existiendo en el realm;
@@ -215,9 +244,9 @@ El script comprueba:
 El script obtiene un token de administrador del realm `master` con
 `KEYCLOAK_BOOTSTRAP_ADMIN_USER` y `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD`, del
 entorno o de `.env` (por defecto, los valores de desarrollo de Compose). No
-imprime el token ni la contraseña. `scripts/apply-user-profile.sh` usa las
-mismas credenciales y tampoco las imprime. No se añade a la CI: la CI actual no
-levanta Keycloak.
+imprime el token ni la contraseña. `scripts/apply-user-profile.sh` y
+`scripts/apply-default-role.sh` usan las mismas credenciales y tampoco las
+imprimen. No se añade a la CI: la CI actual no levanta Keycloak.
 
 `scripts/check-keycloak.sh` sigue comprobando el realm `master`.
 

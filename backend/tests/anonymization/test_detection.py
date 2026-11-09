@@ -10,6 +10,7 @@ from app.services.anonymization.analyzer import (
     REPLACED_PREDEFINED_RECOGNIZERS,
     build_analyzer,
 )
+from app.services.anonymization.config import load_settings
 from app.services.anonymization.detection import (
     PERSON_TYPES,
     Detection,
@@ -24,7 +25,7 @@ from app.services.anonymization.recognizers import (
 # Salvo los de asignación de rol y DEFAULT_ENTITIES, usan el modelo MEDDOCAN,
 # como los tests de ACO-021.
 
-FINDING_THRESHOLD = 0.35  # Umbral de hallazgo inicial (ADR-013).
+FINDING_THRESHOLD = load_settings().finding_threshold
 
 
 @pytest.fixture(scope="module")

@@ -153,20 +153,22 @@ Su puerto solo se publica en `127.0.0.1`.
   contraseñas, protección contra fuerza bruta y procedimiento de
   reimportación están documentados en `infra/keycloak/README.md`.
 
-Cuando `docker compose ps` muestre `keycloak` como `healthy`, aplica el
-perfil de usuario si acabas de reimportar el realm y comprueba que responde
-con:
+Cuando `docker compose ps` muestre `keycloak` como `healthy`, aplica la
+configuración post-importación si acabas de reimportar el realm y comprueba
+que responde con:
 
 ```bash
-scripts/apply-user-profile.sh   # obligatorio tras una importación limpia
+scripts/apply-realm-config.sh   # obligatorio tras una importación limpia
 scripts/check-keycloak.sh
 scripts/check-realm.sh
 ```
 
-El primer script es idempotente y restringe la edición del email al
-administrador; una reimportación limpia borra el perfil y hay que repetir el
-paso. El segundo comprueba el realm `master`; el tercero, el realm `acompas`.
-Si cambias `KEYCLOAK_PORT` en `.env`, los scripts lo toman de ahí.
+El primer script es idempotente: aplica el perfil de usuario (edición del email
+restringida al administrador) y retira `offline_access` del rol por defecto
+efectivo. Una reimportación limpia borra ambos cambios y hay que repetir el
+paso. El segundo comprueba el realm `master`; el tercero, el realm `acompas`,
+incluido su rol por defecto efectivo. Si cambias `KEYCLOAK_PORT` en `.env`, los
+scripts lo toman de ahí.
 
 Los datos de Keycloak se guardan en el volumen `acompas_keycloak_data` y se
 conservan entre arranques. Para empezar de cero:
@@ -178,8 +180,9 @@ docker volume rm acompas_keycloak_data
 
 El prefijo del volumen es el nombre del directorio del proyecto
 (`acompas` por defecto). Tras recrear el volumen, ejecuta
-`scripts/apply-user-profile.sh` antes de `scripts/check-realm.sh`; el perfil de
-usuario no forma parte del JSON importado y una reimportación limpia lo borra.
+`scripts/apply-realm-config.sh` antes de `scripts/check-realm.sh`; el perfil de
+usuario y la retirada de `offline_access` del rol por defecto efectivo no
+forman parte del JSON importado y una reimportación limpia borra ambos cambios.
 
 Los realms en JSON que se coloquen en `infra/keycloak/import/` se
 importan al arrancar. El realm de ACOMPAS está definido en

@@ -11,12 +11,14 @@ from app.services.anonymization import AnonymizationService
 from app.services.anonymization import confidence as confidence_module
 from app.services.anonymization.analyzer import build_analyzer
 from app.services.anonymization.config import load_settings
+from app.services.anonymization.detection import Detection
 from app.services.anonymization.models import (
     REASON_EMPTY_TEXT,
     REASON_LOW_CONFIDENCE,
     AnonymizationStatus,
 )
-from tests.synthetic_data import load_document, load_manifest
+from app.services.anonymization.policy import PERSON_TYPES, POLICY, is_birth_date
+from tests.synthetic_data import count_occurrences, load_document, load_manifest
 
 # Categorías del manifiesto que ADR-013 garantiza. Las demás no se comprueban:
 # hospital y territorio se anonimizan pero no cuentan para la confianza, y
@@ -75,6 +77,91 @@ def assert_no_guaranteed_leak(document_name, anonymized_text):
             assert normalize(value) not in normalized_text, (category, value)
         elif category == "DATE_TIME" and value == BIRTH_DATE:
             assert normalize(value) not in normalized_text, (category, value)
+
+
+# Categorías que ADR-013 garantiza, derivadas de la política de ACO-023.
+# DATE_TIME no está aquí: solo la fecha de nacimiento es garantizada.
+GUARANTEED_CATEGORIES = {
+    entity_type for entity_type, policy in POLICY.items() if policy.guaranteed
+}
+
+# Fragmentos clínicos que T-34 exige conservar. El corpus no contiene
+# profesión ni país; esa parte la cubre el test unitario.
+CLINICAL_CONTEXT = {
+    "informe_patologia_01.txt": (
+        "68 años",
+        "Mujer",
+        "08/09/2026",
+        "12/09/2026",
+        "adenocarcinoma",
+        "CK7",
+        "Ki-67",
+        "ADENOCARCINOMA DUCTAL",
+    ),
+    "carta_oncologia_01.txt": (
+        "68 años",
+        "mujer",
+        "22 de septiembre de 2026",
+        "03/09/2026",
+        "05/09/2026",
+        "08/09/2026",
+        "12/09/2026",
+        "15/09/2026",
+        "19/09/2026",
+        "25/09/2026",
+        "29/09/2026",
+        "adenocarcinoma",
+        "CA 19-9",
+        "mFOLFIRINOX",
+    ),
+}
+
+
+def manifest_entities(document_name):
+    document = next(
+        item for item in load_manifest()["documents"] if item["file"] == document_name
+    )
+    return document["entities"]
+
+
+def guaranteed_manifest_entities(document_name):
+    """Entidades del manifiesto que ADR-013 garantiza para T-31.
+
+    El manifiesto mezcla la fecha de nacimiento con las fechas clínicas dentro
+    de DATE_TIME. Se aplica la regla de ACO-023 P6 sobre el documento original
+    para decidir cuáles cuentan.
+    """
+    original = load_document(document_name)
+    for entity in manifest_entities(document_name):
+        category = entity["category"]
+        if category in GUARANTEED_CATEGORIES:
+            yield entity
+        elif category == "DATE_TIME":
+            start = original.index(entity["text"])
+            detection = Detection(
+                "DATE_TIME", start, start + len(entity["text"]), 1.0
+            )
+            if is_birth_date(original, detection):
+                yield entity
+
+
+def assert_manifest_entity_absent(entity, anonymized_text):
+    category = entity["category"]
+    value = entity["text"]
+    if category in PERSON_TYPES:
+        normalized_text = normalize(anonymized_text)
+        for token in re.findall(r"[^\W\d_]{4,}", value):
+            assert not contains_word(normalized_text, normalize(token)), (
+                category,
+                value,
+                token,
+            )
+        assert count_occurrences(value, anonymized_text) == 0, (category, value)
+        return
+
+    assert count_occurrences(value, anonymized_text) == 0, (category, value)
+    if category in IDENTIFIER_CATEGORIES:
+        assert digits(value) not in digits(anonymized_text), (category, value)
 
 
 class FakeAnalyzer:
@@ -170,6 +257,40 @@ def test_context_types_do_not_change_the_text_or_the_confidence():
     assert output.entities_count == {}
 
 
+def test_clinical_context_is_preserved():
+    # T-34: edad, sexo, profesión, país, fechas no de nacimiento y términos
+    # clínicos que el modelo puede confundir con datos personales. El corpus
+    # no contiene profesión ni país; esta parte se cubre aquí.
+    text = (
+        "Edad: 68 años. Sexo: Mujer. Profesión: ama de casa. País: España. "
+        "Fecha de la consulta: 22/09/2026. "
+        "Diagnóstico: adenocarcinoma ductal. "
+        "Marcador CA 19-9: 450 U/mL. Índice Ki-67: 20 %. "
+        "Tratamiento: mFOLFIRINOX."
+    )
+    service, _ = service_with(
+        text,
+        [
+            ("AGE", text, "68 años"),
+            ("SEXO", text, "Mujer"),
+            ("PROFESION", text, "ama de casa"),
+            ("PAIS", text, "España"),
+            ("DATE_TIME", text, "22/09/2026"),
+            ("PERSON", text, "adenocarcinoma"),
+            ("PERSON", text, "CA 19-9"),
+            ("PERSON", text, "Ki-67"),
+            ("PERSON", text, "mFOLFIRINOX"),
+        ],
+    )
+
+    output = service.anonymize(text)
+
+    assert output.status == AnonymizationStatus.VALIDADO
+    assert output.confidence == 1.0
+    assert output.anonymized_text == text
+    assert output.entities_count == {}
+
+
 def test_birth_date_is_replaced_and_clinical_dates_are_kept():
     text = (
         "Fecha de nacimiento: 14/03/1958. "
@@ -242,6 +363,46 @@ def test_findings_below_the_finding_threshold_do_not_affect_confidence():
     assert output.entities_count == {"ES_DNI": 1}
 
 
+def test_finding_below_threshold_is_discarded_by_the_service():
+    # T-33: el ruido por debajo del umbral de hallazgo no se anonimiza. Se usa
+    # HOSPITAL (sin garantía) para que la puntuación baja no retenga el
+    # documento y el efecto se vea en el texto.
+    settings = load_settings()
+    score = max(0.0, settings.finding_threshold - 0.01)
+    text = "Hospital Universitario Monteluz."
+    service, _ = service_with(
+        text,
+        [("HOSPITAL", text, "Hospital Universitario Monteluz", score)],
+        settings=settings,
+    )
+
+    output = service.anonymize(text)
+
+    assert output.status == AnonymizationStatus.VALIDADO
+    assert output.confidence == 1.0
+    assert output.anonymized_text == text
+    assert output.entities_count == {}
+
+
+def test_finding_above_threshold_is_anonymized_without_a_high_score():
+    # T-33: por encima del umbral se anonimiza aunque la puntuación no sea alta.
+    settings = load_settings()
+    score = settings.finding_threshold + 0.01
+    text = "Hospital Universitario Monteluz."
+    service, _ = service_with(
+        text,
+        [("HOSPITAL", text, "Hospital Universitario Monteluz", score)],
+        settings=settings,
+    )
+
+    output = service.anonymize(text)
+
+    assert output.status == AnonymizationStatus.VALIDADO
+    assert output.confidence == 1.0
+    assert output.anonymized_text == "[HOSPITAL]."
+    assert output.entities_count == {"HOSPITAL": 1}
+
+
 def test_service_does_not_persist_the_original_on_retention():
     settings = load_settings()
     score = (settings.finding_threshold + settings.document_threshold) / 2
@@ -294,6 +455,53 @@ def test_synthetic_corpus_calibration(model_service, name, expected, caplog):
         assert output.confidence < settings.document_threshold
         assert output.anonymized_text is None
         assert output.reason == REASON_LOW_CONFIDENCE
+
+
+@pytest.mark.parametrize("name", sorted(CLINICAL_CONTEXT))
+def test_validated_corpus_keeps_clinical_context(model_service, name):
+    # T-34 sobre el corpus sintético. El corpus no contiene profesión ni país;
+    # esa parte la cubre test_clinical_context_is_preserved.
+    output = model_service.anonymize(load_document(name))
+
+    assert output.status == AnonymizationStatus.VALIDADO
+    assert output.anonymized_text is not None
+    anonymized = output.anonymized_text
+    assert "14/03/1958" not in anonymized
+    assert "[FECHA_NACIMIENTO]" in anonymized
+
+    for value in CLINICAL_CONTEXT[name]:
+        assert value.casefold() in anonymized.casefold(), (name, value)
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("informe_patologia_01.txt", AnonymizationStatus.VALIDADO),
+        ("analitica_01.txt", AnonymizationStatus.RETENIDO),
+        ("carta_oncologia_01.txt", AnonymizationStatus.VALIDADO),
+    ],
+)
+def test_manifest_guaranteed_entities_do_not_survive(
+    model_service, name, expected
+):
+    # T-31: ninguna entidad del manifiesto de las categorías garantizadas
+    # sobrevive. Las categorías sin garantía y las fechas clínicas no cuentan.
+    output = model_service.anonymize(load_document(name))
+
+    assert output.status == expected
+    if expected == AnonymizationStatus.RETENIDO:
+        assert output.anonymized_text is None
+        assert output.entities_count == {}
+        dumped = str(output.model_dump())
+        for entity in manifest_entities(name):
+            assert entity["text"] not in dumped, entity["text"]
+        return
+
+    assert output.anonymized_text is not None
+    checked = list(guaranteed_manifest_entities(name))
+    assert checked
+    for entity in checked:
+        assert_manifest_entity_absent(entity, output.anonymized_text)
 
 
 @pytest.mark.parametrize(
