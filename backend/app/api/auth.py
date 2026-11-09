@@ -1,7 +1,8 @@
-"""Dependencia de autenticación del API (ACO-014).
+"""Dependencia de autenticación del API (ACO-014 y ACO-015).
 
-Traduce los errores de la validación a las respuestas de la ficha (sección
-8.3). El cuerpo nunca incluye el token ni el motivo concreto del rechazo.
+Traduce los errores de la validación a las respuestas de las fichas (ACO-014,
+sección 8.3; ACO-015, sección 8). El cuerpo nunca incluye el token, el email,
+el ``sub`` ni el motivo concreto del rechazo.
 """
 
 from functools import lru_cache
@@ -16,6 +17,8 @@ from app.services.auth import (
     AuthSettings,
     JWKSClient,
     Principal,
+    is_email_authorized,
+    load_authorized_emails,
     load_settings,
     validate_token,
 )
@@ -70,5 +73,10 @@ def get_current_user(
 
     if not principal.roles:
         # Autenticado, pero sin ninguno de los roles de aplicación (P4).
+        raise _http_error(AuthErrorCode.FORBIDDEN)
+
+    # La lista se lee en cada petición: retirar un email corta el acceso en la
+    # petición siguiente. Ausente o vacía se cierra por defecto (ACO-015).
+    if not is_email_authorized(principal.email, load_authorized_emails()):
         raise _http_error(AuthErrorCode.FORBIDDEN)
     return principal
