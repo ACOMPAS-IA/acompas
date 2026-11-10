@@ -1,11 +1,24 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { AnonymizationResult } from '../api/anonymization.ts'
-import { ValidationResultPage } from './ValidationResultPage.tsx'
+import {
+  MAX_CONVERSATION_DOCUMENT_CHARS,
+  ValidationResultPage,
+  canOpenConversation,
+} from './ValidationResultPage.tsx'
 
 // Texto inventado con etiquetas de anonimización (ACO-032, sección 9).
 const ANONYMIZED = 'Paciente: [PACIENTE]. DNI: [DNI].'
 const ORIGINAL = 'Paciente: Juan Pérez. DNI: 12345678Z.'
+
+const CONTINUE_LABEL = 'Continuar a la conversación'
+
+const TOO_LONG_TEXT =
+  'El documento es demasiado largo una vez anonimizado y no se puede usar en la conversación. Prueba con un documento más corto.'
+
+const MAX_TEXT = 'a'.repeat(MAX_CONVERSATION_DOCUMENT_CHARS)
+const OVER_LIMIT_TEXT = 'a'.repeat(MAX_CONVERSATION_DOCUMENT_CHARS + 1)
+const MAX_EMOJIS = '😀'.repeat(MAX_CONVERSATION_DOCUMENT_CHARS)
 
 const VALID: AnonymizationResult = {
   status: 'validado',
@@ -90,6 +103,50 @@ describe('ValidationResultPage', () => {
     ).toBeNull()
   })
 
+  it('ofrece continuar con 30 000 puntos de código', () => {
+    renderPage({ ...VALID, anonymized_text: MAX_TEXT })
+
+    expect(screen.getByRole('button', { name: CONTINUE_LABEL })).toBeDefined()
+    expect(screen.queryByText(TOO_LONG_TEXT)).toBeNull()
+  })
+
+  it('avisa y no ofrece continuar con 30 001 puntos de código', () => {
+    const { container } = renderPage({
+      ...VALID,
+      anonymized_text: OVER_LIMIT_TEXT,
+    })
+
+    expect(screen.getByText(TOO_LONG_TEXT)).toBeDefined()
+    expect(screen.queryByRole('button', { name: CONTINUE_LABEL })).toBeNull()
+
+    // El resto del resultado sigue visible (ACO-032, sección 8.4).
+    expect(
+      screen.getByRole('heading', { name: 'Documento validado' }),
+    ).toBeDefined()
+    expect(screen.getByText('Confianza del documento: 93,0 %')).toBeDefined()
+    expect(screen.getAllByRole('listitem')).toHaveLength(2)
+    expect(
+      container.querySelector('.result__anonymized')?.textContent,
+    ).toBe(OVER_LIMIT_TEXT)
+  })
+
+  it('cuenta puntos de código y permite 30 000 emojis', () => {
+    expect(MAX_EMOJIS.length).toBe(MAX_CONVERSATION_DOCUMENT_CHARS * 2)
+    renderPage({ ...VALID, anonymized_text: MAX_EMOJIS })
+
+    expect(screen.getByRole('button', { name: CONTINUE_LABEL })).toBeDefined()
+    expect(screen.queryByText(TOO_LONG_TEXT)).toBeNull()
+  })
+
+  it('no muestra el aviso de longitud en retenido ni en ilegible', () => {
+    const { unmount } = renderPage(RETAINED)
+    expect(screen.queryByText(TOO_LONG_TEXT)).toBeNull()
+    unmount()
+
+    renderPage(ILLEGIBLE)
+    expect(screen.queryByText(TOO_LONG_TEXT)).toBeNull()
+  })
+
   it('muestra el aviso de retenido sin texto, entidades ni confianza', () => {
     const { onRestart } = renderPage(RETAINED)
 
@@ -142,5 +199,33 @@ describe('ValidationResultPage', () => {
 
     renderPage(ILLEGIBLE)
     expect(screen.queryByText(ORIGINAL)).toBeNull()
+  })
+})
+
+describe('canOpenConversation', () => {
+  it('fija el límite de conversación en 30 000 caracteres', () => {
+    expect(MAX_CONVERSATION_DOCUMENT_CHARS).toBe(30_000)
+  })
+
+  it('devuelve true con 30 000 puntos de código y false con 30 001', () => {
+    expect(
+      canOpenConversation({ ...VALID, anonymized_text: MAX_TEXT }),
+    ).toBe(true)
+    expect(
+      canOpenConversation({ ...VALID, anonymized_text: OVER_LIMIT_TEXT }),
+    ).toBe(false)
+  })
+
+  it('cuenta puntos de código y no unidades UTF-16', () => {
+    expect(
+      canOpenConversation({ ...VALID, anonymized_text: MAX_EMOJIS }),
+    ).toBe(true)
+  })
+
+  it('devuelve false sin resultado, sin texto o con un estado no validado', () => {
+    expect(canOpenConversation(null)).toBe(false)
+    expect(canOpenConversation({ ...VALID, anonymized_text: null })).toBe(false)
+    expect(canOpenConversation(RETAINED)).toBe(false)
+    expect(canOpenConversation(ILLEGIBLE)).toBe(false)
   })
 })
