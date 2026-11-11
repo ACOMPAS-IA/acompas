@@ -5,6 +5,7 @@ import {
   MAX_CONVERSATION_DOCUMENT_CHARS,
   ValidationResultPage,
   canOpenConversation,
+  replacedDataLabels,
 } from './ValidationResultPage.tsx'
 
 // Texto inventado con etiquetas de anonimización (ACO-032, sección 9).
@@ -12,6 +13,12 @@ const ANONYMIZED = 'Paciente: [PACIENTE]. DNI: [DNI].'
 const ORIGINAL = 'Paciente: Juan Pérez. DNI: 12345678Z.'
 
 const CONTINUE_LABEL = 'Continuar a la conversación'
+
+const REPLACED_LEAD = 'Hemos sustituido los datos que te identifican:'
+const NOTHING_REPLACED = 'No se han detectado datos que te identifiquen.'
+
+const LABEL_NOTICE = /Los corchetes son una ayuda para leer el texto/
+const OVER_NOTICE = /También puede pasar lo contrario/
 
 const TOO_LONG_TEXT =
   'El documento es demasiado largo una vez anonimizado y no se puede usar en la conversación. Prueba con un documento más corto.'
@@ -59,48 +66,64 @@ function renderPage(result: AnonymizationResult) {
   return { ...view, onContinue, onRestart }
 }
 
+function replacedItems(): (string | null)[] {
+  return screen.getAllByRole('listitem').map((item) => item.textContent)
+}
+
 describe('ValidationResultPage', () => {
-  it('muestra confianza, entidades y texto anonimizado en validado', () => {
-    const { container } = renderPage(VALID)
+  it('muestra los datos sustituidos en lenguaje natural y el texto anonimizado', () => {
+    const { container, onContinue } = renderPage(VALID)
 
     expect(screen.getByRole('heading', { name: 'Documento validado' })).toBeDefined()
-    expect(screen.getByText('Confianza del documento: 93,0 %')).toBeDefined()
-    const entities = screen.getAllByRole('listitem').map((item) => item.textContent)
-    expect(entities).toEqual(['ES_DNI: 1', 'PERSON: 2'])
+    expect(screen.getByText(REPLACED_LEAD)).toBeDefined()
+    // Orden por importancia, no alfabético por el código interno.
+    expect(replacedItems()).toEqual(['tu DNI', 'nombres de personas'])
     expect(screen.getByText(ANONYMIZED)).toBeDefined()
 
     const anonymized = container.querySelector('.result__anonymized')
     expect(anonymized?.tagName).toBe('PRE')
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Continuar a la conversación' }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: CONTINUE_LABEL }))
+    expect(onContinue).toHaveBeenCalledTimes(1)
     expect(screen.queryByRole('button', { name: 'Probar con otro documento' })).toBeNull()
     expect(container.querySelector('main, header, nav, footer')).toBeNull()
   })
 
-  it('muestra un aviso si no hay entidades o confianza', () => {
-    renderPage({
-      ...VALID,
-      confidence: null,
-      entities_count: {},
-    })
+  it('no muestra la confianza ni los tipos internos en ningún sitio', () => {
+    const { container } = renderPage(VALID)
 
-    expect(screen.getByText('Confianza no disponible.')).toBeDefined()
+    expect(screen.queryByText(/Confianza/)).toBeNull()
+    expect(screen.queryByText(/Entidades detectadas/)).toBeNull()
+    expect(screen.queryByText(/ES_DNI|DATE_TIME|PERSONAL_SANITARIO/)).toBeNull()
+    // Tampoco escondidos tras un desplegable.
+    expect(container.querySelector('details')).toBeNull()
+  })
+
+  it('da siempre los dos avisos sobre los límites de la anonimización', () => {
+    renderPage(VALID)
+
+    expect(screen.getByText(LABEL_NOTICE)).toBeDefined()
+    expect(screen.getByText(OVER_NOTICE)).toBeDefined()
+  })
+
+  it('avisa cuando no se ha sustituido ningún dato', () => {
+    renderPage({ ...VALID, entities_count: {} })
+
+    expect(screen.getByText(NOTHING_REPLACED)).toBeDefined()
+    expect(screen.queryByText(REPLACED_LEAD)).toBeNull()
+    expect(screen.queryByRole('listitem')).toBeNull()
     expect(
-      screen.getByText('No se han detectado entidades que anonimizar.'),
-    ).toBeDefined()
-    expect(
-      screen.getByRole('button', { name: 'Continuar a la conversación' }),
+      screen.getByRole('button', { name: CONTINUE_LABEL }),
     ).toBeDefined()
   })
 
-  it('no ofrece continuar si el texto anonimizado es nulo', () => {
-    renderPage({ ...VALID, anonymized_text: null })
+  it('agrupa un tipo desconocido como otros datos identificativos', () => {
+    renderPage({
+      ...VALID,
+      entities_count: { ES_DNI: 1, TIPO_NUEVO: 2 },
+    })
 
-    expect(
-      screen.queryByRole('button', { name: 'Continuar a la conversación' }),
-    ).toBeNull()
+    expect(replacedItems()).toEqual(['tu DNI', 'otros datos identificativos'])
   })
 
   it('ofrece continuar con 30 000 puntos de código', () => {
@@ -123,8 +146,7 @@ describe('ValidationResultPage', () => {
     expect(
       screen.getByRole('heading', { name: 'Documento validado' }),
     ).toBeDefined()
-    expect(screen.getByText('Confianza del documento: 93,0 %')).toBeDefined()
-    expect(screen.getAllByRole('listitem')).toHaveLength(2)
+    expect(replacedItems()).toEqual(['tu DNI', 'nombres de personas'])
     expect(
       container.querySelector('.result__anonymized')?.textContent,
     ).toBe(OVER_LIMIT_TEXT)
@@ -147,7 +169,15 @@ describe('ValidationResultPage', () => {
     expect(screen.queryByText(TOO_LONG_TEXT)).toBeNull()
   })
 
-  it('muestra el aviso de retenido sin texto, entidades ni confianza', () => {
+  it('no ofrece continuar si el texto anonimizado es nulo', () => {
+    renderPage({ ...VALID, anonymized_text: null })
+
+    expect(
+      screen.queryByRole('button', { name: CONTINUE_LABEL }),
+    ).toBeNull()
+  })
+
+  it('muestra el aviso de retenido sin texto, datos sustituidos ni avisos', () => {
     const { onRestart } = renderPage(RETAINED)
 
     expect(screen.getByRole('heading', { name: 'Documento retenido' })).toBeDefined()
@@ -157,18 +187,20 @@ describe('ValidationResultPage', () => {
       ),
     ).toBeDefined()
     expect(screen.queryByText(/Confianza/)).toBeNull()
+    expect(screen.queryByText(REPLACED_LEAD)).toBeNull()
+    expect(screen.queryByText(LABEL_NOTICE)).toBeNull()
     expect(screen.queryByRole('listitem')).toBeNull()
     expect(screen.queryByText(ANONYMIZED)).toBeNull()
     expect(screen.queryByText('baja_confianza')).toBeNull()
     expect(
-      screen.queryByRole('button', { name: 'Continuar a la conversación' }),
+      screen.queryByRole('button', { name: CONTINUE_LABEL }),
     ).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Probar con otro documento' }))
     expect(onRestart).toHaveBeenCalledTimes(1)
   })
 
-  it('muestra el aviso de ilegible sin texto, entidades ni confianza', () => {
+  it('muestra el aviso de ilegible sin texto, datos sustituidos ni avisos', () => {
     const { onRestart } = renderPage(ILLEGIBLE)
 
     expect(screen.getByRole('heading', { name: 'Documento ilegible' })).toBeDefined()
@@ -178,10 +210,12 @@ describe('ValidationResultPage', () => {
       ),
     ).toBeDefined()
     expect(screen.queryByText(/Confianza/)).toBeNull()
+    expect(screen.queryByText(REPLACED_LEAD)).toBeNull()
+    expect(screen.queryByText(LABEL_NOTICE)).toBeNull()
     expect(screen.queryByRole('listitem')).toBeNull()
     expect(screen.queryByText('texto_vacio')).toBeNull()
     expect(
-      screen.queryByRole('button', { name: 'Continuar a la conversación' }),
+      screen.queryByRole('button', { name: CONTINUE_LABEL }),
     ).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Probar con otro documento' }))
@@ -202,6 +236,47 @@ describe('ValidationResultPage', () => {
   })
 })
 
+describe('replacedDataLabels', () => {
+  it('traduce los tipos internos a lenguaje natural en orden de importancia', () => {
+    expect(
+      replacedDataLabels({
+        PERSONAL_SANITARIO: 3,
+        HOSPITAL: 1,
+        DATE_TIME: 1,
+        ES_HISTORIA_CLINICA: 1,
+        PACIENTE: 1,
+      }),
+    ).toEqual([
+      'tu nombre',
+      'tu número de historia clínica',
+      'tu fecha de nacimiento',
+      'nombres del personal sanitario',
+      'el hospital',
+    ])
+  })
+
+  it('no duplica etiquetas aunque haya varios tipos con el mismo texto', () => {
+    expect(replacedDataLabels({ PACIENTE: 1, PERSON: 1 })).toEqual([
+      'tu nombre',
+      'nombres de personas',
+    ])
+  })
+
+  it('ignora los tipos con recuento cero', () => {
+    expect(replacedDataLabels({ ES_DNI: 0, PERSON: 0 })).toEqual([])
+  })
+
+  it('agrupa los tipos desconocidos en una sola entrada', () => {
+    expect(
+      replacedDataLabels({ ES_DNI: 1, TIPO_NUEVO: 2, OTRO_TIPO: 3 }),
+    ).toEqual(['tu DNI', 'otros datos identificativos'])
+  })
+
+  it('devuelve una lista vacía sin datos sustituidos', () => {
+    expect(replacedDataLabels({})).toEqual([])
+  })
+})
+
 describe('canOpenConversation', () => {
   it('fija el límite de conversación en 30 000 caracteres', () => {
     expect(MAX_CONVERSATION_DOCUMENT_CHARS).toBe(30_000)
@@ -214,18 +289,5 @@ describe('canOpenConversation', () => {
     expect(
       canOpenConversation({ ...VALID, anonymized_text: OVER_LIMIT_TEXT }),
     ).toBe(false)
-  })
-
-  it('cuenta puntos de código y no unidades UTF-16', () => {
-    expect(
-      canOpenConversation({ ...VALID, anonymized_text: MAX_EMOJIS }),
-    ).toBe(true)
-  })
-
-  it('devuelve false sin resultado, sin texto o con un estado no validado', () => {
-    expect(canOpenConversation(null)).toBe(false)
-    expect(canOpenConversation({ ...VALID, anonymized_text: null })).toBe(false)
-    expect(canOpenConversation(RETAINED)).toBe(false)
-    expect(canOpenConversation(ILLEGIBLE)).toBe(false)
   })
 })
