@@ -6,7 +6,10 @@ import { AuthShell } from '../components/layout/AuthShell.tsx'
 import { ConversationPage } from '../pages/ConversationPage.tsx'
 import { LoginPage } from '../pages/LoginPage.tsx'
 import { UploadPage } from '../pages/UploadPage.tsx'
-import { ValidationResultPage } from '../pages/ValidationResultPage.tsx'
+import {
+  ValidationResultPage,
+  canOpenConversation,
+} from '../pages/ValidationResultPage.tsx'
 import { useAuthSession } from './useAuthSession.ts'
 import type { AuthService } from './authService.ts'
 import './auth.css'
@@ -24,13 +27,13 @@ function AuthenticatedApp({ email, onSignOut }: AuthenticatedAppProps) {
   const [screen, setScreen] = useState<Screen>('upload')
   const [result, setResult] = useState<AnonymizationResult | null>(null)
 
-  const validated =
-    result?.status === 'validado' && result.anonymized_text !== null
+  // «Conversación» solo aparece cuando hay un documento validado que el
+  // contrato de ACO-030 admite (T-09, R-12). AppShell no tiene estado
+  // deshabilitado. El mismo predicado cierra la navegación y la guardia.
+  const canConverse = canOpenConversation(result)
 
-  // «Conversación» solo aparece cuando hay un documento validado y, por tanto,
-  // es alcanzable (T-09, R-12). AppShell no tiene estado deshabilitado.
   const navItems = [{ id: 'document', label: 'Documento' }]
-  if (validated) {
+  if (canConverse) {
     navItems.push({ id: 'conversation', label: 'Conversación' })
   }
 
@@ -38,7 +41,7 @@ function AuthenticatedApp({ email, onSignOut }: AuthenticatedAppProps) {
 
   function handleNavigate(id: string) {
     if (id === 'conversation') {
-      if (validated) setScreen('conversation')
+      if (canConverse) setScreen('conversation')
       return
     }
     if (id === 'document') {
@@ -59,7 +62,7 @@ function AuthenticatedApp({ email, onSignOut }: AuthenticatedAppProps) {
   }
 
   function handleContinue() {
-    if (result?.status === 'validado' && result.anonymized_text !== null) {
+    if (canOpenConversation(result)) {
       setScreen('conversation')
     }
   }

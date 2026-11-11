@@ -36,6 +36,9 @@ vi.mock('../api/conversation.ts', async (importOriginal) => {
 
 const config = buildAuthConfig()
 
+const TOO_LONG_TEXT =
+  'El documento es demasiado largo una vez anonimizado y no se puede usar en la conversación. Prueba con un documento más corto.'
+
 const nowInSeconds = () => Math.floor(Date.now() / 1000)
 
 function makeUser(email = 'persona@example.test'): User {
@@ -398,6 +401,31 @@ describe('AuthGate — flujo E2E', () => {
       ).toBeDefined()
     },
   )
+
+  it('no permite abrir la conversación con un texto de más de 30 000 puntos de código', async () => {
+    anonymizeTextMock.mockResolvedValue(
+      validResult({ anonymized_text: 'a'.repeat(30_001) }),
+    )
+
+    render(<AuthGate service={authenticatedService()} />)
+    await screen.findByRole('heading', { name: 'Subir documento' })
+
+    selectTxt()
+    await submitUpload()
+
+    expect(
+      await screen.findByRole('heading', { name: 'Documento validado' }),
+    ).toBeDefined()
+    expect(screen.getByText(TOO_LONG_TEXT)).toBeDefined()
+
+    // Ni el botón ni la entrada de navegación ofrecen una ruta alternativa:
+    // la guardia de handleContinue no llega a navegar.
+    expect(
+      screen.queryByRole('button', { name: 'Continuar a la conversación' }),
+    ).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Conversación' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Conversación' })).toBeNull()
+  })
 
   it('descarta el flujo y vuelve al login al caducar la sesión', async () => {
     anonymizeTextMock.mockResolvedValue(validResult())
