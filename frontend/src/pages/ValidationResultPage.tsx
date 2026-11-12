@@ -21,6 +21,55 @@ const ILLEGIBLE_TEXT =
 const TOO_LONG_TEXT =
   'El documento es demasiado largo una vez anonimizado y no se puede usar en la conversación. Prueba con un documento más corto.'
 
+const REPLACED_LEAD = 'Hemos sustituido los datos que te identifican:'
+const NOTHING_REPLACED = 'No se han detectado datos que te identifiquen.'
+const OTHER_DATA = 'otros datos identificativos'
+
+// Las etiquetas de las entidades son códigos internos (`ES_DNI`, `DATE_TIME`).
+// El paciente ve el texto anonimizado con `[DNI]` o `[FECHA_NACIMIENTO]`, así
+// que aquí se traducen a lenguaje natural y se ordenan por importancia: primero
+// sus datos, después las otras personas y al final los lugares.
+const REPLACED_LABELS: ReadonlyArray<readonly [readonly string[], string]> = [
+  [['PACIENTE'], 'tu nombre'],
+  [['ES_DNI'], 'tu DNI'],
+  [['ES_NIE'], 'tu NIE'],
+  [['ES_HISTORIA_CLINICA'], 'tu número de historia clínica'],
+  [['ID_ASEGURAMIENTO'], 'tu número de aseguramiento'],
+  [['ID_CONTACTO_ASISTENCIAL'], 'tu número de contacto asistencial'],
+  [['DATE_TIME'], 'tu fecha de nacimiento'],
+  [['PHONE_NUMBER'], 'teléfonos'],
+  [['EMAIL_ADDRESS'], 'correos electrónicos'],
+  [['CALLE'], 'direcciones'],
+  [['PERSONAL_SANITARIO'], 'nombres del personal sanitario'],
+  [['FAMILIAR'], 'nombres de familiares'],
+  [['PERSON'], 'nombres de personas'],
+  [['HOSPITAL'], 'el hospital'],
+  [['CENTRO_SALUD'], 'el centro de salud'],
+  [['INSTITUCION'], 'instituciones'],
+  [['TERRITORIO'], 'localidades'],
+  [['ID_EMPLEO_PERSONAL_SANITARIO'], 'identificadores del personal sanitario'],
+  [['ID_TITULACION_PERSONAL_SANITARIO'], 'titulaciones del personal sanitario'],
+]
+
+// Traduce el recuento por tipo a la lista que ve el paciente. Un tipo que no
+// esté en la tabla no se adivina: se agrupa como «otros datos identificativos».
+// eslint-disable-next-line react-refresh/only-export-components -- Predicado compartido y probado para impedir que se muestren códigos internos.
+export function replacedDataLabels(
+  entitiesCount: Record<string, number>,
+): string[] {
+  const known = new Set(REPLACED_LABELS.flatMap(([types]) => types))
+  const labels = REPLACED_LABELS.filter(([types]) =>
+    types.some((type) => (entitiesCount[type] ?? 0) > 0),
+  ).map(([, label]) => label)
+
+  const hasUnknown = Object.entries(entitiesCount).some(
+    ([type, count]) => count > 0 && !known.has(type),
+  )
+  if (hasUnknown) labels.push(OTHER_DATA)
+
+  return labels
+}
+
 // Se cuenta por puntos de código, como UploadPage y el len() de Python del
 // backend; .length cuenta unidades UTF-16 y rechazaría texto admitido.
 // eslint-disable-next-line react-refresh/only-export-components -- Predicado compartido y probado para impedir navegar con un documento no admitido por ACO-030.
@@ -35,11 +84,6 @@ export function canOpenConversation(
   )
 }
 
-function formatConfidence(confidence: number): string {
-  const percentage = (confidence * 100).toFixed(1).replace('.', ',')
-  return `Confianza del documento: ${percentage} %`
-}
-
 // Se monta dentro de AppShell (ACO-017), que ya pinta <main>, la cabecera,
 // la navegación y el pie del disclaimer.
 export function ValidationResultPage({
@@ -51,6 +95,7 @@ export function ValidationResultPage({
   const validated =
     result.status === 'validado' && result.anonymized_text !== null
   const canContinue = canOpenConversation(result)
+  const replaced = replacedDataLabels(result.entities_count)
 
   return (
     <section className="result" aria-labelledby={titleId}>
@@ -61,32 +106,34 @@ export function ValidationResultPage({
       {validated && (
         <>
           <h3 className="result__subtitle">Documento validado</h3>
+
           <p className="result__text">
-            El documento se ha anonimizado correctamente y puedes consultarlo.
+            {replaced.length === 0 ? NOTHING_REPLACED : REPLACED_LEAD}
           </p>
 
-          <p className="result__confidence">
-            {result.confidence === null
-              ? 'Confianza no disponible.'
-              : formatConfidence(result.confidence)}
-          </p>
-
-          <h3 className="result__subtitle">Entidades detectadas</h3>
-          {Object.keys(result.entities_count).length === 0 ? (
-            <p className="result__text">
-              No se han detectado entidades que anonimizar.
-            </p>
-          ) : (
-            <ul className="result__entities">
-              {Object.entries(result.entities_count)
-                .sort(([left], [right]) => left.localeCompare(right))
-                .map(([type, count]) => (
-                  <li key={type} className="result__entity">
-                    {`${type}: ${count}`}
-                  </li>
-                ))}
+          {replaced.length > 0 && (
+            <ul className="result__replaced">
+              {replaced.map((label) => (
+                <li key={label} className="result__replaced-item">
+                  {label}
+                </li>
+              ))}
             </ul>
           )}
+
+          <p className="result__notice">
+            Los corchetes son una ayuda para leer el texto. Pueden no acertar
+            con el papel de la persona: [PERSONA_1] puede ser un médico o un
+            familiar. Lo importante es que el dato que te identifica ya no
+            está, aunque la etiqueta no acierte con el rol.
+          </p>
+
+          <p className="result__notice">
+            También puede pasar lo contrario: que hayamos sustituido un dato
+            que te ayudaba a entender el informe, como una fecha. Es
+            deliberado. Ante la duda, preferimos quitar el dato a dejar
+            escapar algo que te identifique.
+          </p>
 
           <h3 className="result__subtitle">Texto anonimizado</h3>
           <pre className="result__anonymized">{result.anonymized_text}</pre>
