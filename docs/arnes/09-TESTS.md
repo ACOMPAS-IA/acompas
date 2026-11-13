@@ -14,7 +14,7 @@ Verificaciones objetivas de las reglas (03-REGLAS) y de los criterios de aceptac
 
 ## Fuentes
 
-- **Normativas:** Plan de Proyecto (§1, §2, §4); Arquitectura del Sistema (§4, §8, §11, §13); ADR-001 a ADR-015; Documento Operativo del Sprint 1 (§3, §10, §14).
+- **Normativas:** Plan de Proyecto (§1); Arquitectura del Sistema (§4, §16); ADR-013, ADR-014 y ADR-015; Documento Operativo del Sprint 1 (§3, §9, §14).
 - **Derivadas:** Casos de Uso (UC-01, UC-03, UC-05, UC-06, UC-09); Modelo E/R (DOCUMENTO, ETIQUETA_ANONIMIZACION); Wireframes (pantallas 1, 4 y 5); Fichas ACO (criterios de aceptación y tests esperados: 014, 015, 019–026, 028–033, 051, 052); criterios de la demo D-01…D-07, que se toman de 08-PLAN.
 
 ## 1. Criterios de la demo del Sprint 1 → verificaciones
@@ -31,7 +31,11 @@ Verificaciones objetivas de las reglas (03-REGLAS) y de los criterios de aceptac
 
 Hito *(Documento Operativo §14)*: lo cubre el conjunto D-01…D-07 ejecutado sobre el flujo de ACO-032 (T-32).
 
+**Cierre del Sprint 1** *(Documento Operativo §14)*: D-01 a D-06 quedaron cumplidos con su evidencia en el acta #150. D-07 quedó **no cumplido** porque los tests E2E de ACO-033 no existen; la decisión #137 autorizó el cierre con esa excepción. ACO-033 se traslada al Sprint 2 y T-32 sigue siendo su verificación.
+
 T-39 verifica los controles de R-54 en ACO-028. El Documento Operativo §9 excluye ACO-028 del hito («no es criterio de demo»), así que no se enlaza con D-01…D-07; la parte de D-07 «sin secretos en Git» la comprueba T-19.
+
+T-40 a T-43 verifican las reglas de identidad y lista blanca del Sprint 1 (R-55 a R-58). D-02 se apoya en T-14, T-15, T-17 y T-41; la retirada de tokens offline y la configuración del realm se comprueban en T-40, T-42 y T-43.
 
 ## 2. Verificaciones
 
@@ -53,7 +57,7 @@ T-39 verifica los controles de R-54 en ACO-028. El Documento Operativo §9 exclu
 | T-14 | El login requiere 2FA vía Keycloak; no hay autenticación paralela. | E2E o prueba manual documentada + revisión | R-19 · D-02 | 012, 013, 018 |
 | T-15 | El backend rechaza los tokens ausentes o inválidos y acepta uno válido. | Automatizable | R-20 · D-02 | 014 |
 | T-16 | Un paciente no accede a recursos de otro paciente. | Automatizable cuando existan recursos por paciente | R-21 | S1: revisión; 014 |
-| T-17 | Un email autorizado puede acceder y uno no autorizado es rechazado. | Automatizable o E2E | R-22 · D-02 | 015, 033 |
+| T-17 | Un email autorizado puede acceder y uno no autorizado recibe 403 con cuerpo genérico, sin distinguir el motivo. Un token sin email y una lista ausente o vacía también se rechazan. Un usuario retirado de la lista pierde el acceso en la siguiente petición. | Automatizable o E2E con la lista de `EMAILS_AUTORIZADOS` | R-22 · D-02 | 015, 033 (S2) |
 | T-18 | Ninguna llamada a Claude API se hace fuera del gateway. | Revisión de código + test que sustituye el cliente del gateway | R-23 · D-05 | 027, 030 |
 | T-19 | La API key no está en el código fuente, en Git, en las respuestas HTTP, en los logs ni en el bundle del frontend. | Automatizable (búsqueda de patrones; inspección de respuestas) + revisión | R-24 · D-07 | 028 |
 | T-20 | El prompt restringe al ámbito oncológico, rechaza instrucciones incrustadas e indica el origen de la respuesta. | Casos de ACO-052 (fuera de alcance, prompt injection) ejecutados en la demo | R-25, R-26, R-28 | 029, 030, 052 |
@@ -68,7 +72,7 @@ T-39 verifica los controles de R-54 en ACO-028. El Documento Operativo §9 exclu
 | T-29 | No se toman decisiones conjuntas ni se crean ADR implícitos dentro de un ACO, las decisiones delegadas por la ficha se quedan en sus límites y constan en la PR, y no se desactivan controles de seguridad. | Revisión de PR | R-38, R-39, R-40, R-43, R-52 | Todos |
 | T-30 | Los contratos entre módulos están documentados antes de la integración en 032. | Revisión: los contratos de 019, 024 y 030 existen documentados | R-41 | 019, 024, 030, 032 |
 | T-31 | Ninguna entidad del manifiesto sintético de las categorías garantizadas se escapa en el flujo completo. Se comprueba que el dato ha desaparecido, no el rol asignado. Las categorías sin garantía no cuentan. | Automatizable: anonimizar los documentos de ACO-051 y comprobar que ninguna entidad del manifiesto de las categorías garantizadas sigue en la salida | R-44, R-45 · D-06 | 026, 033, 051, 052 |
-| T-32 | Caso feliz E2E, usuario no autorizado y documento que no valida (si el flujo lo contempla), en la CI o con la dependencia documentada. El flujo de la demo contempla el documento retenido y el ilegible (D-03). | Automatizable (ACO-033) | D-07; hito | 032, 033 |
+| T-32 | Caso feliz E2E, usuario no autorizado y documento que no valida (si el flujo lo contempla), en la CI o con la dependencia documentada. El flujo de la demo contempla el documento retenido y el ilegible (D-03). **No existían en el cierre del Sprint 1**: ACO-033 pasa al Sprint 2 con el criterio de D-07 como criterio heredado. | Automatizable (ACO-033) | D-07; hito | 032, 033 (S2) |
 | T-33 | Una detección por debajo del umbral de hallazgo se descarta como ruido; una que lo supera y pasa los filtros se anonimiza, aunque su puntuación no sea alta. | Automatizable con casos sintéticos (el umbral se lee de la configuración) | R-13 · D-03 | 023, 026 |
 | T-34 | Se conservan las fechas que no son de nacimiento, la edad, el sexo, la profesión y el país, y los filtros de falsos positivos no ocultan contenido clínico (nombres de pruebas, resultados, variantes genéticas). | Automatizable con casos sintéticos | R-46 | 023, 026 |
 | T-35 | Las personas reciben la etiqueta de su rol cuando se puede determinar (con prevalencia del contexto sobre el modelo) y la genérica `[PERSONA_n]` cuando no. | Automatizable con los casos sintéticos de la ficha de ACO-022. El acierto de rol es un indicador de calidad: se mide y no bloquea | R-47 | 022, 026 |
@@ -76,13 +80,17 @@ T-39 verifica los controles de R-54 en ACO-028. El Documento Operativo §9 exclu
 | T-37 | Un documento con texto extraído vacío no se procesa, y el aviso al paciente lleva un motivo distinto del de baja confianza. | Automatizable (unitario y E2E) | R-50 · D-03 | 023, 026, 033 |
 | T-38 | Una mención de una persona sin pista propia hereda el rol de otra mención del mismo nombre con pista, dentro del documento y con las condiciones de ADR-014: la mención parcial de dos o más palabras hereda; la palabra suelta y la mención más larga no; la ambigüedad entre roles distintos o con una persona genérica deja `[PERSONA_n]`; los roles coincidentes propagan sin agrupar. | Automatizable con detecciones construidas a mano y los casos C-13 a C-18 de la ficha de ACO-022 (B9) | R-53 | 022, 026 |
 | T-39 | Los controles de la API key de ADR-015 se cumplen: solo el servicio `backend` recibe la variable; `.env` está ignorado y `.env.example` no contiene valores; `load_settings()` rechaza las variables `ANTHROPIC_*` no permitidas sin registrar su valor; el cliente usa `base_url` explícito, `open_telemetry=False` y `trust_env=False`; los loggers del SDK quedan en INFO o superior; una clave centinela no aparece en logs con el logger raíz en DEBUG ni en las respuestas; el procedimiento de rotación está documentado. | Automatizable para la lista de permitidas, el cliente y el logging; búsqueda de `sk-ant-` en el historial y revisión para el resto | R-24, R-54 (ACO-028, no criterio de demo) | 028 |
+| T-40 | `offline_access` no aparece en los composites del rol por defecto **efectivo** del realm; `uma_authorization`, `view-profile` y `manage-account` siguen presentes; el rol `offline_access` sigue existiendo. Una petición con `scope=openid offline_access` contra un cliente que ofrezca el scope no devuelve un refresh token offline (no `typ=Offline`); un login sin ese scope sigue emitiendo un refresh token normal. | Automatizable o script (`check-realm.sh`); la comprobación funcional requiere un usuario local con TOTP y se ejecuta en ACO-015 | R-55 | 012 (P16, P18), 013, 015 |
+| T-41 | La lista blanca se lee de `EMAILS_AUTORIZADOS` en cada petición protegida, con `strip()` y minúsculas y comparación exacta; un token sin email, un email fuera de la lista o una lista ausente o vacía producen 403 genérico; un usuario retirado pierde el acceso en la siguiente petición; al arrancar se registra solo el número de direcciones, nunca sus valores; la lista no se devuelve por ningún endpoint. | Automatizable con tokens y direcciones sintéticas; revisión del arranque y de los logs | R-56 · D-02 | 015 |
+| T-42 | `email.permissions.edit` es exactamente `["admin"]` en el perfil de usuario del realm, y `scripts/apply-user-profile.sh` es idempotente, solo acepta `localhost` o `127.0.0.1`, no admite forzado y no imprime credenciales ni `.env`. | Script (`check-realm.sh`) + revisión del script | R-57 | 012 (P17) |
+| T-43 | El `defaultRole` efectivo es `default-roles-acompas`; `scripts/apply-realm-config.sh` ejecuta en orden el perfil de email y el rol por defecto; los dos scripts son idempotentes, no admiten argumentos ni `--force` y fallan con código distinto de cero si no pueden aplicar el cambio; tras una importación limpia el wrapper deja el realm en el estado esperado. | Script + revisión del procedimiento de reimportación documentado | R-58 | 012 (P16–P18) |
 
 ## 3. Trazabilidad inversa (regla → verificación)
 
 | Regla | Verificación | | Regla | Verificación |
 |---|---|---|---|---|
 | R-01 | T-01 | | R-23 | T-18 |
-| R-02 | T-01, T-02 | | R-24 | T-19 |
+| R-02 | T-01, T-02 | | R-24 | T-19, T-39 |
 | R-03 | T-03 | | R-25 | T-20 |
 | R-04 | T-04 | | R-26 | T-20 |
 | R-05 | T-01, T-04 | | R-27 | T-21 |
@@ -113,14 +121,18 @@ T-39 verifica los controles de R-54 en ACO-028. El Documento Operativo §9 exclu
 | | | | R-52 | T-29 |
 | | | | R-53 | T-38 |
 | | | | R-54 | T-39 |
+| | | | R-55 | T-40 |
+| | | | R-56 | T-41 |
+| | | | R-57 | T-42 |
+| | | | R-58 | T-43 |
 
 ## Cuestiones abiertas
 
 | Cuestión | Fuente |
 |---|---|
 | T-31: el manifiesto de ACO-051 no distingue las categorías garantizadas. `DATE_TIME` mezcla la fecha de nacimiento (garantizada) con otras fechas (que no se anonimizan), y `TERRITORIO` mezcla la localidad (garantizada) con la provincia, que ADR-013 no menciona. No está definido cómo se identifican en el manifiesto las entidades que T-31 debe comprobar. | ADR-013 (Consecuencias); ACO-051 §8 |
-| T-10: ADR-013 exige un registro de auditoría del documento retenido, pero el modelo del registro de auditoría está abierto y la auditoría completa queda fuera del Sprint 1. No está definido qué registro debe comprobarse en el Sprint 1. | ADR-013; Arquitectura §16 nº 4; Plan de Trabajo §11 |
+| T-10: ADR-013 exige un registro de auditoría del documento retenido, pero el modelo del registro de auditoría está abierto y la auditoría completa queda fuera del Sprint 1. No está definido qué registro debe comprobarse en el Sprint 1. | ADR-013; Arquitectura §16 nº 4 |
 | T-34 depende de la lista concreta de filtros de falsos positivos y términos permitidos, que fijan las fichas de ACO-022 y ACO-023. | ADR-013 (Fuera de esta decisión) |
 | Si los umbrales cambian en los Niveles 2 y 3 o con documentos reales, y el uso de la confianza del OCR para detectar documentos ilegibles: las verificaciones del Sprint 1 no lo cubren. | Arquitectura §16 nº 9 |
-| T-20 depende de los casos de ACO-052, cuyos criterios están pendientes de revisión; el tono (D9) no tiene criterio verificable cerrado. | ACO-052; Plan de Proyecto §1 |
+| T-20 depende de los casos de ACO-052, ya confirmados en la revisión de su PR; el tono (D9) no tiene criterio verificable cerrado. | ACO-052; Plan de Proyecto §1 |
 | Objetivo de cobertura (más del 85% en los Niveles 1–2): es un objetivo del módulo, no criterio del Sprint 1, y su medición (métricas) es posterior. | Arquitectura §4 |

@@ -16,7 +16,7 @@ Qué es ACOMPAS: propósito, usuarios, alcance por fases, exclusiones y restricc
 ## Fuentes
 
 - **Normativas:** Plan de Proyecto (§1 Visión y principios, §2 Arquitectura técnica (resumen), §3 Equipo (actores externos), §4 Planificación y tiempos, §6 Gestión de riesgos (riesgos resueltos del mediador)).
-- **Derivadas:** Casos de Uso (§1 Actores, §2 Casos de uso, §4 Planificación por sprint). Aportan detalle, pero no amplían el alcance.
+- **Derivadas:** Casos de Uso (§1 Actores, §2 Casos de uso, §4 Planificación por sprint, que remite al Plan de Proyecto). Aportan detalle, pero no amplían el alcance.
 
 ## 1. Qué es ACOMPAS
 
@@ -25,6 +25,8 @@ ACOMPAS es una herramienta conversacional basada en inteligencia artificial. Ayu
 **Propósito:** es una herramienta de comprensión y traducción, no de diagnóstico. El sistema nunca sustituye al médico ni emite juicios clínicos propios. *(Plan de Proyecto §1)*
 
 **Modelo de uso:** uso directo por pacientes, sin mediador. Hay dos roles: paciente y administrador. *(Plan de Proyecto §2 y §6, riesgos resueltos del mediador; Casos de Uso §1)*
+
+**Canal:** aplicación web adaptable y **mobile-first** desde el Sprint 1. Se usa desde el navegador, sin app nativa ni publicación en tiendas. *(Plan de Proyecto §1)*
 
 ## 2. Principios rectores de producto
 
@@ -93,6 +95,7 @@ Parada de verano: del 15 de julio al 1 de septiembre de cada año. *(Plan de Pro
 - No se usa ningún dato real de paciente en ningún entorno hasta que estén operativos la anonimización, el derecho al olvido básico y el registro de auditoría. *(Plan de Proyecto §2)*
 - Durante el piloto, el acceso se limita a emails autorizados por ACANPAN. *(Plan de Proyecto §2; UC-03)*
 - El modelo responde solo dentro del ámbito oncológico. *(Plan de Proyecto §2)*
+- No hay app nativa ni publicación en tiendas: la aplicación es web adaptable y mobile-first desde el Sprint 1. *(Plan de Proyecto §1, §6)*
 - Fuera del Sprint 1: ver 08-PLAN §4.
 
 ## Cuestiones abiertas
@@ -100,5 +103,5 @@ Parada de verano: del 15 de julio al 1 de septiembre de cada año. *(Plan de Pro
 | Cuestión | Fuente |
 |---|---|
 | Tono del LLM (D9): pendiente de validar con pruebas sobre casos representativos. No debe tratarse como requisito cerrado. | Plan de Proyecto §1 |
-| La columna «Fase» de los casos de uso es orientativa; el sprint concreto de UC-08 (clasificador de intención) y de UC-23/24 (control de gasto) no lo fija la planificación del Plan de Proyecto. | Casos de Uso §4; Arquitectura §16 nº 1 |
+| La columna «Fase» de los casos de uso es orientativa; el sprint concreto de UC-08 (clasificador de intención) y de UC-23/24 (control de gasto) no lo fija la planificación del Plan de Proyecto. | Casos de Uso §2, §4; Arquitectura §16 nº 1 |
 | Calendario del RAG en S3–S4 (con qué corpus trabaja). | Arquitectura §16 nº 6 |
