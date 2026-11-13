@@ -117,11 +117,11 @@ Estado de las fichas en el commit del manifiesto:
 
 | Estado de la ficha | ACO |
 |---|---|
-| Ficha ejecutable con criterios confirmados en la revisión de su PR | 011, 012, 016, 017, 018, 027, 029, 030, 031, 051, 052 |
+| Ficha ejecutable con criterios confirmados en la revisión de su PR | 011, 012, 013, 014, 016, 017, 018, 019, 022, 023, 024, 025, 026, 027, 029, 030, 031, 051, 052 |
 | Ficha revisada, con puntos confirmados y la ejecución de P9 y P10 anotada | 015 |
 | Ficha ejecutable con criterios confirmados, pendiente de aprobación final | 028 |
 | Ficha ejecutable (criterios AC-01…AC-09, tests, componentes y BLOQUEO), sin indicación expresa de estado | 021 |
-| Ficha ampliada con criterios declarados **pendientes** en la propia ficha | 013, 014, 019, 022, 023, 024, 025, 026, 032. En 013 y 022 la PR ya está mergeada y la línea de estado no se ha actualizado (PD-25); en 032 la PR está abierta |
+| Ficha ampliada con criterios declarados **pendientes** en la propia ficha | 032. Su línea de estado la corrige #149, que está abierta |
 | Ficha de alcance | 020, 033 |
 
 Resumen de alcance de cada ACO *(fichas, §Objetivo, §Incluye y §Fuera de alcance; el texto completo está en cada ficha)*:
@@ -177,7 +177,7 @@ La Definition of Done es **única**: la del Plan de Trabajo §10. El Documento O
 
 | Cuestión | Fuente |
 |---|---|
-| Criterios de aceptación pendientes en las fichas de ACO-013, 014, 019, 022, 023, 024, 025, 026 y 032. En 013 y 022 la PR ya está mergeada y la ficha no se ha actualizado (PD-25). | Fichas ACO-013, 014, 019, 022, 023, 024, 025, 026, 032 |
+| Criterios de aceptación pendientes en la ficha de ACO-032: su línea de estado la corrige #149, que está abierta. | Ficha ACO-032; PR #149 |
 | Lista concreta de reconocedores, filtros de falsos positivos y términos permitidos de ACO-022 y ACO-023: la fijan sus fichas al ampliarse. | ADR-013 (Fuera de esta decisión); ACO-022; ACO-023 |
 | Encaje del gateway y modelo de Claude: cuestiones abiertas de la Arquitectura §16 nº 12–13, pendientes de ADR. | Arquitectura §16 nº 12–13 |
 | ADR del entorno de desarrollo (decisión ya adoptada, ADR sin redactar). | Arquitectura §16 nº 11 |
