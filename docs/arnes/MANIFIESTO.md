@@ -12,7 +12,7 @@ Artefacto compilado (Estrategia de Actualización Documental §4.2). Es el **ún
 | Fuentes cambiadas | Plan de Proyecto (v0.21 → v0.22: §1, §6, §7); Arquitectura del Sistema (v0.9 → v0.10: §16); Plan de Trabajo (v0.11 → v0.12: §8, §9, §11, §12, §13); Documento Operativo Sprint 1 (v0.5 → v0.7: §6, §9, §10, §14, §16); Casos de Uso (v0.6 → v0.7: §2, §3, portada); Modelo E/R (v0.9 → v0.10: §1, §2); Wireframes MVP (v0.5 → v0.6: pantallas 2–5, 8, 9, nuevas 4b, 4c y 10); `docs/adr/` (ADR-016, ADR-017 y ADR-018, nuevos); 18 fichas ACO (ACO-012, 014, 015, 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052). La Estrategia v0.8 y las demás fuentes conservan versión y SHA-256 |
 | Piezas regeneradas | 01, 02, 03, 04, 05, 06, 07, 08 y 09 |
 | Piezas sin regenerar | `AGENTS.md`: sus fuentes (Plan de Trabajo §4, §8, §9 y §10; Estrategia §4.1) no cambian de contenido |
-| Instantáneas de origen | Documentos de `~/projects/acompas-fuentes/` en `90acd3c` (13 nov 2026); `docs/adr/` y `docs/aco/` en `7cc69b9` (rama `docs/pasada-b-fichas`) |
+| Instantáneas de origen | Documentos de `~/projects/acompas-fuentes/` en `90acd3c` (13 nov 2026), publicados en `main` de `acompas-fuentes` en `85c0ab4` (`sha256sum -c SHA256SUMS`: 17/17); `docs/adr/` y `docs/aco/` en `7cc69b9` (rama `docs/pasada-b-fichas`) |
 | Commit de las fuentes del repositorio | `7cc69b9` (base `docs/pasada-b-fichas`). Entre `a1df03b` y este commit se añaden ADR-016, ADR-017 y ADR-018, y cambian las fichas indicadas |
 | Proceso | Estrategia de Actualización Documental v0.8: §4.10 y Anexo B (modo B), con las reglas del modo A |
 

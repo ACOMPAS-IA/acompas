@@ -398,7 +398,7 @@ Los identificadores R y T se conservan y los nuevos continúan la numeración. 0
 
 - Rama `docs/arnes-pasada-b`, HEAD = `7cc69b9` antes del commit del arnés, sin cambios previos.
 - Solo cambian `docs/arnes/01` a `09`, `MANIFIESTO.md` y este informe. `AGENTS.md`, `docs/adr/`, `docs/aco/` y el código no cambian.
-- Los SHA-256 del manifiesto se comprueban contra `SHA256SUMS` de `acompas-fuentes` en `90acd3c`; ADR y fichas, contra `7cc69b9`.
+- Los SHA-256 del manifiesto se comprueban contra `SHA256SUMS` de `acompas-fuentes` en `90acd3c`, ya publicados en `main` en `85c0ab4` (`sha256sum -c`: 17/17); ADR y fichas, contra `7cc69b9`.
 - `~/projects/acompas-fuentes`: los SHA-256 coinciden antes y después de la regeneración.
 - Trazabilidad R↔T comprobada en los dos sentidos: 58 reglas y 43 verificaciones, ninguna regla sin verificación ni verificación sin regla. Se corrigen tres desajustes de la generación anterior: R-05 declaraba el rango T-01…T-08 y solo T-01 y T-04 la citan; la fila inversa de R-24 no recogía T-39; y 09 declaraba ADR-001 y ADR-018 sin citarlos.
 - Citas de cada pieza comprobadas contra su fila del MANIFIESTO §4: ningún ADR, sección ni ACO citado fuera de las fuentes declaradas. Se ajustan las fuentes declaradas de 02 (retirados el Plan de Proyecto y ADR-016/018, no citados), 04 (añadidos ADR-012, ADR-013 y la ficha ACO-017), 05 (ADR-004 citado en la fila de OCR), 06 (ADR-012 y la ficha ACO-052), 07 (Arquitectura §6 y retirada §9), 08 (Plan de Trabajo §4, §6, §9 y §10; Documento Operativo §2, §6 y §9–§14; ADR-013 a ADR-015) y 09 (Plan de Proyecto §1; ADR-013 a ADR-015; Documento Operativo §3, §9 y §14).
