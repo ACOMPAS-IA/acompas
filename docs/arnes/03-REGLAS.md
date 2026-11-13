@@ -14,8 +14,8 @@ Reglas de negocio, privacidad, seguridad, arquitectura y proceso que debe cumpli
 
 ## Fuentes
 
-- **Normativas:** ADR-001 a ADR-015; Arquitectura del Sistema (§2, §3, §4, §5, §6, §8, §9, §10, §11, §13, §14, §15); Plan de Proyecto (§1, §2); Plan de Trabajo (§2, §4, §5, §8, §9, §10).
-- **Derivadas:** Casos de Uso (UC-05, UC-07, UC-09); Fichas ACO de docs/aco/ (restricciones, criterios y BLOQUEO de ACO-014, 015, 021, 022, 023, 024, 025, 028, 031 y 051).
+- **Normativas:** ADR-001 a ADR-018; Arquitectura del Sistema (§2, §3, §4, §5, §6, §8, §9, §10, §11, §13, §14, §15, §16); Plan de Proyecto (§1, §2); Plan de Trabajo (§2, §4, §5, §8, §9, §10).
+- **Derivadas:** Casos de Uso (UC-05, UC-07, UC-09); Fichas ACO de docs/aco/ (restricciones, criterios y BLOQUEO de ACO-012, 014, 015, 021, 022, 023, 024, 025, 028, 031 y 051).
 - **Prevalencia:** las fuentes oficiales prevalecen sobre las derivadas. Una Ficha ACO o el arnés nunca cambian una decisión del Plan de Proyecto, de la Arquitectura del Sistema ni de un ADR aprobado. *(Plan de Trabajo §4, Ejecución con agente)* El orden completo de precedencia está en `AGENTS.md`.
 
 ## 1. Privacidad y datos de pacientes
@@ -26,7 +26,7 @@ Reglas de negocio, privacidad, seguridad, arquitectura y proceso que debe cumpli
 | R-02 | Las pruebas, fixtures y demos usan datos sintéticos. Ningún dato sintético puede tomarse ni adaptarse de un documento real. | Plan de Trabajo §10; ACO-051 §8, §10 | T-01, T-02 |
 | R-03 | El documento original no se persiste: se procesa en memoria o en un volumen efímero, y solo se guarda el resultado anonimizado. | ADR-005; Arquitectura §4, §9; Plan de Trabajo §10 | T-03 |
 | R-04 | Ni el contenido de un documento clínico original ni el nombre de su fichero aparecen en logs, mensajes de error, fixtures de prueba, commits, documentación, capturas ni ficheros temporales persistentes. | Arquitectura §11 (Protección de datos); ADR-013 | T-04 |
-| R-05 | Las reglas de privacidad verificables se comprueban con tests automatizados cuando resulte razonable. | Arquitectura §11 | T-01…T-08 |
+| R-05 | Las reglas de privacidad verificables se comprueban con tests automatizados cuando resulte razonable. | Arquitectura §11 | T-01, T-04 |
 | R-06 | No se guarda el valor original de ninguna entidad detectada, ni cifrado ni de ninguna otra forma. | ADR-012 | T-05 |
 | R-07 | No se conserva el nombre del fichero original: el documento lleva un nombre genérico (tipo de documento + fecha de carga). | ADR-012; Arquitectura §9 | T-06 |
 | R-08 | Las etiquetas de anonimización se numeran por documento, sin coherencia entre documentos. | ADR-012; Arquitectura §4 | T-07 |
@@ -61,7 +61,11 @@ Reglas de negocio, privacidad, seguridad, arquitectura y proceso que debe cumpli
 | R-19 | Keycloak self-hosted es el proveedor de identidad (OpenID Connect sobre OAuth 2.0). El 2FA es obligatorio para todos los usuarios. No se implementa un sistema de autenticación paralelo ni se guardan credenciales en la base de datos de ACOMPAS. | ADR-011; Arquitectura §11 | T-14 |
 | R-20 | Las peticiones al backend llevan un JWT firmado y con expiración. El backend lo valida y aplica la autorización: rechaza los tokens ausentes o inválidos. | ADR-011; Arquitectura §3, §11; ACO-014 | T-15 |
 | R-21 | Roles: paciente y administrador. Un paciente solo accede a sus recursos. | ADR-002; ADR-011 | T-16 |
-| R-22 | Durante el piloto, solo pueden darse de alta los emails de la lista blanca autorizada por ACANPAN. La lista se guarda en la base de datos de ACOMPAS, la gestiona manualmente el administrador y no enlaza con el UUID. Keycloak solo resuelve o crea el UUID de un email autorizado. La lista blanca no sustituye a la autenticación. | ADR-009; ADR-001; Arquitectura §11; ACO-015 | T-17 |
+| R-22 | Durante el piloto, solo pueden darse de alta los emails de la lista blanca autorizada por ACANPAN. La lista no enlaza con el UUID y no se guarda la correspondencia email↔UUID. Keycloak solo resuelve o crea el UUID de un email autorizado. La lista blanca no sustituye a la autenticación. En local y demo, la lista vive en una variable de entorno (R-56) como excepción temporal a ADR-009; la tabla `EMAIL_AUTORIZADO` vuelve en el Sprint 2. | ADR-009; ADR-017; ADR-001; Arquitectura §11; ACO-015 | T-17 |
+| R-55 | **Sin tokens offline.** `offline_access` no forma parte del rol por defecto del realm (`default-roles-acompas`); se conservan `uma_authorization`, `view-profile` y `manage-account`, y el rol `offline_access` sigue existiendo en el realm por si se asigna de forma expresa. `scripts/check-realm.sh` comprueba el rol por defecto **efectivo** y sus composites. Una petición con `scope=openid offline_access` no devuelve un refresh token offline. | ADR-016; ADR-018; ACO-012 P16, P18 | T-40 |
+| R-56 | **Mecanismo de la lista blanca en el Sprint 1.** La lista vive en `EMAILS_AUTORIZADOS` (`.env` local no versionado, direcciones separadas por comas); `.env.example` solo lleva un ejemplo con dominio `example.com`. Se aplica `strip()` y minúsculas a la lista y al email del token, y la comparación es exacta, sin comodines ni patrones de dominio. Se comprueba en el backend en **cada petición protegida**, después de validar el JWT y el rol de aplicación. Un token sin email, un email fuera de la lista o una lista ausente o vacía producen **403** con cuerpo genérico (`forbidden`), sin distinguir el motivo. Un usuario retirado pierde el acceso en la siguiente petición. Al arrancar se registra solo el número de direcciones, nunca sus valores; un rechazo no deja registro del email ni del `sub`. La lista no se devuelve por ningún endpoint. | ADR-017; ACO-015 §8 | T-41 |
+| R-57 | **El email del usuario solo lo puede editar el administrador.** En el perfil de usuario del realm, `email.permissions.edit` es exactamente `["admin"]`. Como el perfil no viaja en el JSON del realm, se aplica después de la importación con `scripts/apply-user-profile.sh`, idempotente, limitado al endpoint del perfil del realm `acompas`, solo contra `localhost` o `127.0.0.1` y sin opción de forzarlo. `scripts/check-realm.sh` verifica el valor y no imprime credenciales ni `.env`. | ADR-017 | T-42 |
+| R-58 | **Configuración del realm tras la importación.** El JSON declara `"defaultRole": {"name": "default-roles-acompas"}` para que el rol por defecto efectivo sea el declarado. Tras una importación limpia se ejecuta `scripts/apply-realm-config.sh`, que llama en orden a `scripts/apply-user-profile.sh` (R-57) y `scripts/apply-default-role.sh`; después, `scripts/check-realm.sh`. Los dos scripts son idempotentes, no admiten argumentos ni `--force`, no eliminan roles ni tocan otros composites y fallan con código distinto de cero si no pueden aplicar el cambio. Cualquier importación limpia posterior borra el perfil y exige volver a ejecutar el wrapper. | ADR-018; ADR-016; ACO-012 P16, P18 | T-43 |
 
 ## 4. Modelo de lenguaje y conversación
 
@@ -71,7 +75,7 @@ Reglas de negocio, privacidad, seguridad, arquitectura y proceso que debe cumpli
 | R-24 | Los secretos y credenciales nunca se almacenan en Git. La API key del proveedor LLM no aparece en el código fuente, en las respuestas HTTP, en los logs ni en el navegador. | Plan de Trabajo §10; ADR-015; ACO-028 | T-19, T-39 |
 | R-25 | Prompt de sistema restringido al ámbito oncológico: el modelo declina educadamente las preguntas fuera de ese ámbito. | Arquitectura §3, §11 | T-20 |
 | R-26 | Control de prompt injection: el prompt de sistema se estructura para rechazar instrucciones incrustadas en los documentos o en las preguntas, separando las instrucciones del sistema del contenido del usuario. | Arquitectura §11, §15 | T-20 |
-| R-27 | Disclaimer permanente en la interfaz y en las respuestas: ACOMPAS no diagnostica ni sustituye al médico. | Arquitectura §11; Plan de Proyecto §1–2; ACO-031 | T-21 |
+| R-27 | Disclaimer permanente en la interfaz y en las respuestas: ACOMPAS no diagnostica ni sustituye al médico. Su texto literal y el punto de montaje los fija ACO-031 y se recogen en 04-INTERFAZ. | Arquitectura §11; Plan de Proyecto §1–2; ACO-031 | T-21 |
 | R-28 | La respuesta indica su origen: la fuente recuperada en que se basa o, si no la hay, que procede del conocimiento interno del LLM (D7). Esta vía no amplía el ámbito permitido. | Arquitectura §6, §11; UC-09 | T-20 |
 | R-29 | Control de gasto en el gateway: tope diario y mensual, crédito acumulado, uso del crédito con aviso, desbloqueo solo manual del administrador, modo pruebas (contabiliza sin bloquear, con crédito infinito) y marcas individuales. *(Posterior a S1: no lo exige ninguna ficha del Sprint 1.)* | Arquitectura §8; ADR-006 | T-25 (revisión) |
 | R-54 | **Gestión de la API key de Claude.** En local y en la demo, `ANTHROPIC_API_KEY` se inyecta solo en el servicio `backend` desde un `.env` local no versionado (permisos 600 en Linux/WSL2), y `.env.example` recoge solo los nombres, con valores vacíos. La demo usa una clave del proyecto, con titular, cuenta y límite de gasto definidos; las claves personales son solo para desarrollo; Docker secrets y los gestores externos quedan para producción (Sprint 2). El proveedor construye el cliente con `api_key`, `base_url` explícito, `open_telemetry=False` y `DefaultHttpxClient(trust_env=False)`, y `load_settings()` rechaza cualquier variable `ANTHROPIC_*` distinta de `ANTHROPIC_API_KEY`, registrando solo el nombre y nunca el valor. Los loggers del SDK que puedan emitir contenido (`anthropic`, `httpx2`, `httpcore2` y sus hijos) quedan en nivel efectivo INFO o superior. La rotación es manual y el procedimiento se documenta en el README. | ADR-015; ACO-028 | T-39 |
@@ -117,15 +121,22 @@ Están previstos para el Sprint 2 *(Arquitectura §11, §14)*, y ningún ACO del
 | Objetivo de cobertura de Presidio. Más del 85% es objetivo de los Niveles 1–2, no criterio del Sprint 1. | ADR-003 (Fuera de esta decisión); Arquitectura §4 |
 | Lista concreta de reconocedores, filtros de falsos positivos y términos permitidos: la fijan las fichas de ACO-022 y ACO-023 al ampliarse. | ADR-013 (Fuera de esta decisión); ACO-022; ACO-023 |
 | Texto de los avisos al paciente (documento retenido e ilegible). | ADR-013 (Fuera de esta decisión) |
-| Comprobación de que el documento es de tipo clínico antes de procesarlo. | Arquitectura §16 nº 8; ADR-013 (Fuera de esta decisión) |
-| Uso de la confianza del OCR para detectar documentos ilegibles, y si los umbrales cambian en los Niveles 2 y 3 o con documentos reales. | Arquitectura §16 nº 9; ADR-013 (Fuera de esta decisión) |
-| Diseño del Nivel 3 (marcado y ocultación en el momento de la carga, almacenamiento temporal durante la revisión, marcado posterior). Cuando exista, el documento retenido pasará a revisión obligatoria en lugar de descartarse. | Arquitectura §16 nº 10; ADR-013 (Fuera de esta decisión) |
+| Comprobación de que el documento es de tipo clínico antes de procesarlo. | Arquitectura §16 nº 8 |
+| Uso de la confianza del OCR para detectar documentos ilegibles, y si los umbrales cambian en los Niveles 2 y 3 o con documentos reales. | Arquitectura §16 nº 9 |
+| Diseño del Nivel 3 (marcado y ocultación en el momento de la carga, almacenamiento temporal durante la revisión, marcado posterior). Cuando exista, el documento retenido pasará a revisión obligatoria en lugar de descartarse. | Arquitectura §16 nº 10 |
 | Gestión de secretos en producción, rotación automática y escáner de secretos en CI. | ADR-015 (Fuera de esta decisión) |
-| Encaje mínimo y alcance del LLM gateway en el Sprint 1. | Plan de Trabajo §8, §9; Documento Operativo §13; ACO-027 |
-| Modelo de Claude a usar y política de versiones. | Plan de Trabajo §9 |
-| Sprint del clasificador de intención. | Arquitectura §16 nº 1; Plan de Trabajo §8, §9 |
+| Entorno de desarrollo: Docker Compose como base común y VPS solo cerca de la demo de diciembre. Decisión adoptada; falta redactar el ADR. | Arquitectura §16 nº 11 |
+| Encaje mínimo y alcance del LLM gateway en el Sprint 1. | Arquitectura §16 nº 12; ACO-027 |
+| Modelo de Claude y política de actualización de versiones. | Arquitectura §16 nº 13 |
+| Sprint del clasificador de intención. | Arquitectura §16 nº 1 |
+| Alternativa de almacenamiento de objetos. | Arquitectura §16 nº 2; ADR-010 |
+| Modelo de datos definitivo (UUID como identificador, ETIQUETA_ANONIMIZACION). | Arquitectura §16 nº 5 |
+| Calendario y corpus del RAG en S3–S4. | Arquitectura §16 nº 6 |
+| Modelo de embeddings, dimensionalidad y chunking. | Arquitectura §16 nº 14; ADR-007 (Fuera de esta decisión) |
+| Motor de OCR definitivo (solo si Tesseract no rinde). | Arquitectura §16 nº 15 |
+| Regla de cálculo del crédito y de los topes. | Arquitectura §16 nº 16 |
+| Contratación y configuración del VPS. | Arquitectura §16 nº 17 |
 | Diseño del derecho al olvido y modelo del registro de auditoría. | Arquitectura §16 nº 3–4 |
 | Valores de expiración y claims del JWT, flujo OIDC concreto, política de contraseñas y recuperación. | ADR-011 (Fuera de esta decisión) |
-| Cómo se comprueba la lista blanca y cómo se conecta con el login de Keycloak. | ADR-009 (Fuera de esta decisión) |
-| Regla de cálculo del crédito y de los topes. | Plan de Trabajo §9 |
 | Tono del LLM (D9). | Plan de Proyecto §1 |
+| Contenido y límites de los campos de texto libre `motivo` y `motivo_resolucion` de la solicitud de desbloqueo: pueden contener datos identificativos y ninguna fuente fija validación, límite ni anonimización. | Modelo E/R (SOLICITUD_DESBLOQUEO_CREDITO); Wireframes, pantallas 8 y 9 |
