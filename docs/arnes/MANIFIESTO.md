@@ -9,10 +9,10 @@ Artefacto compilado (Estrategia de Actualización Documental §4.2). Es el **ún
 | Modo | B: regeneración (anterior: modo B, 2026-11-02, commit `0a2d6f0`) |
 | Fecha | 2026-11-13 |
 | Estado | **Regenerado y auditado, pendiente de revisión humana en PR**. Sin piezas detenidas. Pendientes documentales: `docs/arnes/INFORME-GENERACION.md`, sección «Regeneración (modo B) — pasada B (2026-11-13)» |
-| Fuentes cambiadas | Plan de Proyecto (v0.21 → v0.22: §1, §6, §7); Arquitectura del Sistema (v0.9 → v0.10: §16); Plan de Trabajo (v0.11 → v0.12: §8, §9, §11, §12, §13); Documento Operativo Sprint 1 (v0.5 → v0.7: §6, §9, §10, §14, §16); Casos de Uso (v0.6 → v0.7: §2, §3, portada); Modelo E/R (v0.9 → v0.10: §1, §2); Wireframes MVP (v0.5 → v0.6: pantallas 2–5, 8, 9, nuevas 4b, 4c y 10); `docs/adr/` (ADR-016, ADR-017 y ADR-018, nuevos); 18 fichas ACO (ACO-012, 014, 015, 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052). La Estrategia v0.8 y las demás fuentes conservan versión y SHA-256. Después, en `4275ef0`, cambia la línea de estado de ocho fichas (PD-25) |
+| Fuentes cambiadas | Plan de Proyecto (v0.21 → v0.22: §1, §6, §7); Arquitectura del Sistema (v0.9 → v0.10: §16); Plan de Trabajo (v0.11 → v0.12: §8, §9, §11, §12, §13); Documento Operativo Sprint 1 (v0.5 → v0.7: §6, §9, §10, §14, §16); Casos de Uso (v0.6 → v0.7: §2, §3, portada); Modelo E/R (v0.9 → v0.10: §1, §2); Wireframes MVP (v0.5 → v0.6: pantallas 2–5, 8, 9, nuevas 4b, 4c y 10); `docs/adr/` (ADR-016, ADR-017 y ADR-018, nuevos); 18 fichas ACO (ACO-012, 014, 015, 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052). La Estrategia v0.8 y las demás fuentes conservan versión (su SHA-256 es el de `85c0ab4`; el de la instantánea vigente `f7eff22` consta en §2, con las notas de forma). Después, en `4275ef0`, cambia la línea de estado de ocho fichas (PD-25) |
 | Piezas regeneradas | 01, 02, 03, 04, 05, 06, 07, 08 y 09 |
 | Piezas sin regenerar | `AGENTS.md`: sus fuentes (Plan de Trabajo §4, §8, §9 y §10; Estrategia §4.1) no cambian de contenido |
-| Instantáneas de origen | Documentos de `~/projects/acompas-fuentes/` en `90acd3c` (13 nov 2026), publicados en `main` de `acompas-fuentes` en `85c0ab4` (`sha256sum -c SHA256SUMS`: 17/17); `docs/adr/` en `7cc69b9` y `docs/aco/` en `4275ef0` (rama `docs/pasada-b-fichas`) |
+| Instantáneas de origen | Documentos de `~/projects/acompas-fuentes/` en `90acd3c` (13 nov 2026), publicados en `main` de `acompas-fuentes` en `85c0ab4`; la instantánea vigente de las fuentes es `f7eff22` (14 nov 2026), con `sha256sum -c SHA256SUMS`: 17/17. Entre `85c0ab4` y `f7eff22` solo hay cambios de forma (notas del §2); `docs/adr/` en `7cc69b9` y `docs/aco/` en `4275ef0` (rama `docs/pasada-b-fichas`) |
 | Commit de las fuentes del repositorio | `7cc69b9` para `docs/adr/` y `4275ef0` para `docs/aco/` (rama `docs/pasada-b-fichas`). Entre `a1df03b` y `7cc69b9` se añaden ADR-016, ADR-017 y ADR-018; en `4275ef0` se corrigen las líneas de estado de ocho fichas (PD-25) |
 | Proceso | Estrategia de Actualización Documental v0.8: §4.10 y Anexo B (modo B), con las reglas del modo A |
 
@@ -20,21 +20,22 @@ Artefacto compilado (Estrategia de Actualización Documental §4.2). Es el **ún
 
 | Fuente | Versión exacta | Fichero leído | SHA-256 |
 |---|---|---|---|
-| Plan de Proyecto | v0.22 | `ACOMPAS - Plan de Proyecto v0.22.md` | `38e723c7205c79880fb7d3b3a0eaed3c1cfbb3c3bd248e4f2feae5331d7ecf4c` |
+| Plan de Proyecto | v0.22 | `ACOMPAS - Plan de Proyecto v0.22.md` | `3d7fc2070c9686b5e9ad2805afe7f095d6be37d63ca7c7863ac0536ea41701c4` |
 | Arquitectura del Sistema | v0.10 | `ACOMPAS - Arquitectura del Sistema v0.10.md` | `b8c47bdffb2654473c5380622232cefdce8b57dcd812dc479299f1b644a005c2` |
 | Plan de Trabajo | v0.12 | `ACOMPAS - Plan de Trabajo v0.12.md` | `e55e139088890dfe282f0562f433bb3c0aae668294098f7c692012c97b9e10ea` |
-| Documento Operativo Sprint 1 | v0.7 | `ACOMPAS - Documento Operativo Sprint 1 v0.7.md` | `5996b88d23c463c0015dda8263c26929b0ad246fb4250155679c572360bcd69d` |
-| Casos de Uso | v0.7 | `ACOMPAS - Casos de Uso v0.7.md` | `e5109f5e9595cb5598130352176fd9229284e03d13e6d9ae3712905666df0b56` |
-| Modelo E/R | v0.10 | `ACOMPAS - Modelo ER v0.10.md` (texto, relaciones y notas) | `d1633570a26a07e4ddc7e7230111552b19ed5722c204d6ce0590c349750abcb0` |
-| Modelo E/R | v0.10 | `ACOMPAS - Modelo ER v0.10.docx` (solo tablas de entidades: tipo, restricción y descripción; ver nota) | `855e639b06bd277a586c0cee222293cf5be9e7febd43725fdb8a0b9702d8fe24` |
+| Documento Operativo Sprint 1 | v0.7 | `ACOMPAS - Documento Operativo Sprint 1 v0.7.md` | `279d34241d3158a859d36ea7f32303443070504124980aa6d2933e965613a409` |
+| Casos de Uso | v0.7 | `ACOMPAS - Casos de Uso v0.7.md` | `9b43a423dfdddd5c8dcb3f87b14a1474b1cbc2da40a86b576ee5f1306c09e1f7` |
+| Modelo E/R | v0.10 | `ACOMPAS - Modelo ER v0.10.md` (ver nota) | `11110481b8c6332e759419319adcb29600762d17bfc552437d84eb058c724013` |
 | Wireframes MVP | v0.6 | `ACOMPAS - Wireframes MVP v0.6.html` | `b4d63f90de233b7353da077f084a0778ee0d2b877234518cf46ecdc27fc72912` |
-| Estrategia de Actualización Documental | v0.8 | `ACOMPAS - Estrategia de Actualizacion Documental v0.8.md` (§4, incluida §4.10, y Anexos A y B) | `fc63e0684ff4c0ca03b7c91e6d130ee4922e0520789977e771bd1fbc8fa83e6f` |
+| Estrategia de Actualización Documental | v0.8 | `ACOMPAS - Estrategia de Actualizacion Documental v0.8.md` (§4, incluida §4.10, y Anexos A y B) | `f509a3c187b67d5d25f7c0cc4cf39032f3e6d3f038e4956369af5e02d13f8a26` |
 | ADR aprobados | ADR-001 a ADR-018, todos «aprobado» | `docs/adr/` en el commit `7cc69b9` | — |
 | Fichas ACO | ACO-011 a ACO-033, ACO-051 y ACO-052 (25 fichas) | `docs/aco/` en el commit `4275ef0` (`PLANTILLA.md` no es ficha ni fuente) | — |
 
 Ficheros de `~/projects/acompas-fuentes/`.
 
-**Nota sobre el Modelo E/R:** al convertirse a Markdown, las tablas de entidades perdieron las columnas Tipo, Restricción y Descripción. Por autorización expresa del usuario en el PLAN, esas tablas se leyeron del .docx **de la misma versión** v0.10. El resto del .md coincide con el .docx.
+**Nota sobre el Modelo E/R:** en la instantánea `90acd3c`, al convertirse a Markdown, las tablas de entidades perdieron las columnas Tipo, Restricción y Descripción, y por autorización expresa del usuario en el PLAN se leyeron del .docx **de la misma versión**. Corregido en `ACOMPAS-IA/acompas-fuentes#4` (PD-04): el `.md` de `f7eff22` conserva las cuatro columnas y es la única fuente que se cita. El contenido compilado en las piezas es el mismo.
+
+**Nota sobre la exportación:** los `.md` de `f7eff22` se exportan todos con `pandoc -t gfm --wrap=none` (`ACOMPAS-IA/acompas-fuentes#6`). Cambian los saltos de línea de cinco fuentes, no su texto: ninguna pieza cambia de contenido.
 
 **Nota sobre ADR-013:** la fuente es `docs/adr/ADR-013-politica-de-anonimizacion-y-umbral.md` del commit indicado. El fichero suelto `ADR-013.md` de `~/projects/acompas-fuentes/` no es fuente, y su texto difiere en una consecuencia.
 
@@ -71,7 +72,7 @@ Convención: en el cuerpo de cada pieza solo se citan sus fuentes. Lo que perten
 | Pieza | Fuentes normativas (secciones) | Fuentes derivadas u operativas (secciones) |
 |---|---|---|
 | `01-PRODUCTO.md` | Plan de Proyecto §1, §2, §3, §4, §6 | Casos de Uso §1, §2, §4 |
-| `02-DOMINIO.md` | Arquitectura §4, §6, §7, §8, §9, §16; ADR-001, 002, 003, 005, 006, 007, 009, 010, 011, 012, 013, 014, 017 | Casos de Uso §1–§3; Modelo E/R §1, §2 (tablas del .docx), §3, §4; fichas ACO-022 y ACO-023 (qué fija cada una en la política y la numeración) |
+| `02-DOMINIO.md` | Arquitectura §4, §6, §7, §8, §9, §16; ADR-001, 002, 003, 005, 006, 007, 009, 010, 011, 012, 013, 014, 017 | Casos de Uso §1–§3; Modelo E/R §1, §2, §3, §4; fichas ACO-022 y ACO-023 (qué fija cada una en la política y la numeración) |
 | `03-REGLAS.md` | ADR-001 a 018; Arquitectura §2, §3, §4, §5, §6, §8, §9, §10, §11, §13, §14, §15, §16; Plan de Proyecto §1, §2; Plan de Trabajo §2, §4, §5, §8, §9, §10 | Casos de Uso UC-05, UC-07, UC-09; Fichas ACO-012, 014, 015, 021, 022, 023, 024, 025, 028, 031, 051 |
 | `04-INTERFAZ.md` | Plan de Proyecto §1, §4, §6; Arquitectura §3, §4, §6, §7, §8, §9, §11, §14; ADR-012, ADR-013 | Casos de Uso UC-01, 03–06, 08–13, 17, 18, 20–24; Wireframes, pantallas 1–10 (incluidas 4b, 4c y la vista móvil); fichas ACO-017, ACO-031 y ACO-032 |
 | `05-DISEÑO.md` | Arquitectura §3–§11, §13, §14, §16; Plan de Proyecto §2; ADR-001, 003, 004, 005, 006, 007, 009, 010, 011, 012, 013, 014, 015, 016, 017, 018 | Wireframes (componentes de interfaz); Modelo E/R (persistencia) |
