@@ -19,7 +19,7 @@ No se ha modificado ninguna fuente. Los SHA-256 de `~/projects/acompas-fuentes` 
 
 | Tema | Decisión |
 |---|---|
-| Las tablas de entidades del Modelo E/R en .md perdieron las columnas Tipo, Restricción y Descripción | Se leen del .docx de la misma versión (constan en el MANIFIESTO) |
+| Las tablas de entidades del Modelo E/R en .md perdieron las columnas Tipo, Restricción y Descripción | Se leen del .docx de la misma versión (constan en el MANIFIESTO). Resuelto en la fuente por `acompas-fuentes#4` (PD-04): el `.md` de la instantánea `f7eff22` conserva las cuatro columnas |
 | Los Wireframes muestran nombres de fichero originales, frente a ADR-012 | Prevalece la fuente normativa (Estrategia §9 y §4.6). 04 se genera y la discrepancia pasa a pendientes |
 | Documento retenido: UC-06, el wireframe 4 y el ADR pendiente no coinciden | Cuestión abierta, no contradicción. Las piezas solo fijan «se retiene y no se carga» |
 
@@ -341,7 +341,7 @@ Motivo: la pasada B de la Estrategia ha actualizado las fuentes documentales del
 | `docs/aco/` (`a1df03b` → `7cc69b9`) | ACO-012 (P16–P18), 014, 015 (P3, P4, P6, P8 y ejecución de P9–P10), 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052 | — |
 | `docs/aco/` (`7cc69b9` → `4275ef0`) | Línea de estado de ACO-013, 014, 019, 022, 023, 024, 025 y 026: criterios confirmados en la revisión de su PR, con el número de la PR (PD-25). ACO-032 sigue pendiente y su corrección va en #149 | — |
 
-Las dos instantáneas son distintas y no se mezclan: los documentos de `~/projects/acompas-fuentes/` se congelan en `90acd3c` (13 de noviembre), `docs/adr/` en `7cc69b9` y `docs/aco/` en `4275ef0` (rama `docs/pasada-b-fichas`).
+Las instantáneas son distintas y no se mezclan: los documentos de `~/projects/acompas-fuentes/` se congelan en `90acd3c` (13 de noviembre), `docs/adr/` en `7cc69b9` y `docs/aco/` en `4275ef0` (rama `docs/pasada-b-fichas`). Las fuentes se publicaron después en `85c0ab4` y la instantánea vigente es `f7eff22` (14 de noviembre): entre una y otra solo cambia la forma de cinco documentos (PD-04 y la normalización de la exportación), no su contenido.
 
 ### D.2 Piezas regeneradas
 
@@ -399,7 +399,7 @@ Los identificadores R y T se conservan y los nuevos continúan la numeración. 0
 
 - Rama `docs/arnes-pasada-b`, HEAD = `4275ef0` antes del commit del arnés, sin cambios previos.
 - Solo cambian `docs/arnes/01` a `09`, `MANIFIESTO.md` y este informe. `AGENTS.md`, `docs/adr/`, `docs/aco/` y el código no cambian.
-- Los SHA-256 del manifiesto se comprueban contra `SHA256SUMS` de `acompas-fuentes` en `90acd3c`, ya publicados en `main` en `85c0ab4` (`sha256sum -c`: 17/17); ADR, contra `7cc69b9`; fichas, contra `4275ef0`.
+- Los SHA-256 del manifiesto se comprueban contra `SHA256SUMS` de `acompas-fuentes` en `90acd3c`, publicados en `main` en `85c0ab4`; los hashes del §2 son los de la instantánea vigente `f7eff22` (`sha256sum -c`: 17/17), posterior a `acompas-fuentes#4` (PD-04) y `#6` (exportación sin envolver), que solo cambian la forma: ningún `.md` cambia de texto y ninguna pieza se regenera por ellos. ADR, contra `7cc69b9`; fichas, contra `4275ef0`.
 - `~/projects/acompas-fuentes`: los SHA-256 coinciden antes y después de la regeneración.
 - Trazabilidad R↔T comprobada en los dos sentidos: 58 reglas y 43 verificaciones, ninguna regla sin verificación ni verificación sin regla. Se corrigen tres desajustes de la generación anterior: R-05 declaraba el rango T-01…T-08 y solo T-01 y T-04 la citan; la fila inversa de R-24 no recogía T-39; y 09 declaraba ADR-001 y ADR-018 sin citarlos.
 - Citas de cada pieza comprobadas contra su fila del MANIFIESTO §4: ningún ADR, sección ni ACO citado fuera de las fuentes declaradas. Se ajustan las fuentes declaradas de 02 (retirados el Plan de Proyecto y ADR-016/018, no citados), 04 (añadidos ADR-012, ADR-013 y la ficha ACO-017), 05 (ADR-004 citado en la fila de OCR), 06 (ADR-012 y la ficha ACO-052), 07 (Arquitectura §6 y retirada §9), 08 (Plan de Trabajo §4, §6, §9 y §10; Documento Operativo §2, §6 y §9–§14; ADR-013 a ADR-015) y 09 (Plan de Proyecto §1; ADR-013 a ADR-015; Documento Operativo §3, §9 y §14).
