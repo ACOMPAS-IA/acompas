@@ -17,8 +17,10 @@ const CONTINUE_LABEL = 'Continuar a la conversación'
 const REPLACED_LEAD = 'Hemos sustituido los datos que te identifican:'
 const NOTHING_REPLACED = 'No se han detectado datos que te identifiquen.'
 
-const LABEL_NOTICE = /Los corchetes son una ayuda para leer el texto/
-const OVER_NOTICE = /También puede pasar lo contrario/
+const LABEL_NOTICE =
+  'Los corchetes son una ayuda para leer el texto. Pueden no acertar con el papel de la persona: [PERSONA_1] puede ser un médico o un familiar. Lo importante es que el dato que te identifica ya no está, aunque la etiqueta no acierte con el rol.'
+const OVER_NOTICE =
+  'También puede pasar lo contrario: que hayamos sustituido un dato que te ayudaba a entender el informe, como una fecha. Es deliberado. Ante la duda, preferimos quitar el dato a dejar escapar algo que te identifique.'
 
 const TOO_LONG_TEXT =
   'El documento es demasiado largo una vez anonimizado y no se puede usar en la conversación. Prueba con un documento más corto.'
@@ -70,6 +72,10 @@ function replacedItems(): (string | null)[] {
   return screen.getAllByRole('listitem').map((item) => item.textContent)
 }
 
+function normalizeWhitespace(text: string): string {
+  return text.replace(/\s+/g, ' ').trim()
+}
+
 describe('ValidationResultPage', () => {
   it('muestra los datos sustituidos en lenguaje natural y el texto anonimizado', () => {
     const { container, onContinue } = renderPage(VALID)
@@ -99,11 +105,17 @@ describe('ValidationResultPage', () => {
     expect(container.querySelector('details')).toBeNull()
   })
 
-  it('da siempre los dos avisos sobre los límites de la anonimización', () => {
-    renderPage(VALID)
+  it('da los dos avisos con el texto completo de P8', () => {
+    const { container } = renderPage(VALID)
 
-    expect(screen.getByText(LABEL_NOTICE)).toBeDefined()
-    expect(screen.getByText(OVER_NOTICE)).toBeDefined()
+    const notices = Array.from(
+      container.querySelectorAll('.result__notice'),
+    ).map((notice) => normalizeWhitespace(notice.textContent ?? ''))
+
+    expect(notices).toEqual([
+      normalizeWhitespace(LABEL_NOTICE),
+      normalizeWhitespace(OVER_NOTICE),
+    ])
   })
 
   it('avisa cuando no se ha sustituido ningún dato', () => {
