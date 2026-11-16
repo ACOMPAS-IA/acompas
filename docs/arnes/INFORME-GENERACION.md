@@ -338,9 +338,9 @@ Motivo: la pasada B de la Estrategia ha actualizado las fuentes documentales del
 | Modelo E/R v0.9 → v0.10 | SOLICITUD_DESBLOQUEO_CREDITO incorpora `motivo` y `motivo_resolucion`; DOCUMENTO retira `retenido_baja_confianza` y ya no guarda el documento retenido; TIPO_ETIQUETA y ETIQUETA_ANONIMIZACION pasan a `[SANITARIO]`, `[SANITARIO_n]` y `'PERSONAL_SANITARIO'`; ENTRADA_GLOSARIO alinea sus estados; FRAGMENTO_RAG marca la dimensión 768 como provisional | §1, §2 |
 | Wireframes MVP v0.5 → v0.6 | Aviso de duplicado y nombre genérico; resultado de la validación en lenguaje natural, sin confianza, umbral, recuentos ni códigos; nuevas pantallas 4b (retenido) y 4c (ilegible); motivo del paciente y motivo de la resolución en las pantallas 8 y 9; barra de disclaimer en las pantallas 2–9 con el literal de ACO-031 y sin barra en el login; nueva pantalla 10 con la vista móvil a 360 px | Pantallas 2–5, 8, 9, 4b, 4c y 10 |
 | `docs/adr/` (`a1df03b` → `68db567`) | ADR-016 (retirada de `offline_access` del rol por defecto), ADR-017 (mecanismo de la lista blanca) y ADR-018 (corrección del rol por defecto tras la importación), nuevos y aprobados | — |
-| `docs/aco/` (`a1df03b` → `68db567`) | Pasada B: ACO-012 (P16–P18), 014, 015 (P3, P4, P6, P8 y ejecución de P9–P10), 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052. En #162: línea de estado de ACO-013, 014, 019, 022, 023, 024, 025, 026 y ACO-028 (confirmadas, PD-25), encabezado de §0 de ACO-015, remisión a la matriz del Documento Operativo en lugar de «Sprint 1» en ACO-020, ACO-021 y ACO-033, y cita de la PR de fuentes del wireframe v0.6 en ACO-031. ACO-032 no cambia: su texto viene de `d92e8c4` (#149). En la rama fueron `7cc69b9`, `be79c6e`, `4275ef0` y `58fac86`, aplastados en `68db567` | — |
+| `docs/aco/` (`a1df03b` → `68db567`) | Pasada B: ACO-012 (P16–P18), 014, 015 (P3, P4, P6, P8 y ejecución de P9–P10), 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052. En #162: línea de estado de ACO-013, 014, 019, 022, 023, 024, 025, 026 y ACO-028 (confirmadas, PD-25), encabezado de §0 de ACO-015, remisión a la matriz del Documento Operativo en lugar de «Sprint 1» en ACO-020, ACO-021 y ACO-033, y cita de la PR de fuentes del wireframe v0.6 en ACO-031. ACO-032 no cambia: su texto viene de `d92e8c4` (#149). En la rama fueron `7cc69b9`, `be79c6e`, `4275ef0` y `58fac86`, aplastados en `68db567`. En #167 (`929daf8`) entran las fichas históricas ACO-001, ACO-006 y ACO-007 | — |
 
-Las instantáneas son distintas y no se mezclan: los documentos de `~/projects/acompas-fuentes/` se congelan en `90acd3c` (13 de noviembre), y `docs/adr/` y `docs/aco/` en `68db567`, donde entró aplastado el contenido de la rama `docs/pasada-b-fichas`. La ampliación del 16 de noviembre mueve la instantánea de las fuentes a `89cadd4`; el estado de las fichas sigue en `68db567` y `docs/adr/` no cambia. Las fuentes se publicaron después en `85c0ab4` y la instantánea vigente es `f7eff22` (14 de noviembre): entre una y otra solo cambia la forma de cinco documentos (PD-04 y la normalización de la exportación), no su contenido.
+Las instantáneas son distintas y no se mezclan: los documentos de `~/projects/acompas-fuentes/` se congelan en `90acd3c` (13 de noviembre), y `docs/adr/` y `docs/aco/` en `929daf8`, donde consta el contenido de la rama `docs/pasada-b-fichas` (aplastado en `68db567`) y las fichas históricas de #167. La ampliación del 16 de noviembre mueve la instantánea de las fuentes a `89cadd4`; el estado de las fichas sigue en `929daf8` y `docs/adr/` no cambia. Las fuentes se publicaron después en `85c0ab4` y la instantánea vigente es `f7eff22` (14 de noviembre): entre una y otra solo cambia la forma de cinco documentos (PD-04 y la normalización de la exportación), no su contenido.
 
 ### D.2 Piezas regeneradas
 
@@ -396,7 +396,7 @@ Los identificadores R y T se conservan y los nuevos continúan la numeración. 0
 
 ### D.6 Verificación de integridad
 
-- Base `929daf8` (`main` tras #162 y #167), sin cambios previos en la rama. La instantánea que se cita para `docs/adr/` y `docs/aco/` es `68db567`, anterior a la base: los commits de fichas de la rama `docs/pasada-b-fichas` entraron aplastados en ese commit.
+- Base `929daf8` (`main` tras #162 y #167), sin cambios previos en la rama. La instantánea que se cita para `docs/adr/` y `docs/aco/` es `929daf8`: los commits de fichas de la rama `docs/pasada-b-fichas` entraron aplastados en `68db567`, y #167 añadió las fichas históricas ACO-001, ACO-006 y ACO-007.
 - Solo cambian `docs/arnes/01` a `09`, `MANIFIESTO.md` y este informe. `AGENTS.md`, `docs/adr/`, `docs/aco/` y el código no cambian.
 - Los SHA-256 del manifiesto se comprueban contra `SHA256SUMS` de `acompas-fuentes` en `90acd3c`, publicados en `main` en `85c0ab4`; los hashes del §2 son los de la instantánea vigente `f7eff22` (`sha256sum -c`: 17/17), posterior a `acompas-fuentes#4` (PD-04) y `#6` (exportación sin envolver), que solo cambian la forma: ningún `.md` cambia de texto y ninguna pieza se regenera por ellos. La ampliación del 16 de noviembre repite la comprobación sobre `89cadd4`, con `sha256sum -c`: 16/16. ADR y fichas, contra `68db567`.
 - `~/projects/acompas-fuentes`: los SHA-256 coinciden antes y después de la regeneración.
@@ -411,7 +411,7 @@ Lo anterior describe la regeneración del 13 de noviembre. La ampliación del 16
 
 Regeneración según la Estrategia v0.9 §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-11-16. Punto de partida: rama `docs/arnes-pasada-b`, HEAD `79a4df0`. Fuentes, versiones y commits: `MANIFIESTO.md`.
 
-Motivo: la pasada B del 13 de noviembre compiló el juego documental de entonces. Después, `acompas-fuentes#7` retira la Guía rápida de revisión de PR (PD-11), sube el Plan de Trabajo a v0.13 y la Estrategia a v0.9, y la PR #149 (`d92e8c4`) corrige la línea de estado de ACO-032. La ampliación recoge esos cambios; no vuelve a generar las nueve piezas.
+Motivo: la pasada B del 13 de noviembre compiló el juego documental de entonces. Después, `acompas-fuentes#7` retira la Guía rápida de revisión de PR (PD-11), sube el Plan de Trabajo a v0.13 y la Estrategia a v0.9, la PR #149 (`d92e8c4`) corrige la línea de estado de ACO-032 y la PR #167 (`929daf8`) añade las fichas históricas ACO-001, ACO-006 y ACO-007. La ampliación recoge esos cambios; no vuelve a generar las nueve piezas.
 
 ### Fuentes e instantáneas
 
@@ -419,16 +419,16 @@ Motivo: la pasada B del 13 de noviembre compiló el juego documental de entonces
 |---|---|---|
 | Plan de Trabajo v0.12 → v0.13 | §4 deja de remitir a la Guía rápida de revisión de PR; §11 retira el documento de la lista de documentos de proceso. La guía sale del juego documental: no cambian las reglas de revisión ni el flujo | §4, §11 |
 | Estrategia de Actualización Documental v0.8 → v0.9 | Anexo A: se retira la fila de la Guía rápida de revisión de PR | Anexo A |
-| `docs/aco/` (`d92e8c4` → `68db567`) | ACO-032 no cambia (su texto viene de #149); #162 añade la línea de estado de ACO-013, 014, 019, 022, 023, 024, 025, 026 y ACO-028, el encabezado de §0 de ACO-015, la remisión a la matriz del Documento Operativo de ACO-020, 021 y 033, y la cita de la PR de fuentes en ACO-031 | — |
+| `docs/aco/` (`d92e8c4` → `929daf8`) | ACO-032 no cambia (su texto viene de #149); #162 añade la línea de estado de ACO-013, 014, 019, 022, 023, 024, 025, 026 y ACO-028, el encabezado de §0 de ACO-015, la remisión a la matriz del Documento Operativo de ACO-020, 021 y 033, y la cita de la PR de fuentes en ACO-031. #167 añade las fichas históricas ACO-001, ACO-006 y ACO-007 («Estado: ficha histórica»), que no reconstruyen criterios de aceptación, estimación, responsable, revisión ni dependencias | — |
 | Guía rápida de revisión de PR v0.1 | Documento retirado: el `.docx` sale de `acompas-fuentes` y `README.md` y `SHA256SUMS` pasan de 17 a 16 ficheros | — |
 
-La instantánea de las fuentes pasa de `f7eff22` a `89cadd4` (14 de noviembre), con `sha256sum -c SHA256SUMS`: 16/16. `docs/adr/` no cambia y `docs/aco/` pasa a `68db567`.
+La instantánea de las fuentes pasa de `f7eff22` a `89cadd4` (14 de noviembre), con `sha256sum -c SHA256SUMS`: 16/16. `docs/adr/` no cambia entre `68db567` y `929daf8`, y `docs/aco/` pasa a `929daf8` (#167 añade las fichas históricas ACO-001, ACO-006 y ACO-007).
 
 ### Piezas actualizadas
 
 | Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
 |---|---|---|---|
-| 08-PLAN | Sí | `docs/aco/` en `68db567` | §5 pasa ACO-032 a la fila de fichas con criterios confirmados, con la nota de la presentación del resultado revisada en #149, y desaparecen la fila y la cuestión abierta que remitían a #149. Con #162, ACO-028 pasa a la fila de confirmadas y ninguna ficha queda pendiente |
+| 08-PLAN | Sí | `docs/aco/` en `929daf8` | §5 pasa ACO-032 a la fila de fichas con criterios confirmados, con la nota de la presentación del resultado revisada en #149, y desaparecen la fila y la cuestión abierta que remitían a #149. Con #162, ACO-028 pasa a la fila de confirmadas y ninguna ficha queda pendiente. Con #167, §5 añade la fila de ficha histórica (001, 006 y 007) y ACO-007 deja de presentarse como ACO sin ficha |
 | `AGENTS.md` | Sí | Plan de Trabajo §4; §11 | §9: la PR enlaza su ficha y su Issue, sin remisión a la Guía rápida. La regla de revisión no cambia: sigue en el mismo párrafo y en la Definition of Done |
 | 01 a 07 y 09 | No | Ninguna de sus fuentes cambia de contenido | — |
 
@@ -444,6 +444,6 @@ La retirada de la guía no cambia ninguna regla, ningún dato ni ningún criteri
 ### Verificación
 
 - Solo cambian `AGENTS.md`, `docs/arnes/08-PLAN.md`, `docs/arnes/MANIFIESTO.md` y este informe. `docs/adr/`, `docs/aco/` y el código no cambian.
-- La rama se rebasa sobre `main` tras #162 y #167: el estado de las fichas entra por `68db567`, y los commits de fichas que la rama arrastraba se descartan porque ya estaban aplastados en `main`. El diff de la PR no toca `docs/aco/`.
-- Los SHA-256 del §2 son los de `89cadd4`, comprobados con `sha256sum -c SHA256SUMS`: 16/16, antes y después de la ampliación. ADR y fichas, contra `68db567`.
+- La rama se rebasa sobre `main` tras #162 y #167: el estado de las fichas entra por `68db567` y las históricas, por `929daf8`; los commits de fichas que la rama arrastraba se descartan porque ya estaban aplastados en `main`. El diff de la PR no toca `docs/aco/`.
+- Los SHA-256 del §2 son los de `89cadd4`, comprobados con `sha256sum -c SHA256SUMS`: 16/16, antes y después de la ampliación. ADR y fichas, contra `929daf8`, incluidas las históricas de #167.
 - Ninguna pieza del arnés ni `AGENTS.md` remiten ya a la Guía rápida de revisión de PR: `grep -rn "Guía rápida" AGENTS.md docs/arnes/` solo devuelve las filas del manifiesto y de este informe que describen la retirada.

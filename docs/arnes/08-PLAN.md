@@ -69,7 +69,7 @@ Quedan fuera de la demo: los Niveles 2 y 3, el RAG, el historial, el VPS, y el d
 | 051 | Datos sintéticos para demo | Luis | Miguel | 4–6 h | — |
 | 052 | Casos de prueba | Luis | Miguel | 4–6 h | 030/032 |
 
-ACO-007 («esqueleto del backend», FastAPI) se entregó en la PR #1 (merge `4f5e360`). No tiene ficha en `docs/aco/` porque es anterior a las fichas: la dependencia «013/007» del ACO-014 remite a ese trabajo, ya integrado en `main`, y no a un ACO pendiente del Sprint 1. *(Documento Operativo §6)*
+ACO-007 («esqueleto del backend», FastAPI) se entregó en la PR #1 (merge `4f5e360`). Su ficha es histórica (`docs/aco/ACO-007.md`, #167): se añadió después y no reconstruye criterios de aceptación, estimación, responsable, revisión ni dependencias. La dependencia «013/007» del ACO-014 remite a ese trabajo, ya integrado en `main`, y no a un ACO pendiente del Sprint 1. *(Documento Operativo §6)*
 
 ## 3. Cadenas de dependencias y puntos de entrega
 
@@ -121,6 +121,7 @@ Estado de las fichas en el commit del manifiesto:
 | Ficha revisada, con puntos confirmados y la ejecución de P9 y P10 anotada | 015 |
 | Ficha ejecutable (criterios AC-01…AC-09, tests, componentes y BLOQUEO), sin indicación expresa de estado | 021 |
 | Ficha de alcance | 020, 033 |
+| Ficha histórica: entregada antes de las fichas; no reconstruye criterios de aceptación, estimación, responsable, revisión ni dependencias | 001, 006, 007 |
 
 Resumen de alcance de cada ACO *(fichas, §Objetivo, §Incluye y §Fuera de alcance; el texto completo está en cada ficha)*:
 
