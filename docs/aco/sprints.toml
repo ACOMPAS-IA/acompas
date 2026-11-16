@@ -1,0 +1,178 @@
+# Datos del índice de ACO.
+#
+# Una entrada por ACO. El título no se escribe aquí: lo lee scripts/indice.py
+# de la primera línea de docs/aco/ACO-<id>.md.
+#
+# Para regenerar el índice, ejecuta `python scripts/indice.py`. La CI comprueba
+# con `python scripts/indice.py --check` que docs/indice.md coincide con este
+# archivo y con las fichas.
+#
+# El estado es una lista cerrada: pendiente, en curso, en revisión, hecho o
+# traspasado. No se compara con el estado de la Issue en GitHub.
+#
+# Campos opcionales: sprint (S1 a S8), issue (número de la Issue) y casos_uso
+# (lista de UC-NN). Si una entrada no tiene ficha, se escribe el motivo en
+# sin_ficha.
+
+[[aco]]
+id = "001"
+estado = "hecho"
+
+[[aco]]
+id = "006"
+estado = "hecho"
+
+[[aco]]
+id = "007"
+estado = "hecho"
+
+[[aco]]
+id = "011"
+sprint = "S1"
+estado = "hecho"
+issue = 16
+
+[[aco]]
+id = "012"
+sprint = "S1"
+estado = "hecho"
+issue = 17
+
+[[aco]]
+id = "013"
+sprint = "S1"
+estado = "hecho"
+issue = 18
+
+[[aco]]
+id = "014"
+sprint = "S1"
+estado = "hecho"
+issue = 19
+
+[[aco]]
+id = "015"
+sprint = "S1"
+estado = "hecho"
+issue = 20
+
+[[aco]]
+id = "016"
+sprint = "S1"
+estado = "hecho"
+issue = 21
+
+[[aco]]
+id = "017"
+sprint = "S1"
+estado = "hecho"
+issue = 22
+
+[[aco]]
+id = "018"
+sprint = "S1"
+estado = "hecho"
+issue = 23
+
+[[aco]]
+id = "019"
+sprint = "S1"
+estado = "hecho"
+issue = 24
+
+[[aco]]
+id = "020"
+sprint = "S1"
+estado = "hecho"
+issue = 25
+
+[[aco]]
+id = "021"
+sprint = "S1"
+estado = "hecho"
+issue = 26
+
+[[aco]]
+id = "022"
+sprint = "S1"
+estado = "hecho"
+issue = 27
+
+[[aco]]
+id = "023"
+sprint = "S1"
+estado = "hecho"
+issue = 28
+
+[[aco]]
+id = "024"
+sprint = "S1"
+estado = "hecho"
+issue = 29
+
+[[aco]]
+id = "025"
+sprint = "S1"
+estado = "hecho"
+issue = 30
+
+[[aco]]
+id = "026"
+sprint = "S1"
+estado = "hecho"
+issue = 31
+
+[[aco]]
+id = "027"
+sprint = "S1"
+estado = "hecho"
+issue = 32
+
+[[aco]]
+id = "028"
+sprint = "S1"
+estado = "hecho"
+issue = 33
+
+[[aco]]
+id = "029"
+sprint = "S1"
+estado = "hecho"
+issue = 34
+casos_uso = ["UC-05", "UC-09"]
+
+[[aco]]
+id = "030"
+sprint = "S1"
+estado = "hecho"
+issue = 35
+
+[[aco]]
+id = "031"
+sprint = "S1"
+estado = "hecho"
+issue = 36
+
+[[aco]]
+id = "032"
+sprint = "S1"
+estado = "hecho"
+issue = 37
+
+[[aco]]
+id = "033"
+sprint = "S2"
+estado = "traspasado"
+issue = 38
+
+[[aco]]
+id = "051"
+sprint = "S1"
+estado = "hecho"
+issue = 8
+
+[[aco]]
+id = "052"
+sprint = "S1"
+estado = "hecho"
+issue = 39
