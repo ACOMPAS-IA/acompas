@@ -6,15 +6,15 @@ Artefacto compilado (Estrategia de Actualización Documental §4.2). Es el **ún
 
 | Campo | Valor |
 |---|---|
-| Modo | B: regeneración (anterior: modo B, 2026-11-02, commit `0a2d6f0`) |
-| Fecha | 2026-11-13 |
-| Estado | **Regenerado y auditado, pendiente de revisión humana en PR**. Sin piezas detenidas. Pendientes documentales: `docs/arnes/INFORME-GENERACION.md`, sección «Regeneración (modo B) — pasada B (2026-11-13)» |
-| Fuentes cambiadas | Plan de Proyecto (v0.21 → v0.22: §1, §6, §7); Arquitectura del Sistema (v0.9 → v0.10: §16); Plan de Trabajo (v0.11 → v0.12: §8, §9, §11, §12, §13); Documento Operativo Sprint 1 (v0.5 → v0.7: §6, §9, §10, §14, §16); Casos de Uso (v0.6 → v0.7: §2, §3, portada); Modelo E/R (v0.9 → v0.10: §1, §2); Wireframes MVP (v0.5 → v0.6: pantallas 2–5, 8, 9, nuevas 4b, 4c y 10); `docs/adr/` (ADR-016, ADR-017 y ADR-018, nuevos); 18 fichas ACO (ACO-012, 014, 015, 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052). La Estrategia v0.8 y las demás fuentes conservan versión (su SHA-256 es el de `85c0ab4`; el de la instantánea vigente `f7eff22` consta en §2, con las notas de forma). Después, en `4275ef0`, cambia la línea de estado de ocho fichas (PD-25) |
-| Piezas regeneradas | 01, 02, 03, 04, 05, 06, 07, 08 y 09 |
-| Piezas sin regenerar | `AGENTS.md`: sus fuentes (Plan de Trabajo §4, §8, §9 y §10; Estrategia §4.1) no cambian de contenido |
-| Instantáneas de origen | Documentos de `~/projects/acompas-fuentes/` en `90acd3c` (13 nov 2026), publicados en `main` de `acompas-fuentes` en `85c0ab4`; la instantánea vigente de las fuentes es `f7eff22` (14 nov 2026), con `sha256sum -c SHA256SUMS`: 17/17. Entre `85c0ab4` y `f7eff22` solo hay cambios de forma (notas del §2); `docs/adr/` en `7cc69b9` y `docs/aco/` en `4275ef0` (rama `docs/pasada-b-fichas`) |
-| Commit de las fuentes del repositorio | `7cc69b9` para `docs/adr/` y `4275ef0` para `docs/aco/` (rama `docs/pasada-b-fichas`). Entre `a1df03b` y `7cc69b9` se añaden ADR-016, ADR-017 y ADR-018; en `4275ef0` se corrigen las líneas de estado de ocho fichas (PD-25) |
-| Proceso | Estrategia de Actualización Documental v0.8: §4.10 y Anexo B (modo B), con las reglas del modo A |
+| Modo | B: regeneración, ampliada el 2026-11-16 (anterior: modo B, 2026-11-02, commit `0a2d6f0`) |
+| Fecha | 2026-11-13; ampliación del 2026-11-16 |
+| Estado | **Regenerado y auditado, pendiente de revisión humana en PR**. Sin piezas detenidas. La ampliación del 16 de noviembre incorpora la retirada de la Guía rápida de revisión de PR (PD-11) y el estado de las fichas en el commit de `docs/aco/` tras #149 (PD-25). Pendientes documentales: `docs/arnes/INFORME-GENERACION.md`, secciones «Regeneración (modo B) — pasada B (2026-11-13)» y «Ampliación (modo B) — 16 de noviembre de 2026» |
+| Fuentes cambiadas | Plan de Proyecto (v0.21 → v0.22: §1, §6, §7); Arquitectura del Sistema (v0.9 → v0.10: §16); Plan de Trabajo (v0.11 → v0.12: §8, §9, §11, §12, §13); Documento Operativo Sprint 1 (v0.5 → v0.7: §6, §9, §10, §14, §16); Casos de Uso (v0.6 → v0.7: §2, §3, portada); Modelo E/R (v0.9 → v0.10: §1, §2); Wireframes MVP (v0.5 → v0.6: pantallas 2–5, 8, 9, nuevas 4b, 4c y 10); `docs/adr/` (ADR-016, ADR-017 y ADR-018, nuevos); 18 fichas ACO (ACO-012, 014, 015, 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052). La Estrategia v0.8 y las demás fuentes conservan versión (su SHA-256 es el de `85c0ab4`; el de la instantánea vigente `f7eff22` consta en §2, con las notas de forma). Después, en `4275ef0`, cambia la línea de estado de ocho fichas (PD-25). En la ampliación del 16 de noviembre cambian el Plan de Trabajo (v0.12 → v0.13: §4, §11) y la Estrategia de Actualización Documental (v0.8 → v0.9: Anexo A), y la línea de estado de ACO-032 en `d92e8c4` (#149) |
+| Piezas regeneradas | 01, 02, 03, 04, 05, 06, 07, 08 y 09; en la ampliación, 08 (§5, fichas) y `AGENTS.md` (§9) |
+| Piezas sin regenerar | En la ampliación, 01 a 07 y 09: la retirada de la Guía rápida de revisión de PR no cambia ninguna regla, ningún dato ni ningún contrato, y el cambio de `docs/aco/` solo afecta al estado de las fichas (08). En la pasada B, `AGENTS.md` no se tocó porque sus fuentes (Plan de Trabajo §4, §8, §9 y §10; Estrategia §4.1) no cambiaban de contenido |
+| Instantáneas de origen | Documentos de `~/projects/acompas-fuentes/` en `90acd3c` (13 nov 2026), publicados en `main` de `acompas-fuentes` en `85c0ab4`; la instantánea vigente de las fuentes es `89cadd4` (14 nov 2026), con `sha256sum -c SHA256SUMS`: 16/16. Entre `85c0ab4` y `f7eff22` solo hay cambios de forma (notas del §2); entre `f7eff22` y `89cadd4` cambian el Plan de Trabajo (v0.13) y la Estrategia (v0.9) y sale la Guía rápida de revisión de PR (PD-11); `docs/adr/` en `7cc69b9` y `docs/aco/` en `d92e8c4` |
+| Commit de las fuentes del repositorio | `7cc69b9` para `docs/adr/` y `d92e8c4` para `docs/aco/`, en `main`. Entre `a1df03b` y `7cc69b9` se añaden ADR-016, ADR-017 y ADR-018; en `4275ef0` se corrigen las líneas de estado de ocho fichas (PD-25) y en `d92e8c4` (#149) la de ACO-032 |
+| Proceso | Estrategia de Actualización Documental v0.9: §4.10 y Anexo B (modo B), con las reglas del modo A |
 
 ## 2. Fuentes congeladas
 
@@ -22,14 +22,14 @@ Artefacto compilado (Estrategia de Actualización Documental §4.2). Es el **ún
 |---|---|---|---|
 | Plan de Proyecto | v0.22 | `ACOMPAS - Plan de Proyecto v0.22.md` | `3d7fc2070c9686b5e9ad2805afe7f095d6be37d63ca7c7863ac0536ea41701c4` |
 | Arquitectura del Sistema | v0.10 | `ACOMPAS - Arquitectura del Sistema v0.10.md` | `b8c47bdffb2654473c5380622232cefdce8b57dcd812dc479299f1b644a005c2` |
-| Plan de Trabajo | v0.12 | `ACOMPAS - Plan de Trabajo v0.12.md` | `e55e139088890dfe282f0562f433bb3c0aae668294098f7c692012c97b9e10ea` |
+| Plan de Trabajo | v0.13 | `ACOMPAS - Plan de Trabajo v0.13.md` | `f41461f72b5a36e3fd4cc28e2d89f066e6b3f0da32151ea78f05cef1238dff52` |
 | Documento Operativo Sprint 1 | v0.7 | `ACOMPAS - Documento Operativo Sprint 1 v0.7.md` | `279d34241d3158a859d36ea7f32303443070504124980aa6d2933e965613a409` |
 | Casos de Uso | v0.7 | `ACOMPAS - Casos de Uso v0.7.md` | `9b43a423dfdddd5c8dcb3f87b14a1474b1cbc2da40a86b576ee5f1306c09e1f7` |
 | Modelo E/R | v0.10 | `ACOMPAS - Modelo ER v0.10.md` (ver nota) | `11110481b8c6332e759419319adcb29600762d17bfc552437d84eb058c724013` |
 | Wireframes MVP | v0.6 | `ACOMPAS - Wireframes MVP v0.6.html` | `b4d63f90de233b7353da077f084a0778ee0d2b877234518cf46ecdc27fc72912` |
-| Estrategia de Actualización Documental | v0.8 | `ACOMPAS - Estrategia de Actualizacion Documental v0.8.md` (§4, incluida §4.10, y Anexos A y B) | `f509a3c187b67d5d25f7c0cc4cf39032f3e6d3f038e4956369af5e02d13f8a26` |
+| Estrategia de Actualización Documental | v0.9 | `ACOMPAS - Estrategia de Actualizacion Documental v0.9.md` (§4, incluida §4.10, y Anexos A y B) | `a28828250dabb9564bbf00e8da6f297ba964ed4192089cafb9d22571f7dbee78` |
 | ADR aprobados | ADR-001 a ADR-018, todos «aprobado» | `docs/adr/` en el commit `7cc69b9` | — |
-| Fichas ACO | ACO-011 a ACO-033, ACO-051 y ACO-052 (25 fichas) | `docs/aco/` en el commit `4275ef0` (`PLANTILLA.md` no es ficha ni fuente) | — |
+| Fichas ACO | ACO-011 a ACO-033, ACO-051 y ACO-052 (25 fichas) | `docs/aco/` en el commit `d92e8c4` (`PLANTILLA.md` no es ficha ni fuente) | — |
 
 Ficheros de `~/projects/acompas-fuentes/`.
 
@@ -39,13 +39,13 @@ Ficheros de `~/projects/acompas-fuentes/`.
 
 **Nota sobre ADR-013:** la fuente es `docs/adr/ADR-013-politica-de-anonimizacion-y-umbral.md` del commit indicado. El fichero suelto `ADR-013.md` de `~/projects/acompas-fuentes/` no es fuente, y su texto difiere en una consecuencia.
 
-**Nota sobre las fichas:** en `4275ef0`, ocho fichas (ACO-013, 014, 019, 022, 023, 024, 025 y 026) declaran sus criterios confirmados en la revisión de su PR, con el número de la PR. ACO-032 conserva el literal «pendientes de confirmar en la revisión de la PR» porque su corrección va en #149, abierta. 08-PLAN §5 describe ese estado y el INFORME lo recoge como cuestión pendiente.
+**Nota sobre las fichas:** en `4275ef0`, ocho fichas (ACO-013, 014, 019, 022, 023, 024, 025 y 026) declaran sus criterios confirmados en la revisión de su PR, con el número de la PR. En `d92e8c4` (#149) se les suma ACO-032, que declara confirmados los puntos de la revisión de la PR #124 y remite a #149 la presentación del resultado (P8, §8.4 y criterios 12–14). ACO-028 conserva el literal «criterios confirmados… pendiente de aprobación final», que es el que describe 08-PLAN §5.
 
 **Nota sobre ADR-015:** su contexto afirma que la demo interna del 27/10/2026 se celebró. No se celebró. El ADR está aprobado y no se edita; el arnés no compila esa premisa (INFORME, PD-26).
 
-**Nota sobre ADR-016, ADR-017 y ADR-018:** los tres están aprobados y constan en el registro del Plan de Trabajo v0.12. ADR-017 abre una excepción temporal a ADR-009 (lista blanca en `.env` durante local y demo), y ADR-018 abre una excepción acotada a ADR-016 D1-A (aplicación del rol por defecto por la Admin API después de la importación). El arnés las recoge como reglas del Sprint 1, no como cambios permanentes del stack.
+**Nota sobre ADR-016, ADR-017 y ADR-018:** los tres están aprobados y constan en el registro del Plan de Trabajo v0.13. ADR-017 abre una excepción temporal a ADR-009 (lista blanca en `.env` durante local y demo), y ADR-018 abre una excepción acotada a ADR-016 D1-A (aplicación del rol por defecto por la Admin API después de la importación). El arnés las recoge como reglas del Sprint 1, no como cambios permanentes del stack.
 
-**Excluidas:** «ACOMPAS - Fichas ACO Sprint 1 v0.2» (la fuente de las fichas es `docs/aco/`); `ADR-013.md` suelto; contenido de ramas sin fusionar (entre otras, la PR #149 y la PR #162); los demás .docx; el AGENTS.md y los ficheros del arnés anterior; el código; la Guía del método del arnés; el Calendario de Acciones; versiones anteriores de cualquier documento.
+**Excluidas:** «ACOMPAS - Fichas ACO Sprint 1 v0.2» (la fuente de las fichas es `docs/aco/`); `ADR-013.md` suelto; contenido de ramas sin fusionar (entre otras, la PR #162 y la PR #167); los demás .docx; el AGENTS.md y los ficheros del arnés anterior; el código; la Guía del método del arnés; el Calendario de Acciones; versiones anteriores de cualquier documento.
 
 ## 3. Condiciones previas (Estrategia §4.3)
 
@@ -53,7 +53,7 @@ Son las condiciones de la primera generación (modo A). En esta regeneración se
 
 | Condición | Resultado en el modo B | Evidencia |
 |---|---|---|
-| ADR aprobados | Cumple | ADR-001 a ADR-018 tienen «Estado: aprobado», y el registro del Plan de Trabajo v0.12 incluye ADR-001 a ADR-018 |
+| ADR aprobados | Cumple | ADR-001 a ADR-018 tienen «Estado: aprobado», y el registro del Plan de Trabajo v0.13 incluye ADR-001 a ADR-018 |
 | Contradicciones conocidas cerradas | Las conocidas no detienen ninguna pieza | El Modelo E/R v0.10 alinea los estados del glosario, las etiquetas de persona y el tratamiento del documento retenido (02-DOMINIO §5). ADR-016 y ADR-018 resuelven el rol por defecto y los tokens offline; ADR-017, el mecanismo de la lista blanca. Quedan discrepancias menores de redacción en los Casos de Uso y el wireframe 4, sin efecto en las reglas (INFORME) |
 | Modelo E/R alineado con los ADR | Cumple en los tres puntos que estaban abiertos | Los estados, las etiquetas y el documento retenido coinciden con ADR-013 y la Arquitectura §4; la dimensión 768 queda marcada como provisional (Arquitectura §16 nº 14) |
 
@@ -112,7 +112,6 @@ Convención: en el cuerpo de cada pieza solo se citan sus fuentes. Lo que perten
 | Interfaz de la solicitud de borrado | Wireframes, pantalla 2; Arquitectura §16 nº 3 | 04 |
 | Formato exacto del nombre genérico del documento | ADR-012 (Fuera de esta decisión); Wireframes 2, 3, 4 y 5 | 02, 04 |
 | Emails de prueba, catálogos iniciales y valores de crédito iniciales | ACO-015; Modelo E/R; Arquitectura §16 nº 16 | 06 |
-| Criterios pendientes en la ficha de ACO-032 (su línea de estado la corrige #149, abierta) | Ficha ACO-032; PR #149 | 08 |
 | Lista concreta de reconocedores, filtros de falsos positivos y términos permitidos (fichas de ACO-022 y ACO-023 al ampliarse) | ADR-013 (Fuera de esta decisión); ACO-022; ACO-023 | 03, 07, 08, 09 |
 | Correspondencia entre las categorías del manifiesto de ACO-051 y las categorías garantizadas (T-31) | ADR-013 (Consecuencias); ACO-051 | 09 |
 | Registro de auditoría del documento retenido en el Sprint 1 (T-10) | ADR-013; Arquitectura §16 nº 4 | 09 |
@@ -124,7 +123,7 @@ Convención: en el cuerpo de cada pieza solo se citan sus fuentes. Lo que perten
 
 ## 6. Detenciones
 
-**Regeneración (modo B):** ninguna pieza se ha detenido. Las discrepancias que quedan entre las fuentes derivadas y las normativas son de redacción y no cambian ninguna regla (INFORME). Detalle en `INFORME-GENERACION.md`, sección «Regeneración (modo B) — pasada B (2026-11-13)».
+**Regeneración (modo B):** ninguna pieza se ha detenido. Las discrepancias que quedan entre las fuentes derivadas y las normativas son de redacción y no cambian ninguna regla (INFORME). Detalle en `INFORME-GENERACION.md`, secciones «Regeneración (modo B) — pasada B (2026-11-13)» y «Ampliación (modo B) — 16 de noviembre de 2026».
 
 **Regeneración (modo B) de 2026-11-02:** ninguna pieza se detuvo. La cuestión 7 de la Arquitectura §16 quedó cerrada por ADR-014, y la gestión de la API key, por ADR-015.
 

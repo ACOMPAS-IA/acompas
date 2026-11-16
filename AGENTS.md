@@ -117,7 +117,7 @@ Además, el agente nunca: *(Estrategia §4.1)*
 
 - Flujo: Issue → rama → desarrollo local → tests → Pull Request → revisión de la otra persona → CI verde → merge. **Ningún cambio directo sobre main.**
 - Ramas: `feature/ACO-XXX-descripcion` o `fix/ACO-XXX-descripcion`.
-- La Issue es solo un puntero (título, responsable, estado y enlace a la ficha). La PR enlaza su ficha y su Issue y se revisa con la Guía rápida de revisión de PR.
+- La Issue es solo un puntero (título, responsable, estado y enlace a la ficha). La PR enlaza su ficha y su Issue.
 - El primer commit de la PR es la ampliación de la ficha (§3). La descripción de la PR recoge las decisiones delegadas que se han tomado (§5) y las cuatro categorías (§6).
 - El revisor aprueba o rechaza según el contenido, sin modificarlo; los cambios los aplica el autor. El merge lo hace el revisor al aprobar, con la CI en verde, salvo que el autor pida en la PR que se espere.
 - Merge **siempre squash**. Título del commit: el de la PR, que empieza por el ID del ACO o del ADR («ACO-021: Presidio + MEDDOCAN»), con un cuerpo breve y sin el listado de commits intermedios.
