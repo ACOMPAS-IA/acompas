@@ -117,9 +117,8 @@ Estado de las fichas en el commit del manifiesto:
 
 | Estado de la ficha | ACO |
 |---|---|
-| Ficha ejecutable con criterios confirmados en la revisión de su PR | 011, 012, 013, 014, 016, 017, 018, 019, 022, 023, 024, 025, 026, 027, 029, 030, 031, 032 (con la presentación del resultado, P8, revisada en #149), 051, 052 |
+| Ficha ejecutable con criterios confirmados en la revisión de su PR | 011, 012, 013, 014, 016, 017, 018, 019, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032 (con la presentación del resultado, P8, revisada en #149), 051, 052 |
 | Ficha revisada, con puntos confirmados y la ejecución de P9 y P10 anotada | 015 |
-| Ficha ejecutable con criterios confirmados, pendiente de aprobación final | 028 |
 | Ficha ejecutable (criterios AC-01…AC-09, tests, componentes y BLOQUEO), sin indicación expresa de estado | 021 |
 | Ficha de alcance | 020, 033 |
 
