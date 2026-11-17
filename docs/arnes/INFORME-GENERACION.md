@@ -447,3 +447,33 @@ La retirada de la guía no cambia ninguna regla, ningún dato ni ningún criteri
 - La rama se rebasa sobre `main` tras #162 y #167: el estado de las fichas entra por `68db567` y las históricas, por `929daf8`; los commits de fichas que la rama arrastraba se descartan porque ya estaban aplastados en `main`. El diff de la PR no toca `docs/aco/`.
 - Los SHA-256 del §2 son los de `89cadd4`, comprobados con `sha256sum -c SHA256SUMS`: 16/16, antes y después de la ampliación. ADR y fichas, contra `929daf8`, incluidas las históricas de #167.
 - Ninguna pieza del arnés ni `AGENTS.md` remiten ya a la Guía rápida de revisión de PR: `grep -rn "Guía rápida" AGENTS.md docs/arnes/` solo devuelve las filas del manifiesto y de este informe que describen la retirada.
+
+## Ampliación (modo B) — 17 de noviembre de 2026
+
+Regeneración según la Estrategia v0.9 §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-11-17. Punto de partida: rama `docs/arnes-pasada-b`, HEAD `db1766b`. Fuentes, versiones y commits: `MANIFIESTO.md`.
+
+Motivo: el Documento Operativo del Sprint 2 v0.1 entra en `acompas-fuentes` (`#8`, `7696185`) y después se retira su `.docx` (`#10`, `5b5ca6d`), con el `.md` como original. Es fuente normativa de 08 y 09 (Estrategia §4.5) y su cambio regenera solo planificación y verificación (§4.7): no introduce reglas.
+
+### Fuentes e instantáneas
+
+| Fuente | Cambio | Secciones con cambio de contenido |
+|---|---|---|
+| Documento Operativo Sprint 2 v0.1 | Documento nuevo: ventana y capacidad, matriz operativa con dos filas firmes, bloques sin ficha, trabajo identificado sin ACO, colchón y recorte, planificación, riesgos y decisiones pendientes | §5, §6, §8, §9, §11, §12, §14 |
+| `ACOMPAS - Documento Operativo Sprint 2 v0.1.docx` | Retirado: el `.md` pasa a ser el original, con sus 17 encabezados | — |
+
+La instantánea de las fuentes pasa de `89cadd4` a `5b5ca6d` (17 de noviembre), con `sha256sum -c SHA256SUMS`: 17/17. `docs/adr/` y `docs/aco/` siguen en `929daf8`: ningún ADR pasa a aprobado (019, 020 y 021 siguen en revisión) y ninguna ficha cambia.
+
+### Piezas actualizadas
+
+| Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
+|---|---|---|---|
+| 08-PLAN | Sí | Documento Operativo Sprint 2 §5, §6, §8, §9, §11, §12, §14 | §2: ACO-033 pasa a 12–16 h, la estimación de la matriz del S2. §4: los bloques del Sprint 2 se citan del Documento Operativo y se dice que no son filas. Nueva §7 con la matriz vigente: ventana y capacidad (371 h teóricas, techo de 297 h al 80 %), regla de fila, regla de numeración, las dos filas firmes, los bloques, el trabajo identificado sin ACO y lo que queda fuera. La cuestión abierta que daba la matriz por no decidida pasa a describir la matriz abierta |
+| 09-TESTS | Sí | Documento Operativo Sprint 2 §14 | Cita el Documento Operativo del Sprint 2 y añade que D-07 sigue como criterio heredado con ACO-033 como vehículo y T-32 como verificación; los demás criterios de la demo del 9 de noviembre no se trasladan |
+| 01 a 07 | No | El Documento Operativo no introduce reglas | — |
+
+### Verificación
+
+- Cambian `docs/arnes/08-PLAN.md`, `docs/arnes/09-TESTS.md`, `docs/arnes/MANIFIESTO.md` y este informe. `docs/adr/`, `docs/aco/` y el código no cambian.
+- Los SHA-256 del §2 son los de `5b5ca6d`, comprobados con `sha256sum -c SHA256SUMS`: 17/17. El del Documento Operativo del Sprint 2 es `77d35556bcd9f80f12801894f01b488c88cb5de3ecc06a8c244ce6379c3009bf`.
+- El `.md` del Documento Operativo del Sprint 2 es original y no exportación: `grep -c '^#'` devuelve 17, y sus 7 tablas se exportan con el número de columnas correcto.
+- La matriz del Sprint 2 no está cerrada, y el arnés lo dice: dos filas y 18–24 h sobre 297 h. No se presenta como planificada.

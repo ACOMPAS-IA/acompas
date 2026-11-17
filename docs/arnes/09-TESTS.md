@@ -14,7 +14,7 @@ Verificaciones objetivas de las reglas (03-REGLAS) y de los criterios de aceptac
 
 ## Fuentes
 
-- **Normativas:** Plan de Proyecto (§1); Arquitectura del Sistema (§4, §16); ADR-013, ADR-014 y ADR-015; Documento Operativo del Sprint 1 (§3, §9, §14).
+- **Normativas:** Plan de Proyecto (§1); Arquitectura del Sistema (§4, §16); ADR-013, ADR-014 y ADR-015; Documento Operativo del Sprint 1 (§3, §9, §14) y del Sprint 2 (§14).
 - **Derivadas:** Casos de Uso (UC-01, UC-03, UC-05, UC-06, UC-09); Modelo E/R (DOCUMENTO, ETIQUETA_ANONIMIZACION); Wireframes (pantallas 1, 4 y 5); Fichas ACO (criterios de aceptación y tests esperados: 014, 015, 019–026, 028–033, 051, 052); criterios de la demo D-01…D-07, que se toman de 08-PLAN.
 
 ## 1. Criterios de la demo del Sprint 1 → verificaciones
@@ -32,6 +32,8 @@ Verificaciones objetivas de las reglas (03-REGLAS) y de los criterios de aceptac
 Hito *(Documento Operativo §14)*: lo cubre el conjunto D-01…D-07 ejecutado sobre el flujo de ACO-032 (T-32).
 
 **Cierre del Sprint 1** *(Documento Operativo §14)*: D-01 a D-06 quedaron cumplidos con su evidencia en el acta #150. D-07 quedó **no cumplido** porque los tests E2E de ACO-033 no existen; la decisión #137 autorizó el cierre con esa excepción. ACO-033 se traslada al Sprint 2 y T-32 sigue siendo su verificación.
+
+**Sprint 2** *(Documento Operativo Sprint 2 §14)*: D-07 sigue como criterio heredado y su vehículo es ACO-033, con T-32 como verificación de la parte de tests E2E. Los demás criterios de la demo del 9 de noviembre no se trasladan, porque se cumplieron.
 
 T-39 verifica los controles de R-54 en ACO-028. El Documento Operativo §9 excluye ACO-028 del hito («no es criterio de demo»), así que no se enlaza con D-01…D-07; la parte de D-07 «sin secretos en Git» la comprueba T-19.
 
