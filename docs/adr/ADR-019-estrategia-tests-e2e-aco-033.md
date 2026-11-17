@@ -10,7 +10,7 @@ Relacionados: ADR-020 (entorno de ejecución del backend con PyTorch; #135 y #15
 
 ## Contexto
 
-El E2E de ACO-033 cubre el 2FA de T-14, además de T-17 (un email no autorizado recibe 403 genérico), T-21 (el disclaimer es visible), T-32 (caso feliz, usuario no autorizado y documento que no valida) y T-09 (ningún documento llega a la conversación sin pasar por la anonimización). En el cierre del Sprint 1, D-07 quedó como criterio no cumplido —los tests E2E no existían— y el ACO pasó al Sprint 2 con ese criterio heredado (`docs/arnes/08-PLAN.md:24,35`).
+El E2E de ACO-033 ejercita el 2FA que exige T-14, además de T-17 (un email no autorizado recibe 403 genérico), T-21 (el disclaimer es visible), T-32 (caso feliz, usuario no autorizado y documento que no valida) y T-09 (ningún documento llega a la conversación sin pasar por la anonimización). En el cierre del Sprint 1, D-07 quedó como criterio no cumplido —los tests E2E no existían— y ACO-033 pasó al Sprint 2 con ese criterio heredado (#137; el texto del criterio está en `docs/arnes/08-PLAN.md:34`).
 
 No hay ninguna pieza de E2E en el repositorio: `frontend/package.json` no tiene Playwright, no existen `frontend/e2e/` ni `backend/tests/e2e/`, y la CI ejecuta tres jobs —`backend`, `frontend` y `docs`— sin recorrer el flujo completo. El flujo que hay que probar lo fija ACO-032: login con 2FA → subida de un `.txt` sintético → anonimización → resultado → conversación → respuesta, dentro de `AppShell`.
 
@@ -34,7 +34,7 @@ La estrategia no puede depender de piezas que la CI no tiene: ni datos de pacien
 
 3. **Autenticación sin secretos (D3).** Cada ejecución crea por la Admin API dos usuarios sintéticos con rol `paciente` y `CONFIGURE_TOTP`: uno con el email autorizado y otro con un email distinto, **fuera** de la lista, para el caso de acceso denegado. Los usuarios no se versionan ni se añaden al JSON del realm (ADR-008).
 
-   La contraseña y la semilla TOTP son aleatorias, por usuario y ejecución. La semilla se inscribe en la página real de Keycloak leyendo el input oculto `#totpSecret` (o `#kc-totp-secret-key`). La Admin API no puede crear la credencial OTP: en Keycloak 26.8.0, `GET /admin/realms/acompas/users/{id}/credentials` responde 200 y `POST` a la misma ruta responde 404, medido el 17-nov-2026.
+   La contraseña y la semilla TOTP son aleatorias, por usuario y ejecución. La semilla se inscribe en la página real de Keycloak leyendo el input oculto `#totpSecret`, que es el contrato; el elemento visible `#kc-totp-secret-key` queda como respaldo si el tema cambia. La Admin API no puede crear la credencial OTP: en Keycloak 26.8.0, `GET /admin/realms/acompas/users/{id}/credentials` responde 200 y `POST` a la misma ruta responde 404, medido el 17-nov-2026.
 
    Los códigos los calcula un helper de `frontend/e2e/` —nunca en `src/`— con `node:crypto`: HmacSHA1, 6 dígitos, periodo de 30 s y `lookAheadWindow` 1, la política del realm. El helper **no añade devDependency** y sustituye la que C1′ admitía declarar; queda escrito en la ficha.
 
@@ -46,7 +46,7 @@ La estrategia no puede depender de piezas que la CI no tiene: ni datos de pacien
 
    `retenido` queda fuera del E2E por coste y calibración del caso sintético —el umbral de documento es configurable por entorno (ADR-013)—, no por indeterminación, y se cubre en las pruebas unitarias de ACO-026. No se prueban otros navegadores ni viewports en esta fase.
 
-6. **Integración en la CI (D6).** Un job `e2e` independiente en `.github/workflows/ci.yml`, en `pull_request` y en `push` a `main` como los demás y sin filtros de ruta. `timeout-minutes: 15`, `retries: 0`, traza y captura solo en fallo con retención corta, y caché de `~/.cache/ms-playwright` y de npm. El job construye la imagen del backend desde el `Dockerfile` del repositorio con los cambios de #159; si #159 publica la imagen en GHCR, consume esa imagen. Los 8–12 min son un umbral a medir, no una promesa. Convertir el job en check obligatorio no lo decide este ADR: lo configura la persona responsable.
+6. **Integración en la CI (D6).** Un job `e2e` independiente en `.github/workflows/ci.yml`, en `pull_request` y en `push` a `main` como los demás y sin filtros de ruta. `timeout-minutes: 15`, `retries: 0`, traza y captura solo en fallo con retención corta, y caché de `~/.cache/ms-playwright` y de npm. El job construye la imagen del backend desde el `Dockerfile` del repositorio con los cambios de #159; si #159 publica la imagen en GHCR, consume esa imagen. Los 8–12 min son un umbral a medir, no una promesa. La estrategia de imagen —caché de `buildx` o paquete público en GHCR, con su umbral explícito— es la que #134 B1 encomienda a ADR-020/#159, no a este ADR. Convertir el job en check obligatorio tampoco lo decide este ADR: lo configura la persona responsable.
 
 7. **Datos y artefactos (D7).** Solo el corpus sintético de ACO-051 y ficheros generados en el directorio temporal del runner; ningún documento ni nombre de fichero real. La traza puede contener la página de inscripción con la semilla: se limita a la ejecución, con retención corta y usuario borrado al terminar, y no se comparte fuera del job. Los artefactos no incluyen texto de documentos en los commits ni en la descripción de la PR.
 
