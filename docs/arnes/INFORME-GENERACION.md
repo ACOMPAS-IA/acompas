@@ -477,3 +477,7 @@ La instantánea de las fuentes pasa de `89cadd4` a `5b5ca6d` (17 de noviembre), 
 - Los SHA-256 del §2 son los de `5b5ca6d`, comprobados con `sha256sum -c SHA256SUMS`: 17/17. El del Documento Operativo del Sprint 2 es `77d35556bcd9f80f12801894f01b488c88cb5de3ecc06a8c244ce6379c3009bf`.
 - El `.md` del Documento Operativo del Sprint 2 es original y no exportación: `grep -c '^#'` devuelve 17, y sus 7 tablas se exportan con el número de columnas correcto.
 - La matriz del Sprint 2 no está cerrada, y el arnés lo dice: dos filas y 18–24 h sobre 297 h. No se presenta como planificada.
+
+### Pendientes que cierran
+
+- **PD-24** (el registro del Plan de Trabajo no incluía ADR-015): cerrada el 17 de noviembre. El Plan v0.12 incorporó ADR-015 al registro y la v0.13 lo confirma; el `.md`, el `.docx` y `SHA256SUMS` están coherentes en `5b5ca6d` (17/17). La fila «Cumple con salvedad» del `MANIFIESTO` §3 describe la pasada del 13 de noviembre y se deja como registro de entonces; la condición ya no tiene salvedad.
