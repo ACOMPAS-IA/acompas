@@ -22,8 +22,8 @@ la vigente al cerrar y lo dice en la causa.
 
 | Sprint | Estimado | Entregado al cierre | Fin previsto | Fin real | Causa |
 | --- | --- | --- | --- | --- | --- |
-| S1 | ≈143 h (Miguel ≈109 h, Luis ≈34 h) | ≈127–131 h: todo salvo ACO-033 (12–16 h), traspasado al S2 | 9 nov 2026 | 9 nov 2026 (demo); cierre registrado el 12 nov | ACO-033 no llegó: depende de `torch` en CPU y de los modelos horneados (#63, #117). Excepción autorizada en #137. |
-| S2 | — | — | diciembre de 2026 | — | Sprint en planificación: sin matriz cerrada (#142). |
+| S1 | ≈143 h (Miguel ≈109 h, Luis ≈34 h) | ≈135–137 h: todo salvo ACO-033 (6–8 h en la matriz del S1), traspasado al S2 | 9 nov 2026 | 9 nov 2026 (demo); cierre registrado el 12 nov | ACO-033 no llegó: depende de `torch` en CPU y de los modelos horneados (#63, #117). Excepción autorizada en #137. La resta usa su estimación del Sprint 1; la del Sprint 2, que no cambia la fila, es 12–16 h. |
+| S2 | — | — | 31 dic 2026 | — | Sprint en planificación: sin matriz cerrada (Documento Operativo Sprint 2 §6; #142). |
 
 ## Qué no es este registro
 
