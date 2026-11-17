@@ -16,7 +16,7 @@ No hay ninguna pieza de E2E en el repositorio: `frontend/package.json` no tiene 
 
 La prueba es de contrato, no de detalle: lo que las pruebas unitarias no pueden cubrir son los saltos entre frontend, Keycloak y API —la redirección OIDC, el 2FA, el 403 de la lista blanca y el estado del documento entre pantallas—. Por eso recorre el flujo con el navegador y con el Keycloak reales, y solo sustituye lo que la CI no puede tener: el proveedor del LLM.
 
-#134 decidió la herramienta, los prerrequisitos, la autenticación sin secretos y el LLM simulado. Este ADR fija cómo se ejecuta esa decisión. La imagen del backend y el entorno no se deciden aquí: son de ADR-020 y su implementación es #159. #159 condiciona el merge de ACO-033, no la redacción ni la aprobación de este ADR; D6 se cumple cuando #159 esté mergeado.
+#134 decidió la herramienta, los prerrequisitos, la autenticación sin secretos y el LLM simulado. Este ADR fija cómo se ejecuta esa decisión. La imagen del backend y el entorno no se deciden aquí: son de ADR-020 y su implementación es #159. #159 condiciona el merge de ACO-033, no la redacción ni la aprobación de este ADR; la condición B1 se cumple cuando #159 esté mergeado y solo entonces puede medirse el job.
 
 La estrategia no puede depender de piezas que la CI no tiene: ni datos de pacientes, ni la API key de Claude, ni usuarios con secretos fijos. Los tres se sustituyen por datos sintéticos, un gateway simulado y credenciales generadas en cada ejecución.
 
@@ -32,7 +32,7 @@ La estrategia no puede depender de piezas que la CI no tiene: ni datos de pacien
    - el frontend de Compose sigue reenviando `/api` al backend;
    - en CI los volúmenes se crean limpios, para que el realm se importe desde cero, y la espera es `docker compose up --wait` más `GET /health`.
 
-3. **Autenticación sin secretos (D3).** Cada ejecución crea por la Admin API dos usuarios sintéticos con rol `paciente` y `CONFIGURE_TOTP`: uno con el email autorizado y otro con un email distinto, **fuera** de la lista, para el caso de acceso denegado. Los usuarios no se versionan ni se añaden al JSON del realm (ADR-008).
+3. **Autenticación sin secretos (D3).** Cada ejecución crea por la Admin API dos usuarios sintéticos con rol `paciente` y la acción requerida `CONFIGURE_TOTP`: uno con el email autorizado y otro con un email distinto, **fuera** de la lista, para el caso de acceso denegado. Los usuarios se crean solo en el Keycloak local, no se commitean ni se añaden al JSON del realm, y se documentan como sintéticos (`docs/aco/ACO-015.md:189`); los secretos siguen ADR-015 y C1′.
 
    La contraseña y la semilla TOTP son aleatorias, por usuario y ejecución. La semilla se inscribe en la página real de Keycloak leyendo el input oculto `#totpSecret`, que es el contrato; el elemento visible `#kc-totp-secret-key` queda como respaldo si el tema cambia. La Admin API no puede crear la credencial OTP: en Keycloak 26.8.0, `GET /admin/realms/acompas/users/{id}/credentials` responde 200 y `POST` a la misma ruta responde 404, medido el 17-nov-2026.
 
@@ -76,6 +76,7 @@ La estrategia no puede depender de piezas que la CI no tiene: ni datos de pacien
 
 - La inscripción del OTP leyendo `#totpSecret` depende del tema de Keycloak. La versión está fijada (26.8.0) y el identificador queda como contrato explícito.
 - La prueba puede ser intermitente por tiempos de carga. Se mitiga con esperas por estado de la interfaz, `retries: 0` y traza en fallo, para ver la causa en vez de ocultarla.
+- El realm tiene `bruteForceProtected: true` con `failureFactor: 5` (`infra/keycloak/import/acompas-realm.json:13-14`). Con `retries: 0`, un intento fallido encadenado puede bloquear al usuario: cada ejecución usa usuarios nuevos, no se reintenta con las mismas credenciales y el fallo del login se distingue del fallo de la prueba.
 - El job alarga la CI. El umbral de 8–12 min solo se puede medir con #159 mergeado; hasta entonces es una estimación.
 
 ## Fuera de esta decisión
