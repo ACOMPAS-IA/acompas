@@ -58,11 +58,11 @@ Fuente por filas: #137 §B1 (tamaño descomprimido, archivo OCI, carga de modelo
 
 Los 24,53 s son la imagen nueva, no la actual (#137 §B1). La primera petición offline es otra métrica: 38,23 s sin `HF_HUB_OFFLINE` y 25,23 s con ella en el spike (#63); #159 la mide en la imagen final.
 
-La tabla es de un **experimento conjunto**. El tamaño, el build, la primera petición y el arranque de `build_analyzer` no se atribuyen solo a la variante CPU. La comparación de carga de modelos (8,72 s frente a 1,39–1,54 s) se hizo con los modelos ya en disco en ambas imágenes, así que esa diferencia se atribuye principalmente a CPU. No se midió una imagen CPU sin modelos horneados: el ahorro neto de 6,46 GB es conservador respecto al efecto de retirar CUDA, porque la imagen nueva incluye ~0,49 GB de modelos que la actual no tiene.
+La tabla es de un **experimento conjunto**. El tamaño, el build, la primera petición y el arranque de `build_analyzer` no se atribuyen solo a la variante CPU. La comparación de carga de modelos (8,72 s frente a 1,39–1,54 s) se hizo con los modelos ya en disco en ambas imágenes, así que esa diferencia se atribuye principalmente a CPU. No se midió una imagen CPU sin modelos horneados: el ahorro neto de 6,46 GB es conservador respecto al efecto de retirar CUDA, porque la imagen nueva incluye ~0,5 GB de modelos (caché de HF, 477 MB) que la actual no tiene.
 
 ## Alternativas consideradas
 
-- **Mantener `torch` estándar y aplazar la variante CPU (la decisión anterior de este ADR).** Descartada por #137 §D: la configuración CPU es la única medida y la que cumple el umbral de caché de #134.
+- **Mantener `torch` estándar y aplazar la variante CPU (la decisión anterior de este ADR).** Descartada por #137 (§B1 y §D): la configuración CPU es la única medida y la que cumple el umbral de caché de #134.
 - **Instalar CPU solo en el `Dockerfile`, sin cambiar la fuente de paquetes.** Descartada: la dependencia declarada y la imagen quedarían divergentes, y el resultado dependería del orden de instalación.
 - **Dos ACO separados para la variante de PyTorch y el horneado de modelos (B2 de #137).** Descartada: el estado intermedio no está medido y serían dos fichas y dos revisiones para un `Dockerfile` y un índice.
 - **Seguir descargando los modelos en la primera petición.** Descartada: mantiene los ~508 MB, el timeout de ACO-052 y la dependencia de la red en el arranque.
