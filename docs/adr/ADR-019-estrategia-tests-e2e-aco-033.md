@@ -6,11 +6,11 @@ Sustituido por: —
 
 Origen: Decisión conjunta #134 (cerrada el 11 de noviembre de 2026), que fija la herramienta (A1), los prerrequisitos (B1), la autenticación sin secretos (C1′) y el LLM simulado (D1′); y decisión conjunta #137 §D, que ordena este ADR antes de ampliar la ficha ejecutable de ACO-033. Issue #160. Implementación en ACO-033 (#38). Las acciones posteriores al merge tienen vehículo en #175 (precedente de #152).
 
-Relacionados: ADR-020 (entorno de ejecución del backend con PyTorch; #135 y #159), ADR-006 (LLM gateway obligatorio), ADR-008 (sin datos reales), ADR-009 y ADR-017 (lista blanca), ADR-011 (autenticación y autorización), ADR-015 (gestión de secretos), ADR-005 y ADR-012 (no persistencia del original); ACO-026, ACO-032, ACO-033 y ACO-051; #63, #117 y #159.
+Relacionados: ADR-020 (entorno de ejecución del backend con PyTorch; #135 y #159), ADR-006 (LLM gateway obligatorio), ADR-008 (sin datos reales), ADR-009 y ADR-017 (lista blanca), ADR-011 (autenticación y autorización), ADR-013 (política de anonimización y umbral), ADR-015 (gestión de secretos), ADR-005 y ADR-012 (no persistencia del original); ACO-026, ACO-032, ACO-033 y ACO-051; #63, #117 y #159.
 
 ## Contexto
 
-ACO-033 es la verificación de T-14 (el login exige 2FA), T-17 (un email no autorizado recibe 403 genérico), T-21 (el disclaimer es visible), T-32 (caso feliz, usuario no autorizado y documento que no valida) y T-09 (ningún documento llega a la conversación sin pasar por la anonimización). En el cierre del Sprint 1 quedó como criterio no cumplido —los tests E2E no existían— y el ACO pasó al Sprint 2 con ese criterio heredado.
+El E2E de ACO-033 cubre el 2FA de T-14, además de T-17 (un email no autorizado recibe 403 genérico), T-21 (el disclaimer es visible), T-32 (caso feliz, usuario no autorizado y documento que no valida) y T-09 (ningún documento llega a la conversación sin pasar por la anonimización). En el cierre del Sprint 1, D-07 quedó como criterio no cumplido —los tests E2E no existían— y el ACO pasó al Sprint 2 con ese criterio heredado (`docs/arnes/08-PLAN.md:24,35`).
 
 No hay ninguna pieza de E2E en el repositorio: `frontend/package.json` no tiene Playwright, no existen `frontend/e2e/` ni `backend/tests/e2e/`, y la CI ejecuta tres jobs —`backend`, `frontend` y `docs`— sin recorrer el flujo completo. El flujo que hay que probar lo fija ACO-032: login con 2FA → subida de un `.txt` sintético → anonimización → resultado → conversación → respuesta, dentro de `AppShell`.
 
@@ -44,7 +44,7 @@ La estrategia no puede depender de piezas que la CI no tiene: ni datos de pacien
 
 5. **Casos cubiertos (D5).** Tres: caso feliz (login con 2FA, documento sintético validado, conversación y respuesta con el disclaimer visible); usuario no autorizado (el login en Keycloak funciona y la API responde 403 genérico, que el cliente muestra como acceso denegado); y documento que no supera la validación (un `.txt` vacío produce `ilegible`, de forma determinista: el texto vacío es válido en el contrato y el servicio lo trata como ilegible).
 
-   `retenido` queda fuera del E2E por coste y calibración del caso sintético —el umbral de documento es configurable por entorno—, no por indeterminación, y se cubre en las pruebas unitarias de ACO-026. No se prueban otros navegadores ni viewports en esta fase.
+   `retenido` queda fuera del E2E por coste y calibración del caso sintético —el umbral de documento es configurable por entorno (ADR-013)—, no por indeterminación, y se cubre en las pruebas unitarias de ACO-026. No se prueban otros navegadores ni viewports en esta fase.
 
 6. **Integración en la CI (D6).** Un job `e2e` independiente en `.github/workflows/ci.yml`, en `pull_request` y en `push` a `main` como los demás y sin filtros de ruta. `timeout-minutes: 15`, `retries: 0`, traza y captura solo en fallo con retención corta, y caché de `~/.cache/ms-playwright` y de npm. El job construye la imagen del backend desde el `Dockerfile` del repositorio con los cambios de #159; si #159 publica la imagen en GHCR, consume esa imagen. Los 8–12 min son un umbral a medir, no una promesa. Convertir el job en check obligatorio no lo decide este ADR: lo configura la persona responsable.
 
