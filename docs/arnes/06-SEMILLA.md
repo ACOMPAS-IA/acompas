@@ -14,7 +14,7 @@ Datos sintéticos y configuración inicial que pueden cargarse de forma controla
 
 ## Fuentes
 
-- **Normativas:** Plan de Proyecto (§2); Arquitectura del Sistema (§4, §6, §11); ADR-008, ADR-009, ADR-011 y ADR-013.
+- **Normativas:** Plan de Proyecto (§2); Arquitectura del Sistema (§4, §6, §11); ADR-008, ADR-009, ADR-011, ADR-012, ADR-013, ADR-016, ADR-017 y ADR-018.
 - **Derivadas:** Fichas ACO de docs/aco/: ACO-051 (corpus sintético), ACO-012 (realm) y ACO-015 (lista blanca).
 
 ## 1. Principio
@@ -44,19 +44,17 @@ Cualquier dato sintético nuevo que creen otros ACO sigue estas mismas reglas. *
 
 | Elemento | Qué está definido | Fuente |
 |---|---|---|
-| Realm de Keycloak | Realm de ACOMPAS creado de forma **reproducible**, con la configuración base para clientes y usuarios del piloto, y documentado. 2FA obligatorio. | ACO-012; ADR-011 |
-| Lista blanca | La gestiona **manualmente el administrador**, se guarda en la base de datos de ACOMPAS y contiene emails autorizados por ACANPAN, sin referencia al UUID. | ADR-009; Arquitectura §11 |
+| Realm de Keycloak | Realm de ACOMPAS creado de forma **reproducible**, con la configuración base para clientes y usuarios del piloto, y documentado. 2FA obligatorio. El JSON declara `defaultRole` explícito y el rol por defecto no incluye `offline_access`; tras cada importación limpia se ejecuta `scripts/apply-realm-config.sh` (perfil de email y rol por defecto) y se verifica con `scripts/check-realm.sh`. | ACO-012 P16, P17, P18; ADR-011; ADR-016; ADR-017; ADR-018 |
+| Lista blanca | En local y demo, `EMAILS_AUTORIZADOS` en el `.env` no versionado, con direcciones separadas por comas; `.env.example` lleva `paciente@example.com`. La comprueba el backend en cada petición protegida. Es una excepción temporal a ADR-009, sin referencia al UUID; la tabla `EMAIL_AUTORIZADO` vuelve en el Sprint 2. | ADR-009; ADR-017; ACO-015 §8.1 |
 | Glosario | **Sin semilla inicial validada.** El LLM lo construye progresivamente y cada entrada nueva queda pendiente de validación. | Arquitectura §6 (D6) |
-| Usuarios de prueba | Deben poder probarse un usuario autorizado y uno no autorizado. | ACO-015 |
+| Usuarios de prueba | Deben poder probarse un usuario autorizado y uno no autorizado. El no autorizado es un usuario sintético de Keycloak, creado a mano solo en local, documentado como sintético y sin relación con pacientes ni con datos reales; no forma parte de la lista ni del código. | ADR-017 D3-A; ACO-015 |
 | Umbrales de anonimización | Configurables, con valor inicial 0,35 para el umbral de hallazgo y 0,85 para el umbral de documento. Se calibran con el corpus sintético de ACO-051; cambiarlos no requiere un ADR nuevo mientras se respete el criterio de ADR-013, y el cambio y su justificación quedan en la PR. | ADR-013; Arquitectura §4 |
 
 ## Cuestiones abiertas
 
 | Cuestión | Fuente |
 |---|---|
-| Emails de la lista blanca y usuarios de prueba en desarrollo: ninguna fuente fija sus valores. Por coherencia con ACO-051, lo esperable son dominios reservados (`example.*`), pero es una **inferencia**: debe confirmarse en la ficha del ACO. | ACO-015; ADR-008 |
+| Emails concretos de la lista blanca y usuarios de prueba en local/demo: `.env.example` fija solo un ejemplo (`paciente@example.com`). Cualquier valor nuevo debe usar dominios reservados (`example.*`), por coherencia con ACO-051; es una **inferencia** que debe confirmarse en la ficha del ACO. | ACO-015; ADR-008; ADR-017 |
 | Catálogos iniciales (TIPO_DOCUMENTO, TIPO_ETIQUETA): no hay valores semilla aprobados, ni el nombre exacto de la etiqueta genérica de persona. Los ejemplos están en 02-DOMINIO. | Modelo E/R; ADR-012; ADR-013 (Fuera de esta decisión) |
-| Valores iniciales de crédito (topes diario y mensual) por paciente. | Plan de Trabajo §9 (regla de cálculo del crédito) |
+| Valores iniciales de crédito (topes diario y mensual) por paciente. | Arquitectura §16 nº 16 |
 | Flujo OIDC, clientes y política de contraseñas del realm. | ADR-011 (Fuera de esta decisión) |
-| Cómo se comprueba la lista blanca y cómo se conecta con el login. | ADR-009 (Fuera de esta decisión) |
-| Casos de prueba conversacionales y de prompt injection (contenido). | ACO-052 (criterios pendientes de revisión) |

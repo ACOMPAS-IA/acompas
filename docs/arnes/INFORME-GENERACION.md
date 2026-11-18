@@ -19,7 +19,7 @@ No se ha modificado ninguna fuente. Los SHA-256 de `~/projects/acompas-fuentes` 
 
 | Tema | Decisión |
 |---|---|
-| Las tablas de entidades del Modelo E/R en .md perdieron las columnas Tipo, Restricción y Descripción | Se leen del .docx de la misma versión (constan en el MANIFIESTO) |
+| Las tablas de entidades del Modelo E/R en .md perdieron las columnas Tipo, Restricción y Descripción | Se leen del .docx de la misma versión (constan en el MANIFIESTO). Resuelto en la fuente por `acompas-fuentes#4` (PD-04): el `.md` de la instantánea `f7eff22` conserva las cuatro columnas |
 | Los Wireframes muestran nombres de fichero originales, frente a ADR-012 | Prevalece la fuente normativa (Estrategia §9 y §4.6). 04 se genera y la discrepancia pasa a pendientes |
 | Documento retenido: UC-06, el wireframe 4 y el ADR pendiente no coinciden | Cuestión abierta, no contradicción. Las piezas solo fijan «se retiene y no se carga» |
 
@@ -319,3 +319,204 @@ Los identificadores R y T se conservan y los nuevos continúan la numeración. 0
 - Solo cambian `docs/arnes/01`, `02`, `03`, `05`, `07`, `08`, `09`, `MANIFIESTO.md` y este informe. `04-INTERFAZ.md`, `06-SEMILLA.md`, `AGENTS.md`, `docs/adr/`, `docs/aco/` y el código no cambian.
 - Los SHA-256 del manifiesto se comprueban contra `SHA256SUMS` de `acompas-fuentes` en `f716366`; ADR y fichas, contra `a1df03b`.
 - `~/projects/acompas-fuentes`: los SHA-256 coinciden antes y después de la regeneración.
+
+## Regeneración (modo B) — pasada B (2026-11-13)
+
+Regeneración según la Estrategia v0.8 §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-11-13. Rama: `docs/arnes-pasada-b`, rebasada sobre `main` tras #162 y #167. La generación se hizo sobre la rama apilada sobre `docs/pasada-b-fichas` (PR #162); sus commits de fichas entraron en `main` aplastados en `68db567`. Fuentes, versiones y commit: `MANIFIESTO.md`.
+
+Motivo: la pasada B de la Estrategia ha actualizado las fuentes documentales del proyecto, no solo el Modelo E/R. Desde la última regeneración del arnés (`0a2d6f0`, 2 nov) cambian el Plan de Proyecto, la Arquitectura, el Plan de Trabajo, el Documento Operativo, los Casos de Uso, el Modelo E/R, los Wireframes, tres ADR y dieciocho fichas. Esta regeneración compila todas esas fuentes actuales; no es una regeneración parcial.
+
+### D.1 Fuentes e instantáneas
+
+| Fuente | Cambio (control de cambios o diff) | Secciones con cambio de contenido |
+|---|---|---|
+| Plan de Proyecto v0.21 → v0.22 | Aplicación web adaptable y mobile-first desde el Sprint 1, sin app nativa ni tiendas; riesgo asociado; la mitigación del riesgo de concentración de carga recoge la revisión del reparto en el Sprint 2 y deja constancia de que el recorte del S1 no se aplicó; las cuestiones de arquitectura remiten a la Arquitectura §16 | §1, §6, §7 |
+| Arquitectura del Sistema v0.9 → v0.10 | §16 se declara fuente única de las cuestiones técnicas abiertas e incorpora las que faltaban: entorno de desarrollo, LLM gateway, modelo de Claude, embeddings y chunking, OCR definitivo, crédito y topes, y VPS. Retira la referencia a la Propuesta de Plan de Trabajo | §16, §17, portada |
+| Plan de Trabajo v0.11 → v0.12 | ADR-015 a ADR-018 en el registro; los ADR pendientes remiten a la Arquitectura §16; §8 admite la excepción de las dependencias que nombra la ficha ejecutable; los criterios de la demo pasan al Documento Operativo; se eliminan los hitos H5 y H6 y el resumen de decisiones; §14 pasa a §11 | §8, §9, §11, §12, §13 |
+| Documento Operativo Sprint 1 v0.5 → v0.7 | Cierre del Sprint 1 (decisión #137, A1; acta #150): la demo del 9 se ejecutó, D-01 a D-06 cumplidos y D-07 no cumplido por ACO-033, traspasado al Sprint 2. Recibe los criterios de la demo como D-01 a D-07; §10 remite a la DoD única del Plan de Trabajo y añade un criterio propio; ACO-033 marcado como traspasado y nota de ACO-007 | §6, §9, §10, §14, §16 |
+| Casos de Uso v0.6 → v0.7 | UC-04 recoge el duplicado y el nombre genérico (ADR-012); UC-06 recoge el tratamiento del documento retenido (ADR-013); la relación UC-04/UC-05 admite el duplicado y la de UC-06/UC-20 se limita a los documentos que superan el umbral; §4 deja de planificar y remite al Plan de Proyecto | §2, §3, §4, portada |
+| Modelo E/R v0.9 → v0.10 | SOLICITUD_DESBLOQUEO_CREDITO incorpora `motivo` y `motivo_resolucion`; DOCUMENTO retira `retenido_baja_confianza` y ya no guarda el documento retenido; TIPO_ETIQUETA y ETIQUETA_ANONIMIZACION pasan a `[SANITARIO]`, `[SANITARIO_n]` y `'PERSONAL_SANITARIO'`; ENTRADA_GLOSARIO alinea sus estados; FRAGMENTO_RAG marca la dimensión 768 como provisional | §1, §2 |
+| Wireframes MVP v0.5 → v0.6 | Aviso de duplicado y nombre genérico; resultado de la validación en lenguaje natural, sin confianza, umbral, recuentos ni códigos; nuevas pantallas 4b (retenido) y 4c (ilegible); motivo del paciente y motivo de la resolución en las pantallas 8 y 9; barra de disclaimer en las pantallas 2–9 con el literal de ACO-031 y sin barra en el login; nueva pantalla 10 con la vista móvil a 360 px | Pantallas 2–5, 8, 9, 4b, 4c y 10 |
+| `docs/adr/` (`a1df03b` → `68db567`) | ADR-016 (retirada de `offline_access` del rol por defecto), ADR-017 (mecanismo de la lista blanca) y ADR-018 (corrección del rol por defecto tras la importación), nuevos y aprobados | — |
+| `docs/aco/` (`a1df03b` → `68db567`) | Pasada B: ACO-012 (P16–P18), 014, 015 (P3, P4, P6, P8 y ejecución de P9–P10), 018, 019, 020, 021, 023, 024, 025, 026, 027, 028, 030, 031, 032, 033 y 052. En #162: línea de estado de ACO-013, 014, 019, 022, 023, 024, 025, 026 y ACO-028 (confirmadas, PD-25), encabezado de §0 de ACO-015, remisión a la matriz del Documento Operativo en lugar de «Sprint 1» en ACO-020, ACO-021 y ACO-033, y cita de la PR de fuentes del wireframe v0.6 en ACO-031. ACO-032 no cambia: su texto viene de `d92e8c4` (#149). En la rama fueron `7cc69b9`, `be79c6e`, `4275ef0` y `58fac86`, aplastados en `68db567`. En #167 (`929daf8`) entran las fichas históricas ACO-001, ACO-006 y ACO-007 | — |
+
+Las instantáneas son distintas y no se mezclan: los documentos de `~/projects/acompas-fuentes/` se congelan en `90acd3c` (13 de noviembre), y `docs/adr/` y `docs/aco/` en `929daf8`, donde consta el contenido de la rama `docs/pasada-b-fichas` (aplastado en `68db567`) y las fichas históricas de #167. La ampliación del 16 de noviembre mueve la instantánea de las fuentes a `89cadd4`; el estado de las fichas sigue en `929daf8` y `docs/adr/` no cambia. Las fuentes se publicaron después en `85c0ab4` y la instantánea vigente es `f7eff22` (14 de noviembre): entre una y otra solo cambia la forma de cinco documentos (PD-04 y la normalización de la exportación), no su contenido.
+
+### D.2 Piezas regeneradas
+
+| Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
+|---|---|---|---|
+| 01-PRODUCTO | Sí | Plan de Proyecto §1, §6; Casos de Uso §4 | Canal web mobile-first, sin app nativa ni tiendas; la restricción entra en §6; la cita de Casos de Uso §4 pasa a remisión |
+| 02-DOMINIO | Sí | Arquitectura §16; Modelo E/R v0.10; ADR-016, 017, 018 | Lista blanca en `.env` (ADR-017); EMAIL_AUTORIZADO vuelve en S2; `estado_anon` solo `pendiente`/`validado`; etiquetas y `tipo_entidad` del Modelo E/R; motivos del desbloqueo; estados del glosario; embedding 768 provisional; §5 pasa de «discrepancias» a «alineación»; se cierra la cuestión del motivo y se abre la del texto libre |
+| 03-REGLAS | Sí | ADR-016, 017, 018; Arquitectura §16; Plan de Trabajo §8 | R-22 actualizada y nuevas R-55 (sin tokens offline), R-56 (mecanismo de la lista blanca), R-57 (email solo editable por el administrador) y R-58 (configuración del realm tras la importación); R-27 remite al literal de ACO-031; cuestiones abiertas alineadas con la Arquitectura §16 y con la excepción de ADR-017 |
+| 04-INTERFAZ | Sí | Wireframes v0.6; ACO-031; ACO-032; Plan de Proyecto §1, §6 | Pantallas 2–5, 8, 9, 4b, 4c y 10; resultado en lenguaje natural sin confianza ni umbral; disclaimer literal y login sin barra; motivo del paciente y de la resolución; aviso de duplicado y nombre genérico; mobile-first a 360 px; se cierran las cuestiones del motivo, del punto del disclaimer y del texto del aviso de duplicado (PD-27, PD-29) |
+| 05-DISEÑO | Sí | Arquitectura §16; ADR-016, 017, 018 | Identidad sin tokens offline y con configuración posterior a la importación; lista blanca en el backend contra `EMAILS_AUTORIZADOS`; pista C actualizada; cuestiones alineadas con la Arquitectura §16 |
+| 06-SEMILLA | Sí | ADR-016, 017, 018 | Realm con `defaultRole` y scripts post-importación; lista blanca en `.env` con ejemplo `paciente@example.com`; usuario no autorizado sintético; se cierra la cuestión del mecanismo de la lista blanca |
+| 07-INTERCAMBIO | Sí | Arquitectura §16; ADR-016, 017, 018; Modelo E/R v0.10 | Contratos de identidad, lista blanca y configuración del realm; DOCUMENTO sin `retenido_baja_confianza`; ETIQUETA_ANONIMIZACION con el catálogo del Modelo E/R; SOLICITUD_DESBLOQUEO_CREDITO con motivos; se cierra la cuestión del mecanismo de la lista blanca y se abre la del texto libre |
+| 08-PLAN | Sí | Documento Operativo v0.7; Plan de Trabajo v0.12; fichas | Sprint 1 cerrado: demo del 9 y decisión #137; D-01…D-06 cumplidos y D-07 no cumplido por ACO-033; criterios de la demo desde el DO §14; ACO-033 en el S2 y nota de ACO-007; matriz y estado de las fichas alineados con `68db567`: §5 dejaba entonces ACO-032 como única ficha con criterios declarados pendientes, y corrige la afirmación anterior de que su PR seguía abierta; DoD única del Plan de Trabajo §10 con el criterio propio del DO; cuestiones actualizadas |
+| 09-TESTS | Sí | ADR-016, 017, 018; Documento Operativo §14 | Cierre del S1 y D-07 no cumplido; T-17 actualizada; nuevas T-40 (sin tokens offline), T-41 (mecanismo de la lista blanca), T-42 (perfil de email) y T-43 (configuración post-importación); traza inversa de R-55 a R-58; ACO-033 marcado como S2 |
+| `AGENTS.md` | No | Sus fuentes (Plan de Trabajo §4, §8, §9 y §10; Estrategia §4.1) no cambian de contenido | — |
+
+Los identificadores R y T se conservan y los nuevos continúan la numeración. 08 no tiene ADR entre sus fuentes normativas: lo que procede de ADR-013 a ADR-018 se remite a 03 y 09. 04 solo cita ADR-012 (nombre genérico y duplicado) y ADR-013 (documento retenido e ilegible), que son fuente directa de esos comportamientos de interfaz; el resto de los ADR se remite a 03 y 09.
+
+### D.3 Cuestiones abiertas (MANIFIESTO §5)
+
+- **Salen:** «Campo motivo de la solicitud de desbloqueo» (lo resuelve el Modelo E/R v0.10), «Punto de la interfaz del disclaimer» (lo fijan ACO-031 y el wireframe v0.6), «Cómo se comprueba la lista blanca» (lo resuelve ADR-017), «ACO-014 depende de 007» (el Documento Operativo §6 documenta que se entregó en la PR #1) y «Contenido de los casos de prueba conversacionales y de prompt injection» (lo fija ACO-052, ejecutable en esta pasada con quince casos C y cuatro casos F).
+- **Se reformulan:** «Modelo de embeddings» pasa a «Modelo de embeddings, dimensión y chunking», con la dimensión 768 marcada como provisional; «Encaje del gateway y modelo de Claude» se separa en las cuestiones 12 y 13 de la Arquitectura §16; «Diseño del derecho al olvido y del registro de auditoría» se separa en las cuestiones 3 y 4.
+- **Entran:** el contenido y los límites de los campos de texto libre `motivo` y `motivo_resolucion`; el alcance del Sprint 2 y la matriz del traspaso de ACO-033; y las cuestiones 11 a 17 de la Arquitectura §16 (entorno de desarrollo, gateway, modelo de Claude, embeddings, OCR, crédito y VPS), que antes no constaban en el arnés.
+- Las cuestiones 1 a 10 de la Arquitectura §16 se mantienen, con la numeración de la fuente.
+
+### D.4 Pendientes que cierran y pendientes nuevos
+
+| Nº | Situación |
+|---|---|
+| PD-12 | Cerrado por el Plan de Proyecto v0.22 §6: la mitigación del riesgo de concentración de carga ya remite a la revisión del reparto en el Sprint 2 y recoge que el recorte del S1 no se aplicó |
+| PD-13 | Cerrado por el Modelo E/R v0.10: la dimensión 768 de `FRAGMENTO_RAG.embedding` se marca como provisional (Arquitectura §16 nº 14) |
+| PD-16 | Cerrado por el Modelo E/R v0.10: etiquetas `[SANITARIO]`, `[SANITARIO_n]` y `'PERSONAL_SANITARIO'`; DOCUMENTO ya no guarda el documento retenido ni admite `retenido_baja_confianza` |
+| PD-17 | Cerrado en lo que afecta a las reglas: UC-06 ya recoge el documento retenido y el ilegible según ADR-013. Queda una discrepancia de redacción: UC-05 sigue usando `[MÉDICO_1]` y UC-06 sigue diciendo «umbral de confianza» en singular |
+| PD-18 | Cerrado por los Wireframes v0.6: etiquetas de la Arquitectura, sin umbral único, y pantallas 4b y 4c para el retenido y el ilegible |
+| PD-20 | Cerrado por el Plan de Trabajo v0.12 §8: las dependencias que nombra la ficha ejecutable y no cambian el stack no requieren decisión conjunta |
+| PD-24 | Cerrado por el Plan de Trabajo v0.12 §9: el registro incluye ADR-001 a ADR-018 y los pendientes remiten a la Arquitectura §16 |
+| PD-27 | Cerrado por 04-INTERFAZ: el punto del disclaimer es el pie permanente de `AppShell`, slot `disclaimer` (ACO-031) |
+| PD-28 | Cerrado por la ficha de ACO-027: la gestión de secretos ya no se presenta como ADR pendiente, porque la resuelve ADR-015 |
+| PD-29 | Cerrado por 04-INTERFAZ y el wireframe v0.6: el literal del disclaimer es el de ACO-031 P2 y la barra está en las pantallas 2–9 |
+| PD-30 | Cerrado por el Modelo E/R v0.10: `motivo` y `motivo_resolucion` ya existen en SOLICITUD_DESBLOQUEO_CREDITO |
+| PD-25 | Cerrado en lo que respecta a ocho fichas por `68db567` (contenido de la rama `docs/pasada-b-fichas` aplastado): ACO-013, 014, 019, 022, 023, 024, 025 y 026 declaran sus criterios confirmados, con la PR de su revisión. ACO-032 quedó fuera porque su línea de estado la corrige #149, abierta en esa fecha; se cerró con `d92e8c4` (sección siguiente). ACO-028 y el encabezado de ACO-015 entraron también en `68db567` |
+| PD-26 | Sigue abierto: ADR-015 afirma que la demo del 27/10 se celebró y no se celebró |
+| Nuevo | El contenido de `motivo` y `motivo_resolucion` es texto libre y puede contener datos identificativos; ninguna fuente fija límite, validación ni anonimización. Requiere decisión del equipo (cuestión abierta y ADVERTENCIA en la PR) |
+
+### D.5 Hallazgos
+
+- **Figura y versión en Casos de Uso y Modelo E/R.** El subtítulo de portada de los Casos de Uso y el título del Modelo E/R incluyen la versión. En Casos de Uso se regeneró la figura de casos de uso dentro de la misma v0.7 (`90acd3c`), de modo que figura y versión siguen alineadas; el riesgo es que un retoque de figura sin subir de versión deje el título desactualizado. No requiere cambio en el arnés.
+- **Catálogo de `tipo_entidad`.** El Modelo E/R usa códigos de distinta granularidad (`'NOMBRE'`, `'FECHA_NACIMIENTO'`, `'PERSONAL_SANITARIO'`, `'HOSPITAL'`, `'NHC'`) y ninguna fuente cierra el catálogo ni lo cruza con el mapeo MEDDOCAN → Presidio de ACO-021. El arnés lo recoge como cuestión abierta en 02 y 07.
+- **«Umbral» en singular.** UC-06 y algunos párrafos de la Arquitectura §4 y §15 siguen hablando de «umbral de confianza» en singular. Es compatible con los dos umbrales de ADR-013, pero conviene unificar la redacción en la próxima revisión de esas fuentes.
+- **`AUDITORIA.accion` sin valor para el documento retenido.** ADR-013 exige un registro de auditoría del documento retenido (fecha, tipo de documento, motivo), pero el Modelo E/R no define un valor de `accion` para ese caso. El registro sigue siendo una cuestión abierta en 09 (T-10).
+- **`[MÉDICO_1]` en UC-05.** Los Casos de Uso v0.7 mantienen `[MÉDICO_1]` en UC-05, frente a `[SANITARIO_n]` de la Arquitectura §4 y ADR-013. Prevalece la Arquitectura; 04 lo señala.
+- **El wireframe 4 conserva el texto de ejemplo sin anonimizar.** La frase «También fue vista… por la Dra. Martínez» y la marca pendiente «Martínez» son parte del ejemplo de la revisión manual opcional (Nivel 3), no una fuga: el texto que se muestra es el de la demo sintética. No requiere cambio.
+
+### D.6 Verificación de integridad
+
+- Base `929daf8` (`main` tras #162 y #167), sin cambios previos en la rama. La instantánea que se cita para `docs/adr/` y `docs/aco/` es `929daf8`: los commits de fichas de la rama `docs/pasada-b-fichas` entraron aplastados en `68db567`, y #167 añadió las fichas históricas ACO-001, ACO-006 y ACO-007.
+- Solo cambian `docs/arnes/01` a `09`, `MANIFIESTO.md` y este informe. `AGENTS.md`, `docs/adr/`, `docs/aco/` y el código no cambian.
+- Los SHA-256 del manifiesto se comprueban contra `SHA256SUMS` de `acompas-fuentes` en `90acd3c`, publicados en `main` en `85c0ab4`; los hashes del §2 son los de la instantánea vigente `f7eff22` (`sha256sum -c`: 17/17), posterior a `acompas-fuentes#4` (PD-04) y `#6` (exportación sin envolver), que solo cambian la forma: ningún `.md` cambia de texto y ninguna pieza se regenera por ellos. La ampliación del 16 de noviembre repite la comprobación sobre `89cadd4`, con `sha256sum -c`: 16/16. ADR y fichas, contra `68db567`.
+- `~/projects/acompas-fuentes`: los SHA-256 coinciden antes y después de la regeneración.
+- Trazabilidad R↔T comprobada en los dos sentidos: 58 reglas y 43 verificaciones, ninguna regla sin verificación ni verificación sin regla. Se corrigen tres desajustes de la generación anterior: R-05 declaraba el rango T-01…T-08 y solo T-01 y T-04 la citan; la fila inversa de R-24 no recogía T-39; y 09 declaraba ADR-001 y ADR-018 sin citarlos.
+- Citas de cada pieza comprobadas contra su fila del MANIFIESTO §4: ningún ADR, sección ni ACO citado fuera de las fuentes declaradas. Se ajustan las fuentes declaradas de 02 (retirados el Plan de Proyecto y ADR-016/018, no citados), 04 (añadidos ADR-012, ADR-013 y la ficha ACO-017), 05 (ADR-004 citado en la fila de OCR), 06 (ADR-012 y la ficha ACO-052), 07 (Arquitectura §6 y retirada §9), 08 (Plan de Trabajo §4, §6, §9 y §10; Documento Operativo §2, §6 y §9–§14; ADR-013 a ADR-015) y 09 (Plan de Proyecto §1; ADR-013 a ADR-015; Documento Operativo §3, §9 y §14).
+- Las 25 filas de la matriz de 08 coinciden con el Documento Operativo §6 en estimación y dependencias, sin altas ni bajas.
+- La cuestión de 06 sobre el contenido de los casos de prueba se retira: la fija ACO-052, ejecutable en esta pasada.
+
+Lo anterior describe la regeneración del 13 de noviembre. La ampliación del 16 de noviembre actualiza la instantánea de las fuentes, el commit de `docs/aco/` y `AGENTS.md`: el detalle está en la sección siguiente, y los valores vigentes, en `MANIFIESTO.md`.
+
+## Ampliación (modo B) — 16 de noviembre de 2026
+
+Regeneración según la Estrategia v0.9 §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-11-16. Punto de partida: rama `docs/arnes-pasada-b`, HEAD `79a4df0`. Fuentes, versiones y commits: `MANIFIESTO.md`.
+
+Motivo: la pasada B del 13 de noviembre compiló el juego documental de entonces. Después, `acompas-fuentes#7` retira la Guía rápida de revisión de PR (PD-11), sube el Plan de Trabajo a v0.13 y la Estrategia a v0.9, la PR #149 (`d92e8c4`) corrige la línea de estado de ACO-032 y la PR #167 (`929daf8`) añade las fichas históricas ACO-001, ACO-006 y ACO-007. La ampliación recoge esos cambios; no vuelve a generar las nueve piezas.
+
+### Fuentes e instantáneas
+
+| Fuente | Cambio | Secciones con cambio de contenido |
+|---|---|---|
+| Plan de Trabajo v0.12 → v0.13 | §4 deja de remitir a la Guía rápida de revisión de PR; §11 retira el documento de la lista de documentos de proceso. La guía sale del juego documental: no cambian las reglas de revisión ni el flujo | §4, §11 |
+| Estrategia de Actualización Documental v0.8 → v0.9 | Anexo A: se retira la fila de la Guía rápida de revisión de PR | Anexo A |
+| `docs/aco/` (`d92e8c4` → `929daf8`) | ACO-032 no cambia (su texto viene de #149); #162 añade la línea de estado de ACO-013, 014, 019, 022, 023, 024, 025, 026 y ACO-028, el encabezado de §0 de ACO-015, la remisión a la matriz del Documento Operativo de ACO-020, 021 y 033, y la cita de la PR de fuentes en ACO-031. #167 añade las fichas históricas ACO-001, ACO-006 y ACO-007 («Estado: ficha histórica»), que no reconstruyen criterios de aceptación, estimación, responsable, revisión ni dependencias | — |
+| Guía rápida de revisión de PR v0.1 | Documento retirado: el `.docx` sale de `acompas-fuentes` y `README.md` y `SHA256SUMS` pasan de 17 a 16 ficheros | — |
+
+La instantánea de las fuentes pasa de `f7eff22` a `89cadd4` (14 de noviembre), con `sha256sum -c SHA256SUMS`: 16/16. `docs/adr/` no cambia entre `68db567` y `929daf8`, y `docs/aco/` pasa a `929daf8` (#167 añade las fichas históricas ACO-001, ACO-006 y ACO-007).
+
+### Piezas actualizadas
+
+| Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
+|---|---|---|---|
+| 08-PLAN | Sí | `docs/aco/` en `929daf8` | §5 pasa ACO-032 a la fila de fichas con criterios confirmados, con la nota de la presentación del resultado revisada en #149, y desaparecen la fila y la cuestión abierta que remitían a #149. Con #162, ACO-028 pasa a la fila de confirmadas y ninguna ficha queda pendiente. Con #167, §5 añade la fila de ficha histórica (001, 006 y 007) y ACO-007 deja de presentarse como ACO sin ficha |
+| `AGENTS.md` | Sí | Plan de Trabajo §4; §11 | §9: la PR enlaza su ficha y su Issue, sin remisión a la Guía rápida. La regla de revisión no cambia: sigue en el mismo párrafo y en la Definition of Done |
+| 01 a 07 y 09 | No | Ninguna de sus fuentes cambia de contenido | — |
+
+La retirada de la guía no cambia ninguna regla, ningún dato ni ningún criterio de aceptación: desaparece una remisión que no tenía destino en el repositorio. El flujo de revisión sigue en el Plan de Trabajo §4 y §10, en `AGENTS.md` §9 y en `README.es.md`.
+
+### Pendientes que cierran
+
+| Nº | Situación |
+|---|---|
+| PD-11 | Cerrado por el Plan de Trabajo v0.13 §4 y §11 y la Estrategia v0.9 (Anexo A): la guía se retira y con ella la remisión de `AGENTS.md` §9. El flujo de revisión no queda sin fuente: está en el Plan de Trabajo §4 y §10 |
+| PD-25 (ACO-032 y ACO-028) | **Cerrada** por `d92e8c4` (#149) y `68db567` (#162): ACO-032 declara sus criterios confirmados y ACO-028 los suyos (#103). 08-PLAN §5, el MANIFIESTO §2 y este informe lo recogen. #153 se cierra con esta PR |
+
+### Verificación
+
+- Solo cambian `AGENTS.md`, `docs/arnes/08-PLAN.md`, `docs/arnes/MANIFIESTO.md` y este informe. `docs/adr/`, `docs/aco/` y el código no cambian.
+- La rama se rebasa sobre `main` tras #162 y #167: el estado de las fichas entra por `68db567` y las históricas, por `929daf8`; los commits de fichas que la rama arrastraba se descartan porque ya estaban aplastados en `main`. El diff de la PR no toca `docs/aco/`.
+- Los SHA-256 del §2 son los de `89cadd4`, comprobados con `sha256sum -c SHA256SUMS`: 16/16, antes y después de la ampliación. ADR y fichas, contra `929daf8`, incluidas las históricas de #167.
+- Ninguna pieza del arnés ni `AGENTS.md` remiten ya a la Guía rápida de revisión de PR: `grep -rn "Guía rápida" AGENTS.md docs/arnes/` solo devuelve las filas del manifiesto y de este informe que describen la retirada.
+
+## Ampliación (modo B) — 17 de noviembre de 2026
+
+Regeneración según la Estrategia v0.9 §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-11-17. Punto de partida: rama `docs/arnes-pasada-b`, HEAD `db1766b`. Fuentes, versiones y commits: `MANIFIESTO.md`.
+
+Motivo: el Documento Operativo del Sprint 2 v0.1 entra en `acompas-fuentes` (`#8`, `7696185`) y después se retira su `.docx` (`#10`, `5b5ca6d`), con el `.md` como original. Es fuente normativa de 08 y 09 (Estrategia §4.5) y su cambio regenera solo planificación y verificación (§4.7): no introduce reglas.
+
+### Fuentes e instantáneas
+
+| Fuente | Cambio | Secciones con cambio de contenido |
+|---|---|---|
+| Documento Operativo Sprint 2 v0.1 | Documento nuevo: ventana y capacidad, matriz operativa con dos filas firmes, bloques sin ficha, trabajo identificado sin ACO, colchón y recorte, planificación, riesgos y decisiones pendientes | §5, §6, §8, §9, §11, §12, §14 |
+| `ACOMPAS - Documento Operativo Sprint 2 v0.1.docx` | Retirado: el `.md` pasa a ser el original, con sus 17 encabezados | — |
+
+La instantánea de las fuentes pasa de `89cadd4` a `5b5ca6d` (17 de noviembre), con `sha256sum -c SHA256SUMS`: 17/17. `docs/adr/` y `docs/aco/` siguen en `929daf8`: ningún ADR pasa a aprobado (019, 020 y 021 siguen en revisión) y ninguna ficha cambia.
+
+### Piezas actualizadas
+
+| Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
+|---|---|---|---|
+| 08-PLAN | Sí | Documento Operativo Sprint 2 §5, §6, §8, §9, §11, §12, §14 | §2: ACO-033 pasa a 12–16 h, la estimación de la matriz del S2. §4: los bloques del Sprint 2 se citan del Documento Operativo y se dice que no son filas. Nueva §7 con la matriz vigente: ventana y capacidad (371 h teóricas, techo de 297 h al 80 %), regla de fila, regla de numeración, las dos filas firmes, los bloques, el trabajo identificado sin ACO y lo que queda fuera. La cuestión abierta que daba la matriz por no decidida pasa a describir la matriz abierta |
+| 09-TESTS | Sí | Documento Operativo Sprint 2 §14 | Cita el Documento Operativo del Sprint 2 y añade que D-07 sigue como criterio heredado con ACO-033 como vehículo y T-32 como verificación; los demás criterios de la demo del 9 de noviembre no se trasladan |
+| 01 a 07 | No | El Documento Operativo no introduce reglas | — |
+
+### Verificación
+
+- Cambian `docs/arnes/08-PLAN.md`, `docs/arnes/09-TESTS.md`, `docs/arnes/MANIFIESTO.md` y este informe. `docs/adr/`, `docs/aco/` y el código no cambian.
+- Los SHA-256 del §2 son los de `5b5ca6d`, comprobados con `sha256sum -c SHA256SUMS`: 17/17. El del Documento Operativo del Sprint 2 es `77d35556bcd9f80f12801894f01b488c88cb5de3ecc06a8c244ce6379c3009bf`.
+- El `.md` del Documento Operativo del Sprint 2 es original y no exportación: `grep -c '^#'` devuelve 17, y sus 7 tablas se exportan con el número de columnas correcto.
+- La matriz del Sprint 2 no está cerrada, y el arnés lo dice: dos filas y 18–24 h sobre 297 h. No se presenta como planificada.
+
+### Pendientes que cierran
+
+- **PD-24** (el registro del Plan de Trabajo no incluía ADR-015): cerrada el 17 de noviembre. El Plan v0.12 incorporó ADR-015 al registro y la v0.13 lo confirma; el `.md`, el `.docx` y `SHA256SUMS` están coherentes en `5b5ca6d` (17/17). La fila «Cumple con salvedad» del `MANIFIESTO` §3 describe la pasada del 13 de noviembre y se deja como registro de entonces; la condición ya no tiene salvedad.
+
+## Ampliación (modo B) — 18 de noviembre de 2026
+
+Regeneración según la Estrategia v0.10 §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-11-18. Punto de partida: rama `docs/arnes-pasada-b`, HEAD `865b0a1`. Fuentes, versiones y commits: `MANIFIESTO.md`.
+
+Motivo: el Plan de Trabajo y el Documento Operativo del Sprint 2 recogen un cambio de proceso —el registro de seguimientos— y el formato de revisión y de autoría de las fuentes. Las tres fuentes cambiadas son de proceso: no tocan reglas de negocio, datos ni contratos, pero sí reglas que el agente ejecuta, así que el arnés y `AGENTS.md` tenían que compilarlas o el agente seguiría abriendo una Issue por hallazgo. La pasada cierra además un hueco anterior: la mecánica de lotes del Plan §8, que llevaba tiempo en la fuente y no estaba en ninguna pieza.
+
+### Fuentes e instantáneas
+
+| Fuente | Cambio | Secciones con cambio de contenido |
+|---|---|---|
+| Plan de Trabajo v0.13 → v0.15 | v0.14: contenido de la PR, lenguaje y contexto (tres bloques, dos rondas como máximo) y documentos de fuentes (los `.docx` los edita una IA externa a partir de un encargo). v0.15: registro de seguimientos, ciclo de una fila y fila nacida en otro repositorio | §4 |
+| Documento Operativo Sprint 2 v0.1 → v0.3 | El registro de seguimientos entra como artefacto del sprint y el ciclo se remite al Plan; la revisión de mitad de sprint sigue en #168 | §9, §15 |
+| Estrategia de Actualización Documental v0.9 → v0.10 | La lista de pendientes deja de ser las Issues con etiqueta y pasa a ser el registro de seguimientos; el registro no es un documento del juego documental | §3, cuarta regla |
+
+La instantánea de las fuentes pasa de `5b5ca6d` a `b02d3f8` (18 de noviembre), con `sha256sum -c SHA256SUMS`: 17/17. Ningún otro fichero de `SHA256SUMS` cambia. `docs/adr/` y `docs/aco/` siguen en `929daf8`: ningún ADR pasa a aprobado y ninguna ficha cambia.
+
+### Piezas actualizadas
+
+| Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
+|---|---|---|---|
+| 03-REGLAS | Sí | Plan de Trabajo §4 y §8 | R-59: los hallazgos y advertencias sin decisión propia no abren Issue y se anotan como fila en `docs/seguimientos.md`, con su ciclo y la fila nacida en otro repositorio. R-60: contenido de la PR y formato de revisión en tres bloques con dos rondas. R-61: las decisiones por lotes, en dos carriles. Verificación: T-44, T-45 y T-46 |
+| 08-PLAN | Sí | Documento Operativo Sprint 2 §9 | §7: planificación y seguimiento del sprint — revisión de mitad de sprint en #168, registro de seguimientos y fecha de cierre |
+| 09-TESTS | Sí | 03-REGLAS (R-59, R-60 y R-61) | T-44 a T-46, con su fila en la trazabilidad inversa y una nota que las separa de las reglas de identidad |
+| `AGENTS.md` | Sí | Plan de Trabajo §4 y §8 | §6: el registro de seguimientos como destino de un hallazgo o una advertencia sin decisión propia. §7: un cambio de proceso se registra en la PR que lo aplica y las decisiones no bloqueantes van por lotes. §9: contenido de la PR, tres bloques y dos rondas, los `.docx` de fuentes editados por una IA externa a partir de un encargo, y mirar las PR abiertas antes de abrir una |
+| 01, 02, 04, 05, 06 y 07 | No | Las fuentes que cambian son de proceso | — |
+
+### Hallazgos
+
+- **El Documento Operativo Sprint 2 §15 sigue diciendo «defectos y hallazgos».** El registro recoge también advertencias, que no siempre se arreglan. Es una fila del registro de seguimientos, abierta en `acompas#180`, y el arnés no la copia: compila lo que dice §9.
+- **El arnés no había compilado la mecánica de lotes del Plan §8.** Los dos carriles, la semana máxima en cola, las 48 h y el «no se implementa hasta que el lote se aprueba» están en el Plan desde antes de la v0.15 y no estaban en ninguna pieza: el agente no sabía que las decisiones no bloqueantes se lanzan juntas. No es una fuente nueva, es un hueco de esta pasada; se cierra con R-61 y T-46.
+- **La regla de agrupar en la PR abierta no está en el Plan.** Entra en `AGENTS.md` §9 por la vía del cambio de proceso registrado en la PR (Plan de Trabajo §8), no por una fuente que la recoja. Queda como fila del registro de seguimientos, con la próxima revisión del Plan §8 como destino, para que la siguiente regeneración no la pierda.
+- **Los registros no son fuentes.** `docs/seguimientos.md` y `docs/desviaciones.md` no tienen versión, no entran en el Anexo A y no se regeneran con el arnés (Estrategia v0.10 §3, cuarta regla). El MANIFIESTO lo dice en §2 y los excluye.
+
+### Verificación
+
+- Cambian `docs/arnes/03-REGLAS.md`, `docs/arnes/08-PLAN.md`, `docs/arnes/09-TESTS.md`, `docs/arnes/MANIFIESTO.md`, `AGENTS.md` y este informe. `docs/adr/`, `docs/aco/` y el código no cambian.
+- Los SHA-256 del §2 son los de `b02d3f8`, comprobados con `sha256sum -c SHA256SUMS`: 17/17. Plan de Trabajo `98ad947cc40b92a77caa243edbc7c2462a0512db46b789531357592f3656fc61`; Documento Operativo Sprint 2 `97bab99bdfb7fa72386c993352069f466645391e8b3ad7a0686a5d2764e14a41`; Estrategia `45e4707f396a61e1be59408ab0b5430bf22334a86a149eb0d2888a291428912a`.
+- La trazabilidad inversa de 09-TESTS tiene una fila por regla nueva: R-59 → T-44, R-60 → T-45 y R-61 → T-46.
