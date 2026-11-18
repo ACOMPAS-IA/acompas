@@ -240,7 +240,7 @@ To enable them, fill in your local `.env` (the key is never committed):
 
 - `ANTHROPIC_API_KEY`: your Anthropic API key.
 - `LLM_MODEL`: the Claude model. The project has not chosen it yet (pending ADR).
-- Optional: `LLM_MAX_OUTPUT_TOKENS` (1024), `LLM_TIMEOUT_SECONDS` (60) and
+- Optional: `LLM_MAX_OUTPUT_TOKENS` (4096), `LLM_TIMEOUT_SECONDS` (60) and
   `LLM_MAX_RETRIES` (2).
 
 Only `ANTHROPIC_API_KEY` is allowed among the `ANTHROPIC_*` variables. The
