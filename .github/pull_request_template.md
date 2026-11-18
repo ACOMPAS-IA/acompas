@@ -12,8 +12,8 @@ Ficha: `docs/aco/ACO-XXX.md` <!-- o «no es un ACO» -->
 
 ## Avisos
 
-Una fila por aviso. El destino es obligatorio: una Issue, un ADR, una ficha, o
-el motivo por el que no hay nada que hacer.
+Una fila por aviso. El destino es obligatorio: una Issue, un ADR, una ficha, una
+fila del registro de seguimientos, o el motivo por el que no hay nada que hacer.
 
 | Categoría | Detalle | Destino |
 | --- | --- | --- |
@@ -23,7 +23,14 @@ el motivo por el que no hay nada que hacer.
 | ADVERTENCIA | — | — |
 
 <!--
-Destino: `#123`, `ADR-021`, `ficha ACO-058`, o `— (sin acción: motivo)`.
+Destino: `#123`, `ADR-021`, `ficha ACO-058`, `fila en docs/seguimientos.md`, o
+`— (sin acción: motivo)`.
+
+Un hallazgo o una advertencia sin decisión propia no abre Issue: va como fila en
+`docs/seguimientos.md`, en la misma PR que lo encuentra. Abren Issue el bloqueo,
+lo que queda fuera de alcance y el hallazgo o la advertencia que exijan una
+decisión (Plan de Trabajo §4).
+
 Si no hay avisos, se deja cada fila con «—».
 -->
 

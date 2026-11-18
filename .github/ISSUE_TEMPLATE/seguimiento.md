@@ -1,8 +1,13 @@
 ---
 name: Seguimiento
-about: Aviso que implica una acción, detectado en una PR o en un ACO
+about: Aviso que implica una acción o una decisión, detectado en una PR o en un ACO
 title: "ACO-XXX (follow-up): "
 ---
+
+<!--
+Si el aviso no implica una acción ni una decisión, no es una Issue: es una fila
+en docs/seguimientos.md, en la misma PR que lo encuentra (Plan de Trabajo §4).
+-->
 
 ## Contexto
 
