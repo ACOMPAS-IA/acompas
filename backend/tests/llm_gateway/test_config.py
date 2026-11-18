@@ -22,7 +22,7 @@ def test_defaults(llm_env):
 
     assert settings.api_key.get_secret_value() == FAKE_API_KEY
     assert settings.model == FAKE_MODEL
-    assert settings.max_output_tokens == 1024
+    assert settings.max_output_tokens == 4096
     assert settings.timeout_seconds == 60
     assert settings.max_retries == 2
 
@@ -46,7 +46,7 @@ def test_empty_optional_variables_use_defaults(llm_env):
     settings = load_settings()
 
     assert (settings.max_output_tokens, settings.timeout_seconds, settings.max_retries) == (
-        1024,
+        4096,
         60,
         2,
     )
