@@ -207,6 +207,8 @@ La Definition of Done es **única**: la del Plan de Trabajo §10. El Documento O
 
 **Colchón y recorte** *(§8)*: si el colchón se consume a mitad de sprint, se aplica la regla de recorte de #144 (punto B); las fechas de la demo y de ACANPAN no se mueven.
 
+**Planificación y seguimiento** *(§9)*. Revisión de mitad de sprint: 15 minutos, una vez, el viernes 4 de diciembre de 2026, anotada como comentario en la Issue de seguimiento (#168); el semáforo es por ACO. El registro de seguimientos vive en `docs/seguimientos.md`, con una fila por hallazgo o advertencia; el ciclo de la fila y la fila nacida en otro repositorio los fija el Plan de Trabajo §4 (R-59), y el registro no sustituye a la revisión de mitad de sprint. Plan semanal: por decidir cuando la matriz esté cerrada. Cierre del sprint: 31 de diciembre de 2026.
+
 ## Cuestiones abiertas
 
 | Cuestión | Fuente |

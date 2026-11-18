@@ -14,7 +14,7 @@ Verificaciones objetivas de las reglas (03-REGLAS) y de los criterios de aceptac
 
 ## Fuentes
 
-- **Normativas:** Plan de Proyecto (§1); Arquitectura del Sistema (§4, §16); ADR-013, ADR-014 y ADR-015; Documento Operativo del Sprint 1 (§3, §9, §14) y del Sprint 2 (§14).
+- **Normativas:** Plan de Proyecto (§1); Plan de Trabajo (§4); Arquitectura del Sistema (§4, §16); ADR-013, ADR-014 y ADR-015; Documento Operativo del Sprint 1 (§3, §9, §14) y del Sprint 2 (§14).
 - **Derivadas:** Casos de Uso (UC-01, UC-03, UC-05, UC-06, UC-09); Modelo E/R (DOCUMENTO, ETIQUETA_ANONIMIZACION); Wireframes (pantallas 1, 4 y 5); Fichas ACO (criterios de aceptación y tests esperados: 014, 015, 019–026, 028–033, 051, 052); criterios de la demo D-01…D-07, que se toman de 08-PLAN.
 
 ## 1. Criterios de la demo del Sprint 1 → verificaciones
@@ -38,6 +38,8 @@ Hito *(Documento Operativo §14)*: lo cubre el conjunto D-01…D-07 ejecutado so
 T-39 verifica los controles de R-54 en ACO-028. El Documento Operativo §9 excluye ACO-028 del hito («no es criterio de demo»), así que no se enlaza con D-01…D-07; la parte de D-07 «sin secretos en Git» la comprueba T-19.
 
 T-40 a T-43 verifican las reglas de identidad y lista blanca del Sprint 1 (R-55 a R-58). D-02 se apoya en T-14, T-15, T-17 y T-41; la retirada de tokens offline y la configuración del realm se comprueban en T-40, T-42 y T-43.
+
+T-44 a T-46 verifican tres reglas de proceso: el registro de seguimientos (R-59) y el contenido de la PR con su formato de revisión (R-60), del Plan de Trabajo §4, y la mecánica de lotes de decisiones (R-61), del §8. No dependen de ningún ACO: se comprueban en la revisión de cualquier PR.
 
 ## 2. Verificaciones
 
@@ -86,6 +88,9 @@ T-40 a T-43 verifican las reglas de identidad y lista blanca del Sprint 1 (R-55 
 | T-41 | La lista blanca se lee de `EMAILS_AUTORIZADOS` en cada petición protegida, con `strip()` y minúsculas y comparación exacta; un token sin email, un email fuera de la lista o una lista ausente o vacía producen 403 genérico; un usuario retirado pierde el acceso en la siguiente petición; al arrancar se registra solo el número de direcciones, nunca sus valores; la lista no se devuelve por ningún endpoint. | Automatizable con tokens y direcciones sintéticas; revisión del arranque y de los logs | R-56 · D-02 | 015 |
 | T-42 | `email.permissions.edit` es exactamente `["admin"]` en el perfil de usuario del realm, y `scripts/apply-user-profile.sh` es idempotente, solo acepta `localhost` o `127.0.0.1`, no admite forzado y no imprime credenciales ni `.env`. | Script (`check-realm.sh`) + revisión del script | R-57 | 012 (P17) |
 | T-43 | El `defaultRole` efectivo es `default-roles-acompas`; `scripts/apply-realm-config.sh` ejecuta en orden el perfil de email y el rol por defecto; los dos scripts son idempotentes, no admiten argumentos ni `--force` y fallan con código distinto de cero si no pueden aplicar el cambio; tras una importación limpia el wrapper deja el realm en el estado esperado. | Script + revisión del procedimiento de reimportación documentado | R-58 | 012 (P16–P18) |
+| T-44 | Los hallazgos y las advertencias de un ACO que no tienen decisión propia están como fila en `docs/seguimientos.md` y no abren Issue; la fila lleva sprint, fecha, documento afectado, qué falta, dónde se arregla, estado y PR. | Revisión de la PR y del registro | R-59 | Todos |
+| T-45 | La PR abre con «Qué se hace y por qué» y la línea «Qué conviene mirar», recoge las cuatro categorías y se ofrece a revisión con la CI en verde, los tests ejecutados y la evidencia en el cuerpo; la revisión usa los tres bloques y no pasa de dos rondas. | Revisión de la PR | R-60 · D-07 | Todos |
+| T-46 | Las decisiones no bloqueantes se acumulan y se lanzan en un lote de dos o tres, o solas si llevan más de una semana en cola; la que bloquea algo va sola y el mismo día; el lote da 48 h para objetar, cada decisión lleva su línea de veredicto y nada se implementa antes de que el lote se apruebe. | Revisión de la PR y de las decisiones registradas | R-61 | Todos |
 
 ## 3. Trazabilidad inversa (regla → verificación)
 
@@ -127,6 +132,9 @@ T-40 a T-43 verifican las reglas de identidad y lista blanca del Sprint 1 (R-55 
 | | | | R-56 | T-41 |
 | | | | R-57 | T-42 |
 | | | | R-58 | T-43 |
+| | | | R-59 | T-44 |
+| | | | R-60 | T-45 |
+| | | | R-61 | T-46 |
 
 ## Cuestiones abiertas
 

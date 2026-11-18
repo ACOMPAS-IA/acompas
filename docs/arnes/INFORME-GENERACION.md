@@ -481,3 +481,41 @@ La instantánea de las fuentes pasa de `89cadd4` a `5b5ca6d` (17 de noviembre), 
 ### Pendientes que cierran
 
 - **PD-24** (el registro del Plan de Trabajo no incluía ADR-015): cerrada el 17 de noviembre. El Plan v0.12 incorporó ADR-015 al registro y la v0.13 lo confirma; el `.md`, el `.docx` y `SHA256SUMS` están coherentes en `5b5ca6d` (17/17). La fila «Cumple con salvedad» del `MANIFIESTO` §3 describe la pasada del 13 de noviembre y se deja como registro de entonces; la condición ya no tiene salvedad.
+
+## Ampliación (modo B) — 18 de noviembre de 2026
+
+Regeneración según la Estrategia v0.10 §4.10 y el Anexo B, modo B, con las reglas del modo A. Fecha: 2026-11-18. Punto de partida: rama `docs/arnes-pasada-b`, HEAD `865b0a1`. Fuentes, versiones y commits: `MANIFIESTO.md`.
+
+Motivo: el Plan de Trabajo y el Documento Operativo del Sprint 2 recogen un cambio de proceso —el registro de seguimientos— y el formato de revisión y de autoría de las fuentes. Las tres fuentes cambiadas son de proceso: no tocan reglas de negocio, datos ni contratos, pero sí reglas que el agente ejecuta, así que el arnés y `AGENTS.md` tenían que compilarlas o el agente seguiría abriendo una Issue por hallazgo. La pasada cierra además un hueco anterior: la mecánica de lotes del Plan §8, que llevaba tiempo en la fuente y no estaba en ninguna pieza.
+
+### Fuentes e instantáneas
+
+| Fuente | Cambio | Secciones con cambio de contenido |
+|---|---|---|
+| Plan de Trabajo v0.13 → v0.15 | v0.14: contenido de la PR, lenguaje y contexto (tres bloques, dos rondas como máximo) y documentos de fuentes (los `.docx` los edita una IA externa a partir de un encargo). v0.15: registro de seguimientos, ciclo de una fila y fila nacida en otro repositorio | §4 |
+| Documento Operativo Sprint 2 v0.1 → v0.3 | El registro de seguimientos entra como artefacto del sprint y el ciclo se remite al Plan; la revisión de mitad de sprint sigue en #168 | §9, §15 |
+| Estrategia de Actualización Documental v0.9 → v0.10 | La lista de pendientes deja de ser las Issues con etiqueta y pasa a ser el registro de seguimientos; el registro no es un documento del juego documental | §3, cuarta regla |
+
+La instantánea de las fuentes pasa de `5b5ca6d` a `b02d3f8` (18 de noviembre), con `sha256sum -c SHA256SUMS`: 17/17. Ningún otro fichero de `SHA256SUMS` cambia. `docs/adr/` y `docs/aco/` siguen en `929daf8`: ningún ADR pasa a aprobado y ninguna ficha cambia.
+
+### Piezas actualizadas
+
+| Pieza | Regenerada | Motivo (cruce con el MANIFIESTO §4) | Cambios principales |
+|---|---|---|---|
+| 03-REGLAS | Sí | Plan de Trabajo §4 y §8 | R-59: los hallazgos y advertencias sin decisión propia no abren Issue y se anotan como fila en `docs/seguimientos.md`, con su ciclo y la fila nacida en otro repositorio. R-60: contenido de la PR y formato de revisión en tres bloques con dos rondas. R-61: las decisiones por lotes, en dos carriles. Verificación: T-44, T-45 y T-46 |
+| 08-PLAN | Sí | Documento Operativo Sprint 2 §9 | §7: planificación y seguimiento del sprint — revisión de mitad de sprint en #168, registro de seguimientos y fecha de cierre |
+| 09-TESTS | Sí | 03-REGLAS (R-59, R-60 y R-61) | T-44 a T-46, con su fila en la trazabilidad inversa y una nota que las separa de las reglas de identidad |
+| `AGENTS.md` | Sí | Plan de Trabajo §4 y §8 | §6: el registro de seguimientos como destino de un hallazgo o una advertencia sin decisión propia. §7: un cambio de proceso se registra en la PR que lo aplica y las decisiones no bloqueantes van por lotes. §9: contenido de la PR, tres bloques y dos rondas, y los `.docx` de fuentes los edita una IA externa a partir de un encargo |
+| 01, 02, 04, 05, 06 y 07 | No | Las fuentes que cambian son de proceso | — |
+
+### Hallazgos
+
+- **El Documento Operativo Sprint 2 §15 sigue diciendo «defectos y hallazgos».** El registro recoge también advertencias, que no siempre se arreglan. Es una fila del registro de seguimientos, abierta en `acompas#180`, y el arnés no la copia: compila lo que dice §9.
+- **El arnés no había compilado la mecánica de lotes del Plan §8.** Los dos carriles, la semana máxima en cola, las 48 h y el «no se implementa hasta que el lote se aprueba» están en el Plan desde antes de la v0.15 y no estaban en ninguna pieza: el agente no sabía que las decisiones no bloqueantes se lanzan juntas. No es una fuente nueva, es un hueco de esta pasada; se cierra con R-61 y T-46.
+- **Los registros no son fuentes.** `docs/seguimientos.md` y `docs/desviaciones.md` no tienen versión, no entran en el Anexo A y no se regeneran con el arnés (Estrategia v0.10 §3, cuarta regla). El MANIFIESTO lo dice en §2 y los excluye.
+
+### Verificación
+
+- Cambian `docs/arnes/03-REGLAS.md`, `docs/arnes/08-PLAN.md`, `docs/arnes/09-TESTS.md`, `docs/arnes/MANIFIESTO.md`, `AGENTS.md` y este informe. `docs/adr/`, `docs/aco/` y el código no cambian.
+- Los SHA-256 del §2 son los de `b02d3f8`, comprobados con `sha256sum -c SHA256SUMS`: 17/17. Plan de Trabajo `98ad947cc40b92a77caa243edbc7c2462a0512db46b789531357592f3656fc61`; Documento Operativo Sprint 2 `97bab99bdfb7fa72386c993352069f466645391e8b3ad7a0686a5d2764e14a41`; Estrategia `45e4707f396a61e1be59408ab0b5430bf22334a86a149eb0d2888a291428912a`.
+- La trazabilidad inversa de 09-TESTS tiene una fila por regla nueva: R-59 → T-44, R-60 → T-45 y R-61 → T-46.

@@ -87,6 +87,12 @@ Un problema, inconsistencia o posible mejora detectado durante la ejecución que
 
 Un riesgo o una suposición con la que el agente sigue adelante porque puede cumplir los criterios del ACO de forma segura y verificable, y que el revisor debe comprobar expresamente. Por ejemplo, la falta de información contextual o de documentación auxiliar. Se informa como **`ADVERTENCIA — <descripción>`** en la descripción de la PR, **de forma destacada**.
 
+### El registro de seguimientos
+
+Un hallazgo o una advertencia **sin decisión propia** no abre Issue: se anota como fila en `docs/seguimientos.md`, en la misma PR que lo encuentra, y anotar la fila no amplía el alcance de la ficha. Abren Issue el bloqueo, lo que queda fuera de alcance y el hallazgo o la advertencia que exijan una decisión.
+
+La fila nace `abierta`, pasa a `en PR` cuando existe la PR que la arregla y a `cerrada` cuando esa PR entra en `main`. No se borra: se queda con la PR que la cerró. El registro es un solo fichero y no se parte por sprints; cada fila lleva el sprint en que nació. Si el hallazgo aparece en una PR de otro repositorio, la fila va en la PR de `acompas` que encargó el cambio; si esa PR ya está mergeada, la PR de origen la escribe en su cuerpo y entra en la primera PR de `acompas` posterior. *(Plan de Trabajo §4; Estrategia §3, cuarta regla)*
+
 ### Límites que no cambian
 
 Además, el agente nunca: *(Estrategia §4.1)*
@@ -102,6 +108,8 @@ Además, el agente nunca: *(Estrategia §4.1)*
 - Una decisión nueva no se consolida solo en un comentario de código. Si modifica el alcance o los criterios de un ACO, se actualiza su ficha; si es una decisión técnica, sigue el procedimiento de ADR. *(Plan de Trabajo §4)*
 - **Requieren decisión conjunta** del equipo (Issue «decisión conjunta», 48 h para objetar), y por tanto son BLOQUEO para el agente (la única excepción son las dependencias que nombra la ficha ejecutable y que no cambian el stack, §5): añadir, quitar o mover ACOs o fichas entre sprints; nuevas dependencias, componentes o cambios de stack; cambios de seguridad o privacidad (whitelist, JWT, secretos, persistencia de documentos, retención, prompt injection, datos reales); cambios en los contratos de API entre áreas; reasignaciones; reestimaciones de más del 50%; cambios que afecten a lo acordado con ACANPAN; y las cuestiones abiertas de arquitectura. *(Plan de Trabajo §8; §4 para las dependencias nombradas)*
 - **Puede decidirlos la persona responsable, informando en la PR:** refactors internos del ACO, corrección de bugs, ampliación de tests y documentación, dividir el ACO en Issues sin cambiar su alcance y ajustes menores de estimación. *(Plan de Trabajo §8)* El agente puede proponerlos en la PR, y la decisión es de la persona responsable.
+- **Un cambio de proceso** que no afecte a los supuestos de seguridad, privacidad, stack ni contratos de API puede registrarse en la PR que lo aplica, sin Issue aparte: la descripción lleva la decisión, el motivo y el plazo, y la revisión de la otra persona hace de objeción. *(Plan de Trabajo §8)*
+- **Las decisiones no bloqueantes van por lotes:** la que bloquea algo —un BUILD, una demo, la matriz o una PR detenida— se abre sola y el mismo día; la que no bloquea se acumula y se lanza con dos o tres, o sola si lleva más de una semana en cola. El lote da 48 h para objetar, cada decisión lleva su propia línea de veredicto y lo acumulado no se implementa hasta que el lote se aprueba. *(Plan de Trabajo §8)*
 - **Hace falta ADR** si la decisión es difícil de revertir, afecta a la seguridad, la privacidad o los datos de pacientes, añade, retira o sustituye una dependencia o un componente del stack, afecta a más de un área o se aparta del Plan de Proyecto o de la Arquitectura. Un ADR aprobado no se edita: se sustituye por otro. *(Plan de Trabajo §9)*
 
 ## 8. Seguridad y datos
@@ -118,6 +126,9 @@ Además, el agente nunca: *(Estrategia §4.1)*
 - Flujo: Issue → rama → desarrollo local → tests → Pull Request → revisión de la otra persona → CI verde → merge. **Ningún cambio directo sobre main.**
 - Ramas: `feature/ACO-XXX-descripcion` o `fix/ACO-XXX-descripcion`.
 - La Issue es solo un puntero (título, responsable, estado y enlace a la ficha). La PR enlaza su ficha y su Issue.
+- La PR abre con «Qué se hace y por qué», en dos o tres frases sin siglas ni identificadores, y una línea «Qué conviene mirar»; después, las cuatro categorías (§6). Se ofrece a revisión cuando la CI está en verde, los tests se han ejecutado y la evidencia está en el cuerpo. *(Plan de Trabajo §4)*
+- La revisión usa tres bloques —«Bloquea», «No bloquea» y «Dudas»— y dos rondas como máximo; a la tercera, la decisión se toma en una conversación de quince minutos. Cada comentario empieza por qué está mal y qué consecuencia tiene, en lenguaje llano, y los identificadores van después. *(Plan de Trabajo §4)*
+- Los `.docx` de `acompas-fuentes` los edita una IA externa a partir de un encargo: el agente no los edita, no escribe el `.md` a mano y no decide su contenido. Redacta el encargo con lo que ya está acordado y la persona responsable lo autoriza; después exporta el `.md`, comprueba que el diff solo contiene lo encargado y actualiza `SHA256SUMS` y el `MANIFIESTO`. *(Plan de Trabajo §4)*
 - El primer commit de la PR es la ampliación de la ficha (§3). La descripción de la PR recoge las decisiones delegadas que se han tomado (§5) y las cuatro categorías (§6).
 - El revisor aprueba o rechaza según el contenido, sin modificarlo; los cambios los aplica el autor. El merge lo hace el revisor al aprobar, con la CI en verde, salvo que el autor pida en la PR que se espere.
 - Merge **siempre squash**. Título del commit: el de la PR, que empieza por el ID del ACO o del ADR («ACO-021: Presidio + MEDDOCAN»), con un cuerpo breve y sin el listado de commits intermedios.
