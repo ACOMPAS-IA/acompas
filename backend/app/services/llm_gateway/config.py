@@ -23,7 +23,9 @@ class LLMSettings(BaseModel):
     # SecretStr no muestra el valor al imprimir la configuración.
     api_key: SecretStr
     model: str = Field(min_length=1)
-    max_output_tokens: int = Field(default=1024, gt=0)
+    # 4096 desde el 16-nov-2026 (#87): el razonamiento del modelo se descuenta
+    # de este presupuesto y con 1024 se truncaban respuestas.
+    max_output_tokens: int = Field(default=4096, gt=0)
     timeout_seconds: float = Field(default=60, gt=0)
     max_retries: int = Field(default=2, ge=0)
 

@@ -245,7 +245,7 @@ Para activarlas, rellena en tu `.env` local (la clave nunca se sube al repositor
 
 - `ANTHROPIC_API_KEY`: tu clave de Anthropic.
 - `LLM_MODEL`: el modelo de Claude. El proyecto aún no lo ha fijado (ADR pendiente).
-- Opcionales: `LLM_MAX_OUTPUT_TOKENS` (1024), `LLM_TIMEOUT_SECONDS` (60) y
+- Opcionales: `LLM_MAX_OUTPUT_TOKENS` (4096), `LLM_TIMEOUT_SECONDS` (60) y
   `LLM_MAX_RETRIES` (2).
 
 Solo se permite `ANTHROPIC_API_KEY` entre las variables `ANTHROPIC_*`. El
