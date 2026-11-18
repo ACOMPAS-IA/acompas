@@ -6,6 +6,11 @@ Closes #
 
 Ficha: `docs/aco/ACO-XXX.md` <!-- o «no es un ACO» -->
 
+## Qué conviene mirar
+
+<!-- Dónde debe mirar quien revisa y por qué: el punto, la decisión o el riesgo
+concreto. Una o dos frases, sin repetir el diff. (Plan de Trabajo §4) -->
+
 ## Decisiones delegadas
 
 <!-- Decisiones técnicas que la ficha delega y que se han tomado. Si no hay, «ninguna». -->
