@@ -505,13 +505,14 @@ La instantánea de las fuentes pasa de `5b5ca6d` a `b02d3f8` (18 de noviembre), 
 | 03-REGLAS | Sí | Plan de Trabajo §4 y §8 | R-59: los hallazgos y advertencias sin decisión propia no abren Issue y se anotan como fila en `docs/seguimientos.md`, con su ciclo y la fila nacida en otro repositorio. R-60: contenido de la PR y formato de revisión en tres bloques con dos rondas. R-61: las decisiones por lotes, en dos carriles. Verificación: T-44, T-45 y T-46 |
 | 08-PLAN | Sí | Documento Operativo Sprint 2 §9 | §7: planificación y seguimiento del sprint — revisión de mitad de sprint en #168, registro de seguimientos y fecha de cierre |
 | 09-TESTS | Sí | 03-REGLAS (R-59, R-60 y R-61) | T-44 a T-46, con su fila en la trazabilidad inversa y una nota que las separa de las reglas de identidad |
-| `AGENTS.md` | Sí | Plan de Trabajo §4 y §8 | §6: el registro de seguimientos como destino de un hallazgo o una advertencia sin decisión propia. §7: un cambio de proceso se registra en la PR que lo aplica y las decisiones no bloqueantes van por lotes. §9: contenido de la PR, tres bloques y dos rondas, y los `.docx` de fuentes los edita una IA externa a partir de un encargo |
+| `AGENTS.md` | Sí | Plan de Trabajo §4 y §8 | §6: el registro de seguimientos como destino de un hallazgo o una advertencia sin decisión propia. §7: un cambio de proceso se registra en la PR que lo aplica y las decisiones no bloqueantes van por lotes. §9: contenido de la PR, tres bloques y dos rondas, los `.docx` de fuentes editados por una IA externa a partir de un encargo, y mirar las PR abiertas antes de abrir una |
 | 01, 02, 04, 05, 06 y 07 | No | Las fuentes que cambian son de proceso | — |
 
 ### Hallazgos
 
 - **El Documento Operativo Sprint 2 §15 sigue diciendo «defectos y hallazgos».** El registro recoge también advertencias, que no siempre se arreglan. Es una fila del registro de seguimientos, abierta en `acompas#180`, y el arnés no la copia: compila lo que dice §9.
 - **El arnés no había compilado la mecánica de lotes del Plan §8.** Los dos carriles, la semana máxima en cola, las 48 h y el «no se implementa hasta que el lote se aprueba» están en el Plan desde antes de la v0.15 y no estaban en ninguna pieza: el agente no sabía que las decisiones no bloqueantes se lanzan juntas. No es una fuente nueva, es un hueco de esta pasada; se cierra con R-61 y T-46.
+- **La regla de agrupar en la PR abierta no está en el Plan.** Entra en `AGENTS.md` §9 por la vía del cambio de proceso registrado en la PR (Plan de Trabajo §8), no por una fuente que la recoja. Queda como fila del registro de seguimientos, con la próxima revisión del Plan §8 como destino, para que la siguiente regeneración no la pierda.
 - **Los registros no son fuentes.** `docs/seguimientos.md` y `docs/desviaciones.md` no tienen versión, no entran en el Anexo A y no se regeneran con el arnés (Estrategia v0.10 §3, cuarta regla). El MANIFIESTO lo dice en §2 y los excluye.
 
 ### Verificación
