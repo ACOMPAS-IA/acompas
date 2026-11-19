@@ -16,6 +16,8 @@ La Arquitectura §11 exige un registro de auditoría de accesos y operaciones se
 
 #81 cerró el mínimo del documento retenido: un evento por retención con fecha UTC sin hora, tipo de documento y motivo de enumeración cerrada; sin texto, contenido, nombre de fichero, `paciente_id`, id de petición, usuario, IP ni texto libre; tabla dedicada, la aplicación solo inserta, retención de seis meses y lectura por `audit_reader`. No decidió los eventos generales ni el detalle físico.
 
+ADR-008 hace de la auditoría una condición para usar documentos reales: la demo interna con documentos reales depende de que ACO-039 esté operativo.
+
 Hoy no hay capa de base de datos en el repositorio: `backend/pyproject.toml` no incluye SQLAlchemy, Alembic ni psycopg. El ADR se escribe antes de que exista el esquema.
 
 #81 asignó la implementación a ACO-025, «ampliando su alcance»; el Documento Operativo Sprint 2 v0.4, posterior, la asigna a ACO-039 y no incluye ACO-025. Prevalece el acto posterior.
@@ -66,6 +68,7 @@ Retención: seis meses naturales en ambas, contados desde `ocurrido_en`. Índice
 - La Arquitectura §16 nº 4 puede retirarse una vez actualizada, y la §11 puede referir este modelo.
 - #81 exigía la Arquitectura §16.4 en la misma actuación que el ADR. Este repositorio no edita fuentes oficiales: el encargo sale con esta PR, §16.4 se actualiza después y la desviación queda escrita en la PR y en `docs/seguimientos.md`.
 - La aplicación gana una dependencia real de base de datos y de roles que hoy no tiene; entra con ACO-039, no con este ADR.
+- ACO-039 asume lo que #81 dejó encargado: PostgreSQL y los roles en la CI para probar persistencia y privilegios, y la dependencia de ACO-038 para el modelo UUID.
 
 ## Fuera de esta decisión
 
