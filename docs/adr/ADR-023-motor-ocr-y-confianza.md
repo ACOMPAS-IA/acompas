@@ -14,7 +14,7 @@ El Sprint 1 cierra con `.txt` UTF-8 como único formato de entrada y sin OCR: no
 
 Hechos que enmarcan la decisión:
 
-- **ADR-004 decide el OCR local, no su rendimiento.** Fija Tesseract y deja docTR o PaddleOCR como alternativa «si Tesseract no rinde»; la Arquitectura §4 lo repite como «si no rinde lo suficiente», sin decir sobre qué se mide, con qué precisión, en qué tiempo ni quién lo mide. La Arquitectura §16 nº 15 recoge ese hueco como cuestión abierta.
+- **ADR-004 decide el OCR local, no su rendimiento.** Fija Tesseract y deja docTR o PaddleOCR como alternativa «si Tesseract no rinde»; la Arquitectura §4 lo formula como «si Tesseract no rinde lo suficiente», sin decir sobre qué se mide, con qué precisión, en qué tiempo ni quién lo mide. La Arquitectura §16 nº 15 recoge ese hueco como cuestión abierta.
 - **La ilegibilidad se detecta hoy por texto vacío.** ADR-013 declara ilegible el documento cuyo texto extraído está vacío y deja **fuera de su decisión** el uso de la confianza del OCR, que la Arquitectura §16 nº 9 mantiene abierta. Un OCR que devuelve texto basura no dispara nada: hay texto, luego hay documento.
 - **La interfaz ya anuncia los formatos y ya tiene el estado.** El wireframe 3 admite «PDF, JPG, PNG · máx. 20 MB» y la pantalla 4c tiene mensaje propio para el documento ilegible, distinto del retenido por baja confianza. El estado `ilegible` existe y el texto vacío ya lo produce; lo que falta es el segundo motivo —la confianza del OCR— y los formatos.
 - **El original no se persiste y el texto sí se procesa.** ADR-005 obliga a tratar el fichero en memoria o en un volumen efímero y ADR-012 fija que del original no se conserva más que su nombre genérico y su hash; ADR-013 y ACO-024 trabajan sobre el texto extraído, con un tope de 30.000 caracteres.
@@ -24,7 +24,7 @@ Hechos que enmarcan la decisión:
 
 1. **Motor y criterio de sustitución.** Tesseract con el paquete de español sigue siendo el motor, y docTR o PaddleOCR no se instalan mientras cumpla. «Rendir» significa superar esta medición, hecha sobre la imagen de ejecución del backend con Tesseract instalado —hoy no lo tiene: la instalación es de ACO-035— y sobre nueve renders sintéticos: los tres documentos de ACO-051, con sus datos identificativos colocados a propósito, en tres formas cada uno —PDF escaneado a 300 ppp, foto y PDF con capa de texto—. El CER y el tiempo se miden **solo en las dos rutas de OCR** (escaneo y foto, seis renders); el PDF con capa de texto es un control de la extracción, no una prueba de Tesseract: si falla, el problema es del extractor y no se sustituye el motor por eso.
 
-   - **Precisión:** tasa de error de caracteres (CER) global ≤ 10 % y CER ≤ 2 % sobre los valores identificativos colocados a propósito. Las dos se cumplen a la vez; si discrepan, manda la de identificativos: un carácter perdido en un nombre o un DNI es una fuga, uno perdido en una palabra clínica es una molestia.
+   - **Precisión:** tasa de error de caracteres (CER) global ≤ 10 % y CER ≤ 2 % sobre los valores identificativos colocados a propósito. Se exigen las dos y no se compensan: un CER global bajo no disculpa que un identificativo pase del 2 %, porque un carácter perdido en un nombre o un DNI es una fuga y uno perdido en una palabra clínica es una molestia.
    - **Tiempo:** ≤ 3 segundos por página en arranque en frío —el primer OCR tras levantar el contenedor, con los modelos ya en disco y sin caché de página—.
    - **Idioma:** español; los documentos del proyecto están en español y no se añaden paquetes de otros idiomas sin una necesidad declarada.
    - **Quién mide:** el responsable de ACO-035, y deja la tabla por documento en la PR de calibración. La medición se repite entera si cambia el motor, el paquete de idioma o el preprocesado de imagen.
@@ -40,7 +40,7 @@ Hechos que enmarcan la decisión:
 
 4. **Formatos de entrada y ruta de extracción.** Se aceptan `.txt` en UTF-8 —sin cambios—, **PDF, JPG y PNG de hasta 20 MB**, que es lo que anuncia el wireframe 3. Cada formato tiene su ruta, y todas son locales:
 
-   - **PDF con capa de texto:** se extrae el texto directamente, sin OCR. Es el caso barato y el más fiel; si esa extracción no devuelve texto, el documento es ilegible y no se reintenta con OCR.
+   - **PDF con capa de texto**, con 100 caracteres por página o más: se extrae el texto directamente, sin OCR. Es el caso barato y el más fiel.
    - **PDF sin capa de texto**, o con menos de 100 caracteres por página: se rasteriza a 300 ppp en memoria y se pasa el OCR página a página.
    - **JPG y PNG:** OCR directo sobre la imagen.
    - Las páginas se concatenan con un salto de línea, sin marcadores ni numeración añadida, para que el texto extraído siga siendo el que se anonimiza y sobre el que se marcan los tramos.
