@@ -10,7 +10,7 @@ Relacionados: ADR-001 (Keycloak como custodio de la correspondencia email↔UUID
 
 ## Contexto
 
-La Arquitectura §16 nº 5 deja abierto el cierre del modelo de datos: «falta cerrar el modelo completo: UUID como identificador y ETIQUETA_ANONIMIZACION». El Modelo E/R v0.10 ya usa UUID en las claves primarias de sus dieciocho entidades, y `PACIENTE.paciente_id` es el UUID de Keycloak (ADR-001), así que el tipo de clave no está en discusión. Lo que falta es concretar tres cosas: la generación de los UUID que no vienen de Keycloak, la semántica de las dos columnas de posición y la declaración de que con eso el modelo queda cerrado.
+La Arquitectura §16 nº 5 deja abierto el cierre del modelo de datos: «falta cerrar el modelo completo: UUID como identificador y ETIQUETA_ANONIMIZACION». El Modelo E/R v0.10 ya usa UUID en las claves primarias de sus diecisiete entidades, y `PACIENTE.paciente_id` es el UUID de Keycloak (ADR-001), así que el tipo de clave no está en discusión. Lo que falta es concretar tres cosas: la generación de los UUID que no vienen de Keycloak, la semántica de las dos columnas de posición y la declaración de que con eso el modelo queda cerrado.
 
 Hechos que enmarcan la decisión:
 
@@ -30,7 +30,7 @@ Hechos que enmarcan la decisión:
 
 4. **El texto canónico no es un dato aparte.** Es la representación textual del documento anonimizado. Debe almacenarse de forma que no haya que regenerarla, porque una segunda extracción puede dar otro texto e invalidar todas las posiciones, y **el documento guarda el hash de ese texto**: si el texto no coincide con su hash, las posiciones se consideran inválidas y el documento se procesa de nuevo. Es parte del documento anonimizado, no una copia nueva, y **se borra con él** en el derecho al olvido (§16 nº 3, ACO-040); sin él las posiciones no son verificables.
 
-5. **Decisiones nuevas, registradas.** `uuid4` para los identificadores generados por la aplicación y `ADMINISTRADOR.keycloak_id` como `UNIQUE NOT NULL` (hoy solo `NOT NULL`) no los fija ninguna fuente. Se registraron en #189 el 19 de noviembre de 2026 y siguen el Plan de Trabajo §8: entran en este ADR y se aprueban con él, con la revisión de la PR como objeción y su plazo de 48 h; si la revisión considera que alguna es una cuestión de arquitectura abierta, no se aprueba dentro del ADR y pasa a decisión conjunta. Si el §8 no resuelve la segunda, se retira de este ADR y queda en el registro de seguimientos: no condiciona el cierre del modelo.
+5. **Decisiones nuevas, registradas.** `uuid4` para los identificadores generados por la aplicación y `ADMINISTRADOR.keycloak_id` como `UNIQUE NOT NULL` (hoy solo `NOT NULL`) no los fija ninguna fuente. Se registraron en #189 el 19 de noviembre de 2026 y siguen el Plan de Trabajo §8: entran en este ADR y se aprueban con él, con la revisión de la PR como objeción y su plazo de 48 h; si la revisión considera que alguna es una cuestión de arquitectura abierta, no se aprueba dentro del ADR y pasa a decisión conjunta. Si el §8 no resuelve la unicidad de `ADMINISTRADOR.keycloak_id`, se retira de este ADR y queda en el registro de seguimientos: no condiciona el cierre del modelo.
 
 6. **Paciente y Keycloak.** No hay decisión nueva: se deja escrito que `paciente_id` es el UUID de Keycloak (ADR-001) y que no se guarda una segunda correspondencia, para que no se reabra al implementar.
 
@@ -51,7 +51,7 @@ Hechos que enmarcan la decisión:
 - **ACO-040** borra el documento anonimizado, su texto canónico y su hash en el borrado por documento.
 - **ACO-036** convierte los desplazamientos entre lo que el paciente marca en pantalla y el texto canónico, y decide qué ocurre con las marcas del paciente si el documento se reprocesa.
 - **No hay migración**: no existe esquema desplegado. El modelo nace ya con esta forma.
-- **El modelo queda cerrado** con dieciocho entidades y UUID, y la cuestión nº 5 de la Arquitectura puede retirarse.
+- **El modelo queda cerrado** con diecisiete entidades y UUID, y la cuestión nº 5 de la Arquitectura puede retirarse.
 
 ## Fuera de esta decisión
 
