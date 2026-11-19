@@ -22,7 +22,7 @@ Hechos que enmarcan la decisión:
 
 ## Decisión
 
-1. **Motor y criterio de sustitución.** Tesseract con el paquete de español sigue siendo el motor, y docTR o PaddleOCR no se instalan mientras cumpla. «Rendir» significa superar esta medición, hecha sobre la imagen de ejecución del backend con Tesseract instalado —hoy no lo tiene: la instalación es de ACO-035— y sobre doce páginas sintéticas: los tres documentos de ACO-051, con sus datos identificativos colocados a propósito, en tres formas cada uno —PDF con capa de texto, PDF escaneado a 300 ppp y foto—.
+1. **Motor y criterio de sustitución.** Tesseract con el paquete de español sigue siendo el motor, y docTR o PaddleOCR no se instalan mientras cumpla. «Rendir» significa superar esta medición, hecha sobre la imagen de ejecución del backend con Tesseract instalado —hoy no lo tiene: la instalación es de ACO-035— y sobre nueve renders sintéticos: los tres documentos de ACO-051, con sus datos identificativos colocados a propósito, en tres formas cada uno —PDF con capa de texto, PDF escaneado a 300 ppp y foto—.
 
    - **Precisión:** tasa de error de caracteres (CER) global ≤ 10 % y CER ≤ 2 % sobre los valores identificativos colocados a propósito. La segunda es la que manda: un carácter perdido en un nombre o un DNI es una fuga, uno perdido en una palabra clínica es una molestia.
    - **Tiempo:** ≤ 3 segundos por página en arranque en frío —el primer OCR tras levantar el contenedor, con los modelos ya en disco y sin caché de página—.
@@ -43,7 +43,7 @@ Hechos que enmarcan la decisión:
    - **PDF con capa de texto:** se extrae el texto directamente, sin OCR. Es el caso barato y el más fiel.
    - **PDF sin capa de texto**, o con menos de 100 caracteres por página: se rasteriza a 300 ppp en memoria y se pasa el OCR página a página.
    - **JPG y PNG:** OCR directo sobre la imagen.
-   - Las páginas se concatenan con un salto de línea, sin marcadores ni numeración añadida, para que el texto extraído siga siendo el texto sobre el que se anonimiza y se anclan las etiquetas.
+   - Las páginas se concatenan con un salto de línea, sin marcadores ni numeración añadida, para que el texto extraído siga siendo el que se anonimiza y sobre el que se marcan los tramos.
    - **No se conservan metadatos de imagen** (EXIF): no hacen falta para el texto y pueden contener datos del dispositivo o del paciente.
    - **PDF cifrado, fichero corrupto o imagen sin texto:** documento ilegible, con el motivo que ya existe. El original no se persiste en ningún caso (ADR-005, ADR-012).
    - El tope de 30.000 caracteres del contrato de anonimización sigue aguas abajo, sin cambios: el OCR no lo modifica ni lo amplía.
@@ -54,7 +54,7 @@ Hechos que enmarcan la decisión:
 
 ## Alternativas consideradas
 
-- **Medir Tesseract, docTR y PaddleOCR a la vez:** descartada. Triplica el trabajo de calibración para una decisión que solo tiene dos resultados, y ninguno de los tres está instalado.
+- **Medir Tesseract, docTR y PaddleOCR a la vez:** descartada. Triplica el trabajo de calibración para una decisión que se resuelve con un sí o un no, y ninguno de los tres está instalado.
 - **Confianza por línea en vez de por palabra:** descartada. La línea agrega palabras de relleno y esconde justo la palabra que el OCR no ha sabido leer; el umbral dejaría pasar documentos con un nombre destruido.
 - **Seguir detectando la ilegibilidad solo por texto vacío:** descartada por la Arquitectura §16 nº 9. Un OCR que devuelve ruido produce un documento «válido» sin nada que anonimizar.
 - **Tratar la baja confianza de OCR como documento retenido:** descartada. El retenido significa «hay datos personales y no me fío de haberlos detectado»; aquí el problema es anterior, y la pantalla 4c ya tiene un mensaje distinto para cada caso.
@@ -65,7 +65,7 @@ Hechos que enmarcan la decisión:
 ## Consecuencias
 
 - ACO-035 implementa el motor, la ruta por formato, la confianza del documento y la calibración. Su ficha recoge los compromisos de esta decisión al ampliarse.
-- Los renders sintéticos de ACO-051 son fixtures de ACO-035: ACO-051 no cambia ni se amplía, y no se usan documentos reales.
+- Los renders sintéticos de los documentos de ACO-051 son fixtures de ACO-035: ACO-051 no cambia ni se amplía, y no se usan documentos reales.
 - El estado `ilegible` gana un motivo sin cambiar de nombre, de código de respuesta ni de pantalla; el literal del aviso sigue abierto.
 - El Nivel 2 y el Nivel 3 reciben un texto ya validado por OCR; ACO-036 no hereda ninguna decisión de umbral.
 - Las librerías de PDF e imagen entran al stack con ACO-035 y con su ficha, no con este ADR.
