@@ -58,7 +58,6 @@ que todavía no es un seguimiento, sino una queja.
 | S2 | 19 nov 2026 | Arquitectura del Sistema v0.10, §16 nº 15 | La cuestión del motor de OCR definitivo sigue abierta después del merge de ADR-023, y esa sección es la fuente única de las cuestiones abiertas | Próxima revisión de la Arquitectura, §16 | abierta | [#192](https://github.com/ACOMPAS-IA/acompas/pull/192) |
 | S2 | 19 nov 2026 | Arnés 03-REGLAS, 05-DISEÑO, 09-TESTS y MANIFIESTO | Listan la confianza del OCR y el motor definitivo como cuestiones abiertas que alimentan 03, 05 y 09; caen cuando la Arquitectura retire §16 nº 9 y nº 15 | Regeneración del arnés, después de la revisión de la Arquitectura | abierta | [#192](https://github.com/ACOMPAS-IA/acompas/pull/192) |
 | S2 | 19 nov 2026 | Arnés 04-INTERFAZ, «Cuestiones abiertas» | Da por no definido qué formatos acepta la interfaz de subida; ADR-023 los fija (`.txt`, PDF, JPG y PNG hasta 20 MB) | Regeneración del arnés, que retira la fila al recoger el ADR | abierta | [#192](https://github.com/ACOMPAS-IA/acompas/pull/192) |
-| S2 | 19 nov 2026 | Plan de Trabajo v0.15, §9 | El registro de ADR llega a ADR-018: faltan los ADR-019 a 022 y el ADR-023; al regenerar caen también las listas de ADR que hoy llegan a 018 (arnés 03, 05 y 06, y el manifiesto) | Próxima revisión del Plan, §9, y regeneración del arnés | abierta | [#192](https://github.com/ACOMPAS-IA/acompas/pull/192) |
 
 ## Lo que no es este registro
 
