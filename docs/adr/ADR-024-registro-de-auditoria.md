@@ -22,7 +22,7 @@ Hoy no hay capa de base de datos en el repositorio: `backend/pyproject.toml` no 
 
 ## Decisión
 
-**1. Lista cerrada de eventos.** Se registran cuatro:
+**1. Lista cerrada de eventos.** Se registran cinco:
 
 | `accion` | Cuándo |
 |---|---|
@@ -30,12 +30,15 @@ Hoy no hay capa de base de datos en el repositorio: `backend/pyproject.toml` no 
 | `documento_borrado` | Se borra un documento, por derecho al olvido o por el administrador |
 | `historial_consultado` | Se abre el historial del paciente |
 | `documento_retenido` | El documento se retiene por baja confianza (#81) |
+| `cuenta_borrada` | Se borra la cuenta del paciente, por derecho al olvido |
 
-No se registran, y el ADR lo dice para que no entren por la vía de los hechos: `inicio_sesion` (lo cubre Keycloak, ADR-011), `confirmacion_anon` (no es acceso, carga ni borrado; su rastro está en `DOCUMENTO.validado_en`), la consulta o edición del documento anonimizado, los desbloqueos de crédito y los accesos directos del administrador a `psql`, que no pasan por la aplicación. `documento_retenido` solo se escribe en `auditoria_retencion`: `auditoria.accion` se restringe con un `CHECK` a los tres eventos generales, para que un evento de retención no pueda acabar en la tabla que sí admite `paciente_id`. Añadir un evento exige modificar este ADR.
+`cuenta_borrada` se añade aquí porque el procedimiento del derecho al olvido, que fija la Arquitectura §16 nº 3, tiene que dejar constancia de que el borrado ocurrió, y esa constancia sobrevive a la anonimización de los identificadores (punto 6).
 
-**2. Identificador y relación con la entidad.** Cada fila lleva `auditoria_id` UUIDv4 interno, generado por el servidor, nunca expuesto ni reutilizado en otro sistema. El actor se identifica con `actor_id` y `actor_tipo` (`paciente`, `administrador` o `sistema`). El sujeto afectado es `paciente_id`, el UUID que el sistema usa como seudónimo: ninguna entidad guarda la identidad real (ADR-001). La entidad concreta se identifica con `entidad_afectada`, de enumeración cerrada (`documento`, `historial`), y `entidad_id`, el UUID del registro afectado; no se copia contenido, nombre de fichero, identificador de petición ni texto libre. `documento_retenido` no lleva paciente, actor ni entidad, porque no hay entidad persistida a la que apuntar (#81).
+No se registran, y el ADR lo dice para que no entren por la vía de los hechos: `inicio_sesion` (lo cubre Keycloak, ADR-011), `confirmacion_anon` (no es acceso, carga ni borrado; su rastro está en `DOCUMENTO.validado_en`), la consulta o edición del documento anonimizado, los desbloqueos de crédito y los accesos directos del administrador a `psql`, que no pasan por la aplicación. `documento_retenido` solo se escribe en `auditoria_retencion`: `auditoria.accion` se restringe con un `CHECK` a los cuatro eventos generales, para que un evento de retención no pueda acabar en la tabla que sí admite `paciente_id`. Añadir un evento exige modificar este ADR.
 
-**3. Dos tablas.** `auditoria` guarda los tres eventos generales, con las columnas del Modelo E/R **sin `detalle`** (precedente de ADR-021: no hay campos de texto libre, porque admiten contenido clínico) y con `ip_origen`; `creado_en` pasa a `ocurrido_en`, TIMESTAMPTZ en UTC. `ip_origen` es dato personal: se conserva solo aquí —#81 lo excluye del retenido— porque saber desde dónde se accede es el objeto de la auditoría de accesos, y cae con la retención de la fila. `auditoria_retencion` guarda `documento_retenido` con la forma de #81: `id` UUIDv4, `ocurrido_en` DATE en UTC sin hora, `tipo_documento` (con `desconocido` mientras no se pida) y `motivo`, que solo admite `baja_confianza`. El `id` se conserva aunque #81 permita omitirlo: fecha, tipo y motivo admiten duplicados y la tabla necesita clave primaria; es interno y no se expone.
+**2. Identificador y relación con la entidad.** Cada fila lleva `auditoria_id` UUIDv4 interno, generado por el servidor, nunca expuesto ni reutilizado en otro sistema. El actor se identifica con `actor_id` y `actor_tipo` (`paciente`, `administrador` o `sistema`). El sujeto afectado es `paciente_id`, el UUID que el sistema usa como seudónimo: ninguna entidad guarda la identidad real (ADR-001). La entidad concreta se identifica con `entidad_afectada`, de enumeración cerrada (`documento`, `historial`, `paciente`), y `entidad_id`, el UUID del registro afectado; no se copia contenido, nombre de fichero, identificador de petición ni texto libre. `documento_retenido` no lleva paciente, actor ni entidad, porque no hay entidad persistida a la que apuntar (#81).
+
+**3. Dos tablas.** `auditoria` guarda los cuatro eventos generales, con las columnas del Modelo E/R **sin `detalle`** (precedente de ADR-021: no hay campos de texto libre, porque admiten contenido clínico) y con `ip_origen`; `creado_en` pasa a `ocurrido_en`, TIMESTAMPTZ en UTC. `ip_origen` es dato personal: se conserva solo aquí —#81 lo excluye del retenido— porque saber desde dónde se accede es el objeto de la auditoría de accesos, y cae con la retención de la fila. `auditoria_retencion` guarda `documento_retenido` con la forma de #81: `id` UUIDv4, `ocurrido_en` DATE en UTC sin hora, `tipo_documento` (con `desconocido` mientras no se pida) y `motivo`, que solo admite `baja_confianza`. El `id` se conserva aunque #81 permita omitirlo: fecha, tipo y motivo admiten duplicados y la tabla necesita clave primaria; es interno y no se expone.
 
 Son dos tablas y no una con columnas nulas porque #81 prohíbe identificadores en el retenido y los privilegios tienen que poder diferir por tabla; una tabla común dejaría escribir un `paciente_id` junto a un evento de retención y no habría forma de impedirlo por permiso.
 
@@ -62,7 +65,7 @@ Retención: seis meses propuestos y provisionales, sin requisito legal consultad
 ## Consecuencias
 
 - ACO-039 tiene ya el modelo que necesitaba: dos tablas, cuatro roles —`acompas_app`, `audit_reader`, `audit_retention` y `audit_erasure`— y una migración. Los roles los crea el despliegue; la migración concede y revoca. Su ficha ejecutable los concreta al empezar, como primer commit de su PR.
-- El Modelo E/R cambia: `AUDITORIA` pierde `detalle`, `creado_en` pasa a `ocurrido_en`, la enumeración de `accion` se cierra en tres valores —`documento_retenido` queda solo en `AUDITORIA_RETENCION`— y el índice de `paciente_id` + `ocurrido_en` se mantiene. Se añade `AUDITORIA_RETENCION`.
+- El Modelo E/R cambia: `AUDITORIA` pierde `detalle`, `creado_en` pasa a `ocurrido_en`, la enumeración de `accion` se cierra en cuatro valores —`documento_retenido` queda solo en `AUDITORIA_RETENCION`— y el índice de `paciente_id` + `ocurrido_en` se mantiene. Se añade `AUDITORIA_RETENCION`.
 - La implementación pasa de ACO-025, como decía #81, a ACO-039, como asigna el DO Sprint 2 v0.4, acto posterior acordado; ACO-025 conserva su alcance y su P5, y #81, cerrada, no se edita.
 - La Arquitectura §16 nº 4 puede retirarse una vez actualizada, y la §11 puede referir este modelo.
 - #81 exigía la Arquitectura §16.4 en la misma actuación que el ADR. Este repositorio no edita fuentes oficiales: el encargo se redacta al cerrar la PR, §16.4 se actualiza después y la desviación queda escrita en la PR y en `docs/seguimientos.md`.
@@ -73,7 +76,7 @@ Retención: seis meses propuestos y provisionales, sin requisito legal consultad
 
 - La implementación: ACO-039, con ACO-038 para el modelo UUID.
 - La política de retención de documentos y el documento retenido: ADR-013 y #138.
-- El derecho al olvido: Arquitectura §16 nº 3 y ACO-040; aquí solo se fija qué deja el borrado en el registro.
+- El derecho al olvido: Arquitectura §16 nº 3 y ACO-040; aquí solo se fija qué deja el borrado en el registro, con el evento `cuenta_borrada`.
 - Autenticación, roles de usuario y sesión: ADR-011.
 - Endpoint o pantalla de consulta: en S2 no hay, y el canal es `psql` con `audit_reader`.
 - El `resultado` y el `detalle` de los errores de la aplicación: son logs, no auditoría.
