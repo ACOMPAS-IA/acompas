@@ -166,6 +166,24 @@ estado = "traspasado"
 issue = 38
 
 [[aco]]
+id = "034"
+sprint = "S2"
+estado = "pendiente"
+issue = 159
+
+[[aco]]
+id = "041"
+sprint = "S2"
+estado = "pendiente"
+issue = 185
+
+[[aco]]
+id = "047"
+sprint = "S2"
+estado = "pendiente"
+issue = 110
+
+[[aco]]
 id = "051"
 sprint = "S1"
 estado = "hecho"
@@ -176,3 +194,9 @@ id = "052"
 sprint = "S1"
 estado = "hecho"
 issue = 39
+
+[[aco]]
+id = "053"
+sprint = "S2"
+estado = "pendiente"
+issue = 186
