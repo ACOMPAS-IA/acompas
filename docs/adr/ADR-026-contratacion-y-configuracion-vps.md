@@ -4,9 +4,9 @@ Estado: aprobado
 
 Sustituido por: —
 
-Origen: Issue #198 y Arquitectura del Sistema v0.10 §16 nº 17, que deja abiertos «el criterio de contratación y la configuración», y §16 nº 11, que da por adoptado el reparto de entornos sin redactarlo. Documento Operativo Sprint 2 v0.4 §6: fila del ADR, responsable Miguel, revisión de Luis, y fila de ACO-054, 8–10 h, que este ADR desbloquea. No abre ventana de 48 h: la matriz ya asigna el ADR y esto es su redacción. Tres de sus puntos no los fija ninguna fuente y siguen el procedimiento del Plan de Trabajo §8, anotados en #198.
+Origen: Issue #198 y Arquitectura del Sistema v0.10 §16 nº 17, que deja abiertos «el criterio de contratación y la configuración», y §16 nº 11, que da por adoptado el reparto de entornos sin redactarlo. Documento Operativo Sprint 2 v0.4 §6: fila del ADR, que escribe Miguel, y fila de ACO-054, 8–10 h, con revisión de Luis, que este ADR desbloquea. No abre ventana de 48 h para el ADR: la matriz ya lo asigna y esto es su redacción. Tres de sus puntos no los fija ninguna fuente y constan en el comentario de #198 del 19 de noviembre de 2026, con su línea de veredicto y sus 48 h, según el Plan de Trabajo §8.
 
-Relacionados: ADR-005 (el original no se persiste), ADR-008 (sin datos reales hasta las salvaguardas), ADR-011 (autenticación y roles), ADR-015 (gestión de secretos), ADR-020 (entorno de ejecución del backend), ADR-025 (derecho al olvido y el límite de las copias); ACO-054, ACO-055, ACO-056; #92, #165.
+Relacionados: ADR-005 (el original no se persiste), ADR-008 (sin datos reales hasta las salvaguardas), ADR-011 (autenticación y autorización), ADR-015 (gestión de secretos), ADR-020 (entorno de ejecución del backend), ADR-025 (derecho al olvido y el límite de las copias); ACO-054, ACO-055, ACO-056; #92, #165.
 
 ## Contexto
 
@@ -14,7 +14,7 @@ La Arquitectura §13 fija el servidor (VPS Hetzner CPX41, 16 GB de RAM, región 
 
 El Plan de Proyecto §5 presupuesta 30–40 €/mes para el CPX41, 5 €/mes de copias y ~5 €/mes de dominio y servicios básicos, con 10–15 €/año de registro; §7 sitúa la contratación a finales de noviembre de 2026. La fila ACO-054 del Documento Operativo Sprint 2 depende de este ADR, y detrás están ACO-055 (staging) y ACO-056 (demo).
 
-Dos cosas no están medidas. El precio del CPX41 cambia y no hay cuenta que lo consulte: la API de precios de Hetzner exige token y la cuenta se abre al contratar. Y no hay medida del consumo de memoria del conjunto: lo medido es la imagen del backend, 3,20 GB con los modelos dentro (ADR-020), y los componentes que §13 dice que conviven en el servidor.
+Dos cosas no están medidas. El precio del CPX41 cambia y no hay cuenta que lo consulte: la API de precios de Hetzner exige token y la cuenta se abre al contratar. El presupuesto del Plan §5 basta para decidir la contratación —es un rango y la factura lo confirma—; lo que no se hace es contratar fuera de él. Y no hay medida del consumo de memoria del conjunto: lo medido es la imagen del backend, 3,20 GB con los modelos dentro (ADR-020), y los componentes que §13 dice que conviven en el servidor.
 
 ADR-008 y la regla R-01 del arnés siguen vigentes: ningún entorno usa documentos reales hasta que la anonimización, el derecho al olvido y el registro de auditoría estén operativos.
 
@@ -28,7 +28,7 @@ ADR-008 y la regla R-01 del arnés siguen vigentes: ningún entorno usa document
 
 **4. Arranque en limpio de la demo.** Antes de la demo se baja el proyecto de ensayo con sus volúmenes y se levanta el de demo con la base vacía; los documentos son sintéticos (ADR-008). La demo nunca ve lo que quedó del ensayo. ACO-055 conserva el arranque reproducible —orden de `up`, migraciones y realm de Keycloak— para que el ensayo se pueda repetir; ACO-056 ensaya el recorrido sobre ese arranque.
 
-**5. Red.** Solo se publican 443 y 80 (ACME y redirección). PostgreSQL, Keycloak, el backend y el servicio de modelos escuchan en la red interna de su proyecto, sin puerto publicado. Un proxy inverso termina TLS con Let's Encrypt y enruta por nombre: el dominio raíz a la demo y `ensayo.<dominio>` al ensayo. Cortafuegos del proveedor con 22, 80 y 443; SSH solo con clave, sin contraseña y sin acceso directo de root.
+**5. Red.** Solo se publican 443 y 80 (ACME y redirección). PostgreSQL, Keycloak, el backend y el servicio de modelos escuchan en la red interna de su proyecto, sin puerto publicado. Un proxy inverso termina TLS con Let's Encrypt y enruta por nombre: el dominio raíz a la demo y `ensayo.<dominio>` al ensayo. Cortafuegos del proveedor con 22, 80 y 443; SSH solo con clave, sin contraseña y sin acceso directo de root. ACO-054 puede contratar, preparar los dos proyectos y desplegar los servicios internos sin esta pieza; publicar por HTTPS espera a que el §8 confirme el proxy.
 
 **6. Dominio.** `acompas-ia.es` es el canónico: el proyecto y sus pacientes son españoles y el `.es` es el registro de referencia, ya presupuestado. El `.org` no se contrata ahora; si se registra, redirige al `.es` y no aloja nada. Registrador y DNS se llevan desde una sola cuenta, con las cuentas nominales del punto 9; el registrador concreto se elige al contratar y se anota en ACO-054. No es #92: allí se decide la clave de Claude y su titularidad.
 
@@ -44,7 +44,7 @@ ADR-008 y la regla R-01 del arnés siguen vigentes: ningún entorno usa document
 
 ## Lo que este ADR propone y no decide por sí solo
 
-Tres puntos no los fija ninguna fuente y se registran en #198 con su línea de veredicto y su plazo, según el §8:
+Tres puntos no los fija ninguna fuente y constan en el comentario de #198 del 19 de noviembre de 2026, con su línea de veredicto y su plazo, según el §8. **La aprobación de este ADR no los alcanza.**
 
 - **Ensayo y demo en la misma instancia**, en lugar de una segunda máquina.
 - **Retención de las copias** y el proveedor concreto.
@@ -71,4 +71,4 @@ Si el §8 los cambia, se corrige este ADR antes del merge, no después.
 
 ## Documentos afectados
 
-Arquitectura del Sistema §13 y §16 nº 11 y 17; Plan de Trabajo §9, registro de ADR; Documento Operativo Sprint 2 §6, filas ACO-054 a ACO-056, sin ficha todavía; arnés `08-PLAN` y `03-REGLAS`, por regeneración. Casos de Uso no cambia.
+Arquitectura del Sistema §13 y §16 nº 11 y 17; Plan de Trabajo §9, registro de ADR; Documento Operativo Sprint 2 §6, filas ACO-054 a ACO-056, sin ficha todavía; arnés, por regeneración. Casos de Uso no cambia.
