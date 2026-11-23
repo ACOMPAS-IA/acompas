@@ -24,33 +24,31 @@ ADR-008 y la regla R-01 del arnés siguen vigentes: ningún entorno usa document
 
 **2. Precio y alta.** El presupuesto es 30–40 €/mes (Plan §5). El precio vigente se anota en ACO-054 el día de la contratación, con la factura, porque antes no hay cuenta. Si el precio o el modelo han cambiado y se sale del presupuesto, no se contrata por decisión propia: se anota en #198 y sigue el §8, porque compromete gasto. El alta se hace por consola o API; el plazo real se mide en ACO-054 y no mueve la fecha, que está fijada a finales de noviembre.
 
-**3. Reparto de entornos.** Desarrollo: Docker Compose en local, sin depender del VPS (§13; R-33). Servidor: el entorno de **pruebas**, con **dos proyectos Compose** en la misma instancia, `ensayo` y `demo`, cada uno con su red, sus volúmenes y su fichero de entorno; comparten servidor y proxy, no datos. La producción no existe todavía y tendrá instancia propia cuando exista: entonces se cumplen las «instancias separadas» de §13 sin haberlas incumplido antes.
+**3. Reparto de entornos.** Desarrollo: Docker Compose en local, sin depender del VPS (§13; R-33). Servidor: el entorno de **pruebas**, con **dos proyectos Compose** en la misma instancia, `ensayo` y `demo`, cada uno con su red, sus volúmenes y su fichero de entorno; comparten servidor y proxy, no datos. La producción no existe todavía y tendrá instancia propia cuando exista: entonces se cumplen las «instancias separadas» de §13 sin haberlas incumplido antes. Las imágenes que corren en el servidor no incluyen `tests/` ni dependencias de desarrollo; el build de producción del frontend y el modo de los demás servicios van con #165.
 
-**4. Arranque en limpio de la demo.** Antes de la demo se baja el proyecto de ensayo con sus volúmenes y se levanta el de demo con la base vacía; los documentos son sintéticos (ADR-008). La demo nunca ve lo que quedó del ensayo. ACO-055 conserva el arranque reproducible —orden de `up`, migraciones y realm de Keycloak— para que el ensayo se pueda repetir; ACO-056 ensaya el recorrido sobre ese arranque.
+**4. Arranque en limpio de la demo.** Antes de la demo se baja el proyecto de ensayo con sus volúmenes y se levanta el de demo con la base vacía; los documentos son sintéticos salvo que #161 decida usar los reales de un grupo reducido con las salvaguardas de ADR-008 operativas. La demo nunca ve lo que quedó del ensayo. ACO-055 conserva el arranque reproducible —orden de `up`, migraciones y realm de Keycloak— para que el ensayo se pueda repetir; ACO-056 ensaya el recorrido sobre ese arranque.
 
-**5. Red.** Solo se publican 443 y 80 (ACME y redirección). PostgreSQL, Keycloak, el backend y el servicio de modelos escuchan en la red interna de su proyecto, sin puerto publicado. Un proxy inverso termina TLS con Let's Encrypt y enruta por nombre: el dominio raíz a la demo y `ensayo.<dominio>` al ensayo. Cortafuegos del proveedor con 22, 80 y 443; SSH solo con clave, sin contraseña y sin acceso directo de root. ACO-054 puede contratar, preparar los dos proyectos y desplegar los servicios internos sin esta pieza; publicar por HTTPS espera a que el §8 confirme el proxy.
+**5. Red.** Solo se publican 443 y 80 (ACME y redirección). PostgreSQL, Keycloak, el backend y el servicio de modelos escuchan en la red interna de su proyecto, sin puerto publicado. El proxy inverso es **Caddy**, por ACME automático y configuración mínima, aprobado en #198: termina TLS con Let's Encrypt y enruta por nombre, el dominio raíz a la demo y `ensayo.<dominio>` al ensayo. Cortafuegos del proveedor con 22, 80 y 443; SSH solo con clave, sin contraseña y sin acceso directo de root. ACO-054 puede contratar, preparar los dos proyectos y desplegar los servicios internos sin esta pieza; publicar por HTTPS forma parte del despliegue de ACO-054.
 
 **6. Dominio.** `acompas-ia.es` es el canónico: el proyecto y sus pacientes son españoles y el `.es` es el registro de referencia, ya presupuestado. El `.org` no se contrata ahora; si se registra, redirige al `.es` y no aloja nada. Registrador y DNS se llevan desde una sola cuenta, con las cuentas nominales del punto 9; el registrador concreto se elige al contratar y se anota en ACO-054. No es #92: allí se decide la clave de Claude y su titularidad.
 
 **7. Persistencia.** Persiste el volumen de PostgreSQL. El documento original no se persiste (ADR-005) y el temporal es efímero. El anonimizado de la demo va a un volumen efímero que se borra con el entorno: dónde se guarda y con qué tecnología sigue abierto en §16 nº 2, y ACO-054 no lo decide ni lo necesita para la demo.
 
-**8. Copias.** Cifradas, en proveedor europeo (§13), diarias, fuera del servidor, con restauración probada en ACO-054. La retención y el proveedor concreto no los fija ninguna fuente: van al §8, anotados en #198. El derecho al olvido se verifica sobre los datos vivos y **no alcanza las copias**; es el límite que ADR-025 declara y este ADR no lo estrecha.
+**8. Copias.** Cifradas, en proveedor europeo (§13), diarias, fuera del servidor, con restauración probada en ACO-054. Retención rotatoria de 30 días, fijada en #198: las copias que vencen se purgan, de modo que la supresión alcanza lo copiado en 30 días como máximo y se le puede decir al paciente. El proveedor concreto se elige al contratar y se anota en ACO-054. La operación de borrado no toca las copias: rotan solas, y el borrado se verifica sobre los datos vivos (ADR-025).
 
 **9. Acceso.** Dos cuentas nominales, una por persona (Miguel, Luis), con clave SSH y sudo, sin cuentas compartidas ni contraseña. La consola del proveedor y el registrador están a nombre del responsable del proyecto, con la otra persona como contacto técnico. El fichero de la clave lo lee solo la cuenta que despliega.
 
 **10. Clave.** `ANTHROPIC_API_KEY` vive en el servidor, fuera del repositorio y del contexto de construcción, en un fichero con permisos 600, y se inyecta solo al servicio `backend` (ADR-015 §1). No se copia a la imagen, no viaja en el fichero de Compose y no entra en Git. El mecanismo de producción —Docker secrets o gestor gestionado, con rotación— sigue pendiente en el ADR que anuncia ADR-015 §6, y este ADR no lo decide porque el VPS es el entorno de pruebas.
 
-**11. Lo que no entra en el servidor.** Ningún documento real hasta que las salvaguardas de ADR-008 estén operativas. La demo usa documentos sintéticos y, si ACANPAN no confirma la demo, no se contrata.
+**11. Lo que no entra en el servidor.** Ningún documento real hasta que las salvaguardas de ADR-008 estén operativas. La demo usa documentos sintéticos salvo que #161 decida otra cosa con esas salvaguardas operativas, y si ACANPAN no confirma la demo, no se contrata.
 
-## Lo que este ADR propone y no decide por sí solo
+## Decisiones votadas en #198
 
-Tres puntos no los fija ninguna fuente y constan en el comentario de #198 del 19 de noviembre de 2026, con su línea de veredicto y su plazo, según el §8. **La aprobación de este ADR no los alcanza.**
+Las tres no las fijaba ninguna fuente y se votaron en #198 con la ventana de 48 h del §8. Los veredictos son del 22 de noviembre de 2026, antes del merge:
 
-- **Ensayo y demo en la misma instancia**, en lugar de una segunda máquina.
-- **Retención de las copias** y el proveedor concreto.
-- **El proxy inverso**: Caddy, por ACME automático y configuración mínima, frente a nginx.
-
-Si el §8 los cambia, se corrige este ADR antes del merge, no después.
+- **Ensayo y demo en la misma instancia: aprobado.**
+- **Copias: objeción a «sin purgas» y retención rotatoria de 30 días**, que este ADR recoge en el punto 8. Sin retención, las copias guardarían para siempre lo que el derecho al olvido borra de los datos vivos; con 30 días, la supresión las alcanza en ese plazo y se le puede decir al paciente. El proveedor concreto se elige en ACO-054.
+- **Proxy inverso: Caddy, aprobado**, y así consta en el punto 5.
 
 ## Alternativas consideradas
 
@@ -64,7 +62,7 @@ Si el §8 los cambia, se corrige este ADR antes del merge, no después.
 
 - ACO-054 contrata, despliega y anota precio, plazo y consumo real; ACO-055 deja el arranque reproducible; ACO-056 ensaya sobre él.
 - Si el precio se sale de 30–40 €/mes o el CPX41 ya no existe, se para y va al §8: no se contrata por decisión propia.
-- Las copias quedan sin retención fijada hasta que el §8 la resuelva; mientras tanto no se promete al paciente un borrado que las alcance.
+- Las copias rotan a los 30 días: ACO-054 programa la purga y la restauración, y la supresión alcanza lo copiado en ese plazo.
 - El derecho al olvido se sigue verificando sobre los datos vivos (ADR-025).
 - La Arquitectura §13 y §16 nº 11 y 17 se corrigen en su próxima revisión, con su fila en el registro de seguimientos; el arnés se regenera después desde las fuentes.
 - El registro de ADR del Plan de Trabajo §9 incorpora este ADR en la pasada de documentación, no en esta PR.
