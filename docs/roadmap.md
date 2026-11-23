@@ -4,10 +4,10 @@
 > decidido en otra parte. Cada fila cita su fuente. Si algo no coincide con la
 > fuente, vale la fuente.
 >
-> **Estado de esta versión:** 20 de noviembre de 2026. Comprobada contra el
+> **Estado de esta versión:** 23 de noviembre de 2026. Comprobada contra el
 > Documento Operativo del Sprint 2 v0.4, la Arquitectura del Sistema v0.10, el
-> Plan de Proyecto v0.22, los ADR-022 a ADR-027 (en revisión) y el índice de ACO
-> de `main`.
+> Plan de Proyecto v0.22, los ADR-022 a ADR-028 (ADR-023 en `main`; el resto, en
+> revisión) y el índice de ACO de `main`.
 
 ## Leyenda
 
@@ -20,7 +20,7 @@
 
 El estado de cada ACO **no se repite aquí**: vive en [`docs/indice.md`](indice.md),
 que se genera de `docs/aco/sprints.toml` y la CI comprueba. El estado vivo del
-sprint está en el [tablero del proyecto](https://github.com/orgs/ACOMPAS-IA/projects/1).
+sprint está en el [tablero del proyecto](https://github.com/users/ACOMPAS-IA/projects/1).
 
 ## 1. Qué puede hacer el paciente en cada hito
 
@@ -78,8 +78,9 @@ gantt
 ### Nota sobre las fechas
 
 - **S1: 15 sep – 9 nov 2026** (ocho semanas), con el cierre el **12 de
-  noviembre** y la decisión conjunta #137. *(Documento Operativo Sprint 1 §5;
-  08-PLAN §1)*
+  noviembre** y la decisión conjunta #137. Las fechas de fin previsto (27 oct) y
+  fin real (9 nov) son las del registro de desviaciones. *(Documento Operativo
+  Sprint 1 §5; 08-PLAN §1; `docs/desviaciones.md`)*
 - **S2: 10 nov – 31 dic 2026.** *(Documento Operativo Sprint 2 §8)*
 - La demo de ACANPAN figura como «dic 2026»; **el día no está fijado en ninguna
   fuente**. El hito se dibuja el 31 de diciembre como marcador de mes, y la
@@ -168,7 +169,7 @@ S1 conversación:    027 → 028/030;  029 → 030 → 031
 S2 datos:           ADR-022 → 038 → 039 / 040 / 043
 S2 anonimización:   ADR-023 → 035 → 036 (Nivel 3) → demo
                     ADR-027 → 036
-S2 conversación:    ADR-006 → 041;  ADR del clasificador → 042
+S2 conversación:    ADR-006 → 041;  ADR-028 → 042
                     043 → 044 → 045 → 046
 S2 entrega:         053 + 054 + 055 → 056
 E2E:                032 (hecho) + 034 + ADR-019 → 033
@@ -185,19 +186,18 @@ mismo con la API de anonimización (ACO-024) y la conversación.
 | Documentos reales (demo de diciembre) | Anonimización completa (Niveles 1 a 3), derecho al olvido y auditoría. El ADR-027, en revisión, fija que el Nivel 3 forma parte de la anonimización; si la anonimización no llega a tiempo, se aplica el plan B de la Arquitectura (documentos ya anonimizados fuera) |
 | Demo ACANPAN (ACO-056) | ACO-053, ACO-054, ACO-055 y la fecha de #161 |
 | RAG completo (S4) | El calendario del RAG y con qué corpus trabaja (cuestión abierta) |
-| Conversar sin documento (S3+) | Un ACO que modifique ACO-030 §8.1 (#145) |
+| Conversar sin documento (S3+) | El clasificador (ACO-042) y los topes de gasto (S3); el ACO que modifique ACO-030 §8.1 (#170; #145) |
 
 ## 5. Decisiones y riesgos que pueden mover las fechas
 
 | Riesgo o decisión | Qué puede mover | Estado | Fuente |
 | --- | --- | --- | --- |
 | ADR del modelo de datos | ACO-038, y con él auditoría, borrado y guardado | En revisión | [#190](https://github.com/ACOMPAS-IA/acompas/pull/190) |
-| ADR del motor de OCR y su confianza | ACO-035 y la cadena hasta la demo | En revisión | [#192](https://github.com/ACOMPAS-IA/acompas/pull/192) |
 | ADR del registro de auditoría | ACO-039 y el uso de datos reales | En revisión | [#195](https://github.com/ACOMPAS-IA/acompas/pull/195) |
 | ADR del derecho al olvido | ACO-040 y el uso de datos reales | En revisión | [#197](https://github.com/ACOMPAS-IA/acompas/pull/197) |
 | ADR de contratación del VPS | ACO-054, 055 y 056 | En revisión | [#199](https://github.com/ACOMPAS-IA/acompas/pull/199) |
 | ADR del Nivel 3 | ACO-036 y el uso de documentos reales | En revisión | [#201](https://github.com/ACOMPAS-IA/acompas/pull/201) |
-| ADR del clasificador de intención | ACO-042 | Abierto: antes del 25 de noviembre | #169; DO Sprint 2 §6 |
+| ADR del clasificador de intención | ACO-042 | En revisión: ADR-028, antes del 25 de noviembre | [#203](https://github.com/ACOMPAS-IA/acompas/pull/203); DO Sprint 2 §6 |
 | Clave del proyecto y límite de gasto | La demo con documentos reales | Abierto | #92 |
 | Fecha de la demo | ACO-056 y el ensayo | Sin fijar | #161 |
 | Documentos reales o plan B | Qué se enseña y a quién | Abierto | #161 |
@@ -209,7 +209,8 @@ mismo con la API de anonimización (ACO-024) y la conversación.
 
 Cerradas desde la versión anterior: el cierre del S1 (#137), el índice generado
 (#140), el colchón y la regla de recorte (#144), el límite y la retención de
-documentos (#138) y el clasificador de intención (#169, que pasa a ACO-042).
+documentos (#138), el clasificador de intención (#169, que pasa a ACO-042) y el
+ADR del motor de OCR (ADR-023, #192).
 ADR-019 y ADR-020 están aprobados.
 
 ## 6. Cómo se mantiene
