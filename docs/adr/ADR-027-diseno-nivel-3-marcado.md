@@ -42,7 +42,7 @@ El Modelo E/R ya admite la marca: `ETIQUETA_ANONIMIZACION.fuente` vale `'presidi
 
 ## Lo que este ADR propone y no decide por sí solo
 
-- **Las 48 h de D2 y D2 bis.** Se registran en #200; si alguna se objeta, el ADR se corrige antes del merge.
+- **Las 48 h de D2 y D2 bis.** Aprobadas en #200 el 22 de noviembre de 2026, sin objeciones; recogidas en los puntos 3 y 4.
 - **La publicación de las dos cifras.** Corresponde a las métricas de cobertura (ACO-037).
 
 ## Alternativas consideradas
