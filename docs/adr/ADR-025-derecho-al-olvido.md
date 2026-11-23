@@ -78,7 +78,7 @@ El evento final se escribe unido al UUID y, después, `audit_erasure` anula `pac
 
 - **ACO-040** implementa las dos operaciones, la verificación, la respuesta al paciente y la comprobación de `activo` en cada petición.
 - **ACO-038** da el modelo y las relaciones que hacen posible el orden del punto 3; **ACO-039**, el rol `audit_erasure` y la tabla donde vive el evento final.
-- El registro de auditoría crece con filas sin identificadores que se conservan hasta su retención, la de ADR-024, pendiente de #194.
+- El registro de auditoría crece con filas sin identificadores que se conservan hasta su retención: seis meses y purga con `audit_retention`, fijados en #194 (ADR-024 §8).
 - **No cambian** el límite y la retención (#138, ADR-013), la autenticación (ADR-011) ni el modelo de la lista blanca (ADR-009).
 - Las copias de seguridad no se tratan aquí: la Arquitectura §13 prevé backups cifrados y ninguna fuente fija qué pasa con ellos al ejercer el olvido. El borrado se verifica sobre los datos vivos y la carencia queda anotada en el registro de seguimientos.
 - El paso 9 del Modelo E/R se corrige en su próxima revisión, y la secuencia del arnés (`07-INTERCAMBIO`) se regenera desde las fuentes: no se edita a mano.
@@ -91,6 +91,7 @@ El evento final se escribe unido al UUID y, después, `audit_erasure` anula `pac
 - Dónde se guarda el anonimizado y con qué tecnología: Arquitectura §16 nº 2.
 - El paciente con dos emails: límite declarado en el punto 1.
 - Las copias de seguridad y su política.
+- Lo que ya salió hacia el proveedor del modelo: el texto anonimizado y las preguntas no se pueden recuperar desde aquí, y su retención la rige el contrato. La Arquitectura §10 y §13 declaran que no hay retención ni uso de datos para entrenamiento; este procedimiento no puede verificarlo.
 
 ## Documentos afectados
 
