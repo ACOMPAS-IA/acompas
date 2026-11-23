@@ -26,7 +26,7 @@ Se lee del entorno en cada llamada, no al importar ni al arrancar la aplicación
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | Para llamar a la API | — |
 | `LLM_MODEL` | Para llamar a la API | — |
-| `LLM_MAX_OUTPUT_TOKENS` | No | 1024 |
+| `LLM_MAX_OUTPUT_TOKENS` | No | 4096 |
 | `LLM_TIMEOUT_SECONDS` | No | 60 |
 | `LLM_MAX_RETRIES` | No | 2 |
 
