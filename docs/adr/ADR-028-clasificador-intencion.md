@@ -4,9 +4,9 @@ Estado: aprobado
 
 Sustituido por: —
 
-Origen: Decisión conjunta #169 (opción C, cerrada el 18 nov 2026), que sitúa el clasificador en el Sprint 2, en el bloque «límites del LLM», y encarga este ADR antes del BUILD y antes del 25 nov 2026. Lo implementa ACO-042 (bloque «límites del LLM», ACO-035–046). Cierra la cuestión 1 de la Arquitectura v0.10 §16 («el clasificador de intención ya tiene módulo asignado —el LLM gateway—, pero falta decidir en qué sprint se implementa»).
+Origen: Decisión conjunta #169 (opción C, cerrada el 18 nov 2026), que sitúa el clasificador en el Sprint 2, en el bloque «límites del LLM», y encarga este ADR antes del BUILD y antes del 25 nov 2026. Lo implementa ACO-042 (bloque «límites del LLM», ACO-035–046). Las acciones posteriores al merge (registro del Plan de Trabajo §9, retirada de la cuestión de la Arquitectura y UC-08) tienen vehículo en la Issue #207. Cierra la cuestión 1 de la Arquitectura v0.10 §16 («el clasificador de intención ya tiene módulo asignado —el LLM gateway—, pero falta decidir en qué sprint se implementa»).
 
-Relacionados: ADR-006 (LLM gateway obligatorio), ADR-008 (sin datos reales hasta salvaguardas), ADR-015 (secretos), ADR-019 (E2E con gateway simulado), ADR-024 (registro de auditoría); ACO-027 (gateway), ACO-029 (prompt de sistema), ACO-030 (conversación), ACO-041 (prompt v1 e historial manipulado), ACO-042 (implementación), ACO-052 (catálogo de casos); #145 y #170 (conversación sin documento), #116 (respuesta inyectada en el historial), #87 (ADR del modelo de Claude), #92 (clave del proyecto y límite de gasto), #172 (caché de prompts).
+Relacionados: ADR-006 (LLM gateway obligatorio), ADR-008 (sin datos reales hasta salvaguardas), ADR-015 (secretos), ADR-019 (E2E con gateway simulado), ADR-024 (registro de auditoría); ACO-027 (gateway), ACO-029 (prompt de sistema), ACO-030 (conversación), ACO-041 (prompt v1 e historial manipulado), ACO-042 (implementación), ACO-052 (catálogo de casos); #145 y #170 (conversación sin documento), #116 (respuesta inyectada en el historial), #87 (ADR del modelo principal de Claude), #92 (clave del proyecto y límite de gasto), #172 (caché de prompts).
 
 ## Contexto
 
@@ -28,7 +28,7 @@ Condiciones que fija #169 y que este ADR respeta:
 Restricciones que ya están en vigor:
 
 - R-23: toda llamada a Claude API pasa por el gateway.
-- R-04: ni el contenido de los documentos ni los mensajes del paciente aparecen en logs.
+- R-04: ni el contenido de los documentos ni el nombre de su fichero aparecen en logs.
 - El contrato de `POST /api/conversation` (ACO-030) es público y lo consume el frontend (ACO-032).
 - El prompt de ACO-029 no se toca en este ADR.
 
@@ -44,12 +44,12 @@ Restricciones que ya están en vigor:
    - Sin historial: los mensajes previos los envía el cliente y pueden estar manipulados (#116).
    - Con el indicador: un seguimiento corto en una conversación en curso («¿y eso es grave?», «explícamelo otra vez») se clasifica `en_ambito`.
 
-3. **Cómo clasifica.** Con una llamada a un **modelo pequeño de Claude a través del mismo gateway y del mismo proveedor**, con un prompt de clasificación propio y una salida de una sola etiqueta.
-   - No añade un encargado de tratamiento: el mensaje del paciente ya va a ese proveedor en la llamada principal.
-   - El prompt de clasificación es un fichero versionado junto a los de ACO-029 (`app/services/prompts`), con su huella en el registro, como el prompt de sistema. **No modifica el prompt de ACO-029.**
-   - El modelo es configurable (`LLM_CLASSIFIER_MODEL`). El valor inicial lo fija la ficha de ACO-042 dentro de la familia de modelos pequeños de Claude; la política de versiones es la del ADR del modelo (#87, #142).
-   - Salida corta (límite de salida de pocas decenas de tokens), sin razonamiento extendido y con un tiempo máximo propio (`LLM_CLASSIFIER_TIMEOUT_SECONDS`), más corto que el de la llamada principal.
-   - Una respuesta que no sea exactamente una de las dos etiquetas se trata como `en_ambito`.
+3. **Cómo clasifica.** Con una llamada a **Claude Haiku 4.5** (`claude-haiku-4-5-20251001`) a través del gateway, con un prompt de clasificación propio, **temperatura 0** y una salida de una sola etiqueta.
+   - **Proveedor.** No añade un encargado de tratamiento: el mensaje va al mismo proveedor que ya trata los mensajes del paciente. Si la pregunta está en ámbito, también va a la llamada principal; si se bloquea, la clasificación es el único envío y se ahorra la llamada principal, no la clasificación.
+   - **Prompt.** Es un fichero versionado junto a los de ACO-029 (`app/services/prompts`), con su huella en el registro, como el prompt de sistema. **No modifica el prompt de ACO-029.**
+   - **Modelo y cambio de modelo.** El modelo es configurable (`LLM_CLASSIFIER_MODEL`), con Claude Haiku 4.5 como valor inicial: es el modelo pequeño de Claude disponible y basta para una salida de una etiqueta. Cambiarlo no exige un ADR nuevo mientras el modelo nuevo cumpla el punto 8: el cambio va en una PR con la evaluación completa repetida y su informe. El ADR del modelo de Claude (#87) es del modelo principal, no de este.
+   - **Salida y tiempo.** Límite de salida de pocas decenas de tokens, sin razonamiento extendido, y tiempo máximo propio (`LLM_CLASSIFIER_TIMEOUT_SECONDS`), más corto que el de la llamada principal. Los valores iniciales de estas dos variables los fija la ficha de ACO-042.
+   - **Salida no reconocible.** Una respuesta que no sea exactamente una de las dos etiquetas se trata como `en_ambito`.
 
 4. **Si el clasificador falla, la conversación sigue (fail-open).** Si la clasificación agota su tiempo, devuelve un error del proveedor o una salida no reconocible, la petición continúa a la llamada principal con el prompt como barrera, y el gateway registra `intent_check_failed` con el motivo.
    - Bloquear ante un fallo convertiría una incidencia puntual del proveedor en una denegación del servicio para el paciente, cuando la llamada principal depende del mismo proveedor y el prompt sigue activo.
@@ -59,18 +59,18 @@ Restricciones que ya están en vigor:
    - **El contrato de `POST /api/conversation` no cambia**: ningún campo nuevo, ningún código de error nuevo. El frontend muestra la respuesta como cualquier otra, con el disclaimer visible.
    - El literal lo fija la ficha de ACO-042 y repite la idea de la sección «Ámbito» del prompt de ACO-029: qué sí puede hacer ACOMPAS.
 
-6. **Dónde vive.** En el paquete del gateway (`app/services/llm_gateway`), como dice la Arquitectura §11 y ADR-006.
-   - El gateway ofrece la clasificación como una operación propia, distinta de `complete()`, para que la llamada de clasificación no se clasifique a sí misma.
-   - La conversación la invoca **siempre** antes de la llamada principal. Que no haya una ruta de conversación sin clasificación se comprueba con un test.
-   - La interfaz concreta (nombre, firma, modelos de datos) la fija la ficha de ACO-042.
+6. **Dónde vive: dentro del gateway, sin depender del llamante.** El gateway ofrece una **operación de conversación** que clasifica dentro y, si la pregunta pasa, llama al modelo principal. La conversación usa esa operación; `complete()` deja de ser su entrada y queda como vía interna del gateway, que la clasificación usa sin clasificarse a sí misma.
+   - Así se cumple ADR-006: el clasificador se aplica de forma uniforme en un único punto, y ninguna conversación puede llegar al modelo principal sin pasar por él, aunque el llamante se olvide.
+   - Un test comprueba que la ruta de conversación no tiene otra entrada al modelo principal.
+   - La interfaz concreta (nombre, firma y modelos de datos) la fija la ficha de ACO-042.
 
-7. **Qué se registra.** Solo metadatos, como hoy en `llm_call`: etiqueta, modelo, tokens de entrada y salida, duración, huella del prompt de clasificación y, si falla, el motivo. **Nunca el texto del mensaje** (R-04).
+7. **Qué se registra.** Solo metadatos, como hoy en `llm_call`: etiqueta, modelo, tokens de entrada y salida, duración, huella del prompt de clasificación y, si falla, el motivo. **Nunca el texto del mensaje del paciente.** Es una regla nueva: R-04 cubre el contenido del documento y el nombre de su fichero, no los mensajes, y 03-REGLAS la amplía a los mensajes del paciente.
    - Los tokens de la clasificación son gasto del paciente: los topes del Sprint 3 los cuentan junto a los de la llamada principal.
 
-8. **Cómo se acepta.** ACO-042 incluye un conjunto de evaluación sintético y etiquetado, y una ejecución real opcional (`ACOMPAS_LLM_LIVE=1`), con el mismo patrón que el ejecutor de ACO-052.
+8. **Cómo se acepta.** ACO-042 incluye un conjunto de evaluación sintético y etiquetado, y una ejecución real opcional (`ACOMPAS_LLM_LIVE=1`), con el mismo patrón que el ejecutor de ACO-052. Con temperatura 0, el conjunto completo se ejecuta **tres veces** y los criterios se cumplen en las tres, para no aceptar un resultado que dependa de una pasada afortunada.
    - **En ámbito:** todos los mensajes del catálogo de ACO-052 (C01–C15) y de las sondas S1–S9 de ACO-029, más al menos 20 preguntas límite que deben pasar: nutrición durante el tratamiento, ansiedad por el diagnóstico, efectos secundarios, trámites de la consulta, síntomas urgentes, seguimientos cortos en conversación.
    - **Fuera de ámbito:** al menos 20 peticiones claramente ajenas.
-   - **Criterio:** **ningún falso positivo** en el conjunto en ámbito y al menos el 80 % de detección en el conjunto fuera de ámbito. Lo que se escapa lo sigue declinando el prompt.
+   - **Criterio:** **ningún falso positivo** en el conjunto en ámbito, en ninguna de las tres ejecuciones, y al menos el 80 % de detección en el conjunto fuera de ámbito en cada una. Lo que se escapa lo sigue declinando el prompt.
    - El informe registra modelo, huella de los dos prompts, tasa de fallos y latencia y tokens medios de la clasificación.
 
 9. **Pruebas sin red.** Los tests unitarios usan un clasificador falso inyectable, igual que el proveedor falso del gateway. El E2E de ADR-019 sustituye el gateway completo por uno simulado, que no clasifica; la conversación con y sin bloqueo se prueba en los tests del backend.
@@ -92,25 +92,26 @@ Restricciones que ya están en vigor:
 - Las preguntas claramente ajenas dejan de llegar al modelo principal: menos coste y menos superficie para sacar al modelo de su ámbito.
 - Variables de entorno nuevas: `LLM_CLASSIFIER_MODEL` y `LLM_CLASSIFIER_TIMEOUT_SECONDS`, con su documentación en `.env.example` y el README. No hay secretos nuevos: usa la misma clave (ADR-015).
 - Un prompt nuevo, versionado y con huella. El prompt de ACO-029 no cambia.
+- La conversación entra al modelo principal solo por la operación de conversación del gateway; `complete()` queda como vía interna.
 - El contrato de `POST /api/conversation` no cambia.
-- El arnés gana una regla (clasificación previa obligatoria en la conversación, con la duda a favor del paciente) y su verificación.
-- Estimación de arranque de ACO-042 para la matriz del S2: **8–12 h** (módulo, prompt, integración, tests, conjunto de evaluación y ejecución real). Se confirma al ampliar la ficha.
+- El arnés gana una regla (clasificación previa obligatoria en la conversación, con la duda a favor del paciente) y su verificación, y R-04 se amplía a los mensajes del paciente.
+- Estimación de ACO-042: **8–10 h**, la de la matriz del Documento Operativo del S2 (módulo, prompt, integración, tests, conjunto de evaluación y ejecuciones reales).
 - **La conversación sin documento (#170)** queda con una de sus dos dependencias cubierta; le sigue faltando la de los topes (S3).
 
 ## Fuera de esta decisión
 
 - Los topes de gasto y la regla de cálculo del crédito (Arquitectura §16 nº 16; Sprint 3).
-- La elección y la política de versiones del modelo de Claude, incluido el razonamiento (ADR del modelo; #87, #142).
+- La elección y la política de versiones del modelo principal de Claude, incluido el razonamiento (ADR del modelo; #87).
 - El control de prompt injection y la respuesta inyectada en el historial (#116, ACO-041): el clasificador decide el ámbito, no detecta ataques.
 - El registro de auditoría: la clasificación no es un evento de ADR-024; deja solo los metadatos del punto 7 en el registro del gateway.
 - La conversación sin documento y su marcador (#170).
-- El literal de la respuesta al bloquear y los valores iniciales de las variables: ficha de ACO-042.
+- El literal de la respuesta al bloquear y los valores iniciales del límite de salida y del tiempo máximo: ficha de ACO-042.
 
 ## Documentos afectados
 
 - Arquitectura del Sistema §11 y §16 (cierra la cuestión 1).
 - Casos de Uso UC-08 (validación de ámbito antes de enviar la pregunta).
-- Arnés: 03-REGLAS (regla nueva), 05-DISEÑO, 07-INTERCAMBIO y 09-TESTS (verificación nueva), en la siguiente regeneración.
+- Arnés: 03-REGLAS (regla nueva de clasificación y ampliación de R-04 a los mensajes del paciente), 05-DISEÑO, 07-INTERCAMBIO y 09-TESTS (verificación nueva), en la siguiente regeneración.
 - Plan de Trabajo §9 (registro de ADR).
 - Ficha de ACO-042 y su fila en la matriz del Documento Operativo del Sprint 2 (§6).
 - `.env.example` y README (variables nuevas), con ACO-042.
