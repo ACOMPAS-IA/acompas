@@ -27,9 +27,10 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# 1. PyTorch, variante CPU: solo esa pieza y solo desde su índice.
+# 1. PyTorch, variante CPU: solo esa pieza, con el rango de `pyproject.toml` y
+#    solo desde su índice.
 RUN pip install --no-deps --report /tmp/torch-report.json \
-        torch --index-url https://download.pytorch.org/whl/cpu
+        "torch>=2.2,<3.0" --index-url https://download.pytorch.org/whl/cpu
 
 # 2. El resto, desde PyPI. Se comprueba el informe de pip y las versiones
 #    instaladas: un paquete resuelto fuera de PyPI, o cualquier rastro de
@@ -43,41 +44,49 @@ import sys
 from urllib.parse import urlparse
 
 
-def origenes(path):
+def urls(path):
     with open(path, encoding="utf-8") as f:
         informe = json.load(f)
-    hosts = set()
-    for item in informe.get("install", []):
-        url = (item.get("download_info") or {}).get("url")
-        host = urlparse(url).hostname if url else None
-        if host:
-            hosts.add(host)
-    return hosts
+    return [
+        item["download_info"]["url"]
+        for item in informe.get("install", [])
+        if (item.get("download_info") or {}).get("url")
+    ]
 
 
-def es_indice_pytorch(host):
-    # El índice sirve los ficheros desde su CDN (`download-r2.pytorch.org`).
-    return host == "download.pytorch.org" or host.endswith(".pytorch.org")
+def es_indice_cpu(url):
+    # El índice sirve los ficheros desde su CDN (`download-r2.pytorch.org`),
+    # pero la ruta es la del índice CPU: no basta con mirar el host, porque
+    # `download.pytorch.org/whl/cu132` es el índice de CUDA.
+    partes = urlparse(url)
+    host = partes.hostname or ""
+    return host.endswith("pytorch.org") and partes.path.startswith("/whl/cpu/")
 
 
-torch_hosts = origenes("/tmp/torch-report.json")
-deps_hosts = origenes("/tmp/deps-report.json")
+torch_urls = urls("/tmp/torch-report.json")
+deps_urls = urls("/tmp/deps-report.json")
 nvidia = sorted(
     dist.metadata["Name"]
     for dist in metadata.distributions()
     if dist.metadata["Name"] and dist.metadata["Name"].lower().startswith("nvidia")
 )
 
-print("origen de torch:", sorted(torch_hosts))
-print("origen del resto:", sorted(deps_hosts))
+print(
+    "origen de torch:",
+    sorted({urlparse(url).hostname or "(local)" for url in torch_urls}),
+)
+print(
+    "origen del resto:",
+    sorted({urlparse(url).hostname or "(local)" for url in deps_urls}),
+)
 print("paquetes de NVIDIA:", nvidia)
 
 import torch  # noqa: E402
 
-if not torch_hosts or not all(es_indice_pytorch(host) for host in torch_hosts):
+if not torch_urls or not all(es_indice_cpu(url) for url in torch_urls):
     sys.exit("torch no se resolvió solo desde el índice CPU")
-if any(es_indice_pytorch(host) for host in deps_hosts):
-    sys.exit("algún paquete se resolvió desde el índice CPU de PyTorch")
+if any((urlparse(url).hostname or "").endswith("pytorch.org") for url in deps_urls):
+    sys.exit("algún paquete se resolvió desde el índice de PyTorch")
 if nvidia:
     sys.exit("la imagen CPU instaló paquetes de NVIDIA")
 if torch.version.cuda is not None:
@@ -88,9 +97,13 @@ PY
 #    salen de `model_ids.py`, que es su origen único.
 COPY app/services/anonymization/model_ids.py /tmp/model_ids.py
 RUN PYTHONPATH=/tmp python - <<'PY'
+import importlib.metadata as metadata
 import subprocess
 import sys
+from pathlib import Path
 
+import torch
+from huggingface_hub import hf_hub_download
 from model_ids import MEDDOCAN_MODEL, SPACY_MODEL
 
 subprocess.run(
@@ -100,6 +113,10 @@ subprocess.run(
 
 from transformers import AutoModelForTokenClassification, AutoTokenizer  # noqa: E402
 
+# Solo `config.json`: `snapshot_download` traería el repositorio entero, con el
+# mismo modelo en dos formatos y casi un giga de más. La ruta del fichero
+# termina en el commit resuelto.
+ruta_config = Path(hf_hub_download(MEDDOCAN_MODEL, "config.json"))
 AutoTokenizer.from_pretrained(MEDDOCAN_MODEL)
 AutoModelForTokenClassification.from_pretrained(MEDDOCAN_MODEL)
 
@@ -108,6 +125,18 @@ AutoModelForTokenClassification.from_pretrained(MEDDOCAN_MODEL)
 import tldextract  # noqa: E402
 
 tldextract.extract("https://example.com")
+
+# Las versiones resueltas quedan dentro de la imagen y en el registro del build:
+# el ADR-020 deja abierto fijarlas, pero exige poder saber cuáles son.
+versiones = {
+    "torch": torch.__version__,
+    SPACY_MODEL: metadata.version(SPACY_MODEL.replace("_", "-")),
+    MEDDOCAN_MODEL: ruta_config.parent.name,
+}
+with open("/opt/hf/BUILD-VERSIONS.txt", "w", encoding="utf-8") as archivo:
+    for nombre, version in versiones.items():
+        archivo.write(f"{nombre}={version}\n")
+print("versiones horneadas:", versiones)
 PY
 
 # A partir de aquí, el modelo no puede descargar nada (ADR-020 D4).
