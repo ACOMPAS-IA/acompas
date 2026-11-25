@@ -43,7 +43,7 @@ pytest tests/anonymization/test_analyzer.py \
   tests/anonymization/test_service.py -q
 ```
 
-La primera ejecución descarga el modelo MEDDOCAN y el modelo de spaCy en español; las siguientes usan la caché. Los tests de corpus de `test_service.py` reutilizan el fixture de módulo `model_service`, y los de detección el fixture `analyzer` de `test_detection.py`: no se añaden cargas nuevas del modelo.
+La imagen del backend trae los modelos desde ACO-034. Si ejecutas los tests fuera de ella, la primera ejecución descarga el modelo MEDDOCAN y el modelo de spaCy en español, y las siguientes usan la caché. Los tests de corpus de `test_service.py` reutilizan el fixture de módulo `model_service`, y los de detección el fixture `analyzer` de `test_detection.py`: no se añaden cargas nuevas del modelo.
 
 ### Suite completa
 
@@ -54,12 +54,11 @@ pytest -q
 
 ## Contenedor aislado
 
-No uses el contenedor de la demo: su imagen puede ser anterior a la rama y no monta el código. Construye una imagen desde `backend/` y ejecuta con un volumen de caché para no repetir la descarga:
+No uses el contenedor de la demo: su imagen puede ser anterior a la rama y no monta el código. Construye una imagen desde `backend/` y ejecuta los tests en ella; los modelos ya viajan dentro, así que no hace falta volumen de caché:
 
 ```bash
 docker build -t acompas-backend-aco026 backend
 docker run --rm -v "$PWD/backend:/app" -w /app \
-  -v acompas-aco026-hf-cache:/root/.cache/huggingface \
   acompas-backend-aco026 pytest tests/anonymization -q
 ```
 
