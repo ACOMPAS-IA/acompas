@@ -12,7 +12,6 @@ import os
 import sys
 import tempfile
 import traceback
-import uuid
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -20,7 +19,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.anonymization import get_anonymization_service
-from app.api.auth import get_current_user, get_jwks_client
+from app.api.auth import get_jwks_client
 from app.main import app
 from app.services.anonymization import AnonymizationService
 from app.services.anonymization.config import (
@@ -29,7 +28,8 @@ from app.services.anonymization.config import (
     load_settings,
 )
 from app.services.anonymization.models import REASON_LOW_CONFIDENCE
-from app.services.auth import Principal
+
+pytestmark = pytest.mark.usefixtures("authenticated_user")
 
 URL = "/api/anonymization"
 NAME = "Rosario Albendea Quintanar"
@@ -132,17 +132,6 @@ def logged_text(caplog):
 def assert_no_forbidden_values(value):
     for forbidden in FORBIDDEN_VALUES:
         assert forbidden not in value
-
-
-@pytest.fixture(autouse=True)
-def authenticated_user():
-    app.dependency_overrides[get_current_user] = lambda: Principal(
-        user_id=uuid.UUID("00000000-0000-4000-8000-000000000001"),
-        email="paciente@example.com",
-        roles=frozenset({"paciente"}),
-    )
-    yield
-    app.dependency_overrides.pop(get_current_user, None)
 
 
 @pytest.fixture(autouse=True)
