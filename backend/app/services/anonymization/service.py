@@ -1,3 +1,5 @@
+import threading
+
 from .analyzer import build_analyzer
 from .confidence import document_confidence
 from .config import load_settings
@@ -23,11 +25,16 @@ class AnonymizationService:
     def __init__(self, analyzer=None, settings_loader=load_settings):
         self._analyzer = analyzer
         self._settings_loader = settings_loader
+        # Dos peticiones simultáneas no pueden construir el modelo dos veces:
+        # son dos analyzers en memoria y minutos de carga (#119).
+        self._analyzer_lock = threading.Lock()
 
     @property
     def analyzer(self):
         if self._analyzer is None:
-            self._analyzer = build_analyzer()
+            with self._analyzer_lock:
+                if self._analyzer is None:
+                    self._analyzer = build_analyzer()
         return self._analyzer
 
     def anonymize(self, text: str) -> AnonymizationResult:
