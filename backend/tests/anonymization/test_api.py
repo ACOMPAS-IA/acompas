@@ -5,7 +5,6 @@ red. Los valores son sintéticos (ACO-051, ADR-008).
 """
 
 import logging
-import uuid
 from types import SimpleNamespace
 
 import pytest
@@ -20,8 +19,9 @@ from app.services.anonymization.config import (
     FINDING_THRESHOLD_ENV,
     load_settings,
 )
-from app.services.auth import Principal
 from app.services.auth.config import ISSUER_ENV, JWKS_URL_ENV
+
+pytestmark = pytest.mark.usefixtures("authenticated_user")
 
 URL = "/api/anonymization"
 TEXT = "Paciente: Rosario Albendea Quintanar. DNI: 12345678Z."
@@ -60,18 +60,6 @@ def service_with(text, results, settings_loader=load_settings):
     return AnonymizationService(
         analyzer=analyzer, settings_loader=settings_loader
     ), analyzer
-
-
-@pytest.fixture(autouse=True)
-def authenticated_user():
-    """El endpoint está protegido; el contrato se prueba ya autenticado."""
-    app.dependency_overrides[get_current_user] = lambda: Principal(
-        user_id=uuid.UUID("00000000-0000-4000-8000-000000000001"),
-        email="paciente@example.com",
-        roles=frozenset({"paciente"}),
-    )
-    yield
-    app.dependency_overrides.pop(get_current_user, None)
 
 
 @pytest.fixture(autouse=True)
