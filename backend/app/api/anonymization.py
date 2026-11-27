@@ -64,6 +64,8 @@ def get_anonymization_service() -> AnonymizationService:
     return _service
 
 
+# Aquí `lru_cache` basta: construir el extractor no descarga modelos y dos
+# instancias no cuestan memoria, al contrario que el analyzer (#119).
 @lru_cache(maxsize=1)
 def _default_extractor() -> DocumentExtractor:
     return DocumentExtractor()
