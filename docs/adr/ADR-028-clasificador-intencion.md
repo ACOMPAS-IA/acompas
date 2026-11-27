@@ -4,9 +4,9 @@ Estado: aprobado
 
 Sustituido por: —
 
-Origen: Decisión conjunta #169 (opción C, cerrada el 18 nov 2026), que sitúa el clasificador en el Sprint 2, en el bloque «límites del LLM», y encarga este ADR antes del BUILD y antes del 25 nov 2026. Lo implementa ACO-042 (bloque «límites del LLM», ACO-035–046). Las acciones posteriores al merge (registro del Plan de Trabajo §9, retirada de la cuestión de la Arquitectura y UC-08) tienen vehículo en la Issue #NNN. Cierra la cuestión 1 de la Arquitectura v0.10 §16 («el clasificador de intención ya tiene módulo asignado —el LLM gateway—, pero falta decidir en qué sprint se implementa»).
+Origen: Decisión conjunta #169 (opción C, cerrada el 18 nov 2026), que sitúa el clasificador en el Sprint 2, en el bloque «límites del LLM», y encarga este ADR antes del BUILD y antes del 25 nov 2026. Lo implementa ACO-042 (bloque «límites del LLM», ACO-035–046). Las acciones posteriores al merge (registro del Plan de Trabajo §9, retirada de la cuestión de la Arquitectura, UC-08, regeneración del arnés y fila de ACO-042 en la matriz del Documento Operativo) tienen vehículo en la Issue #207. Cierra la cuestión 1 de la Arquitectura v0.10 §16 («el clasificador de intención ya tiene módulo asignado —el LLM gateway—, pero falta decidir en qué sprint se implementa»).
 
-Relacionados: ADR-006 (LLM gateway obligatorio), ADR-008 (sin datos reales hasta salvaguardas), ADR-015 (secretos), ADR-019 (E2E con gateway simulado), ADR-024 (registro de auditoría); ACO-027 (gateway), ACO-029 (prompt de sistema), ACO-030 (conversación), ACO-041 (prompt v1 e historial manipulado), ACO-042 (implementación), ACO-052 (catálogo de casos); #145 y #170 (conversación sin documento), #116 (respuesta inyectada en el historial), #87 (ADR del modelo principal de Claude), #92 (clave del proyecto y límite de gasto), #172 (caché de prompts).
+Relacionados: ADR-006 (LLM gateway obligatorio), ADR-008 (sin datos reales hasta salvaguardas), ADR-015 (secretos), ADR-019 (E2E con gateway simulado), ADR-024 (registro de auditoría); ACO-027 (gateway), ACO-029 (prompt de sistema), ACO-030 (conversación), ACO-041 (prompt v1 e historial manipulado), ACO-042 (implementación), ACO-052 (catálogo de casos); #145 y #170 (conversación sin documento), #116 (respuesta inyectada en el historial), #87 (decisión del modelo principal y su razonamiento), #92 (clave del proyecto y límite de gasto), #172 (caché de prompts).
 
 ## Contexto
 
@@ -43,11 +43,12 @@ Restricciones que ya están en vigor:
    - Sin documentos: el texto de un documento no cambia si la pregunta es de ámbito, y enviarlo multiplicaría el coste de cada clasificación.
    - Sin historial: los mensajes previos los envía el cliente y pueden estar manipulados (#116).
    - Con el indicador: un seguimiento corto en una conversación en curso («¿y eso es grave?», «explícamelo otra vez») se clasifica `en_ambito`.
+   - **De dónde sale el indicador.** Es un booleano que el backend deriva de si el historial que envía el cliente está vacío; no se lee su contenido ni se envía al clasificador. Un cliente que lo falsee solo relaja la clasificación de un mensaje suelto, y el prompt de ACO-029 sigue siendo la barrera de fondo.
 
 3. **Cómo clasifica.** Con una llamada a **Claude Haiku 4.5** (`claude-haiku-4-5-20251001`) a través del gateway, con un prompt de clasificación propio, **temperatura 0** y una salida de una sola etiqueta.
    - **Proveedor.** No añade un encargado de tratamiento: el mensaje va al mismo proveedor que ya trata los mensajes del paciente. Si la pregunta está en ámbito, también va a la llamada principal; si se bloquea, la clasificación es el único envío y se ahorra la llamada principal, no la clasificación.
    - **Prompt.** Es un fichero versionado junto a los de ACO-029 (`app/services/prompts`), con su huella en el registro, como el prompt de sistema. **No modifica el prompt de ACO-029.**
-   - **Modelo y cambio de modelo.** El modelo es configurable (`LLM_CLASSIFIER_MODEL`), con Claude Haiku 4.5 como valor inicial: es el modelo pequeño de Claude disponible y basta para una salida de una etiqueta. Cambiarlo no exige un ADR nuevo mientras el modelo nuevo cumpla el punto 8: el cambio va en una PR con la evaluación completa repetida y su informe. El ADR del modelo de Claude (#87) es del modelo principal, no de este.
+   - **Modelo y cambio de modelo.** El modelo es configurable (`LLM_CLASSIFIER_MODEL`), con Claude Haiku 4.5 como valor inicial: es el modelo pequeño de Claude disponible y basta para una salida de una etiqueta. Cambiarlo no exige un ADR nuevo mientras el modelo nuevo cumpla el punto 8: el cambio va en una PR con la evaluación completa repetida y su informe. La decisión del modelo de Claude es la del modelo principal, no la del clasificador: #87 espera ese ADR y no es él.
    - **Salida y tiempo.** Límite de salida de pocas decenas de tokens, sin razonamiento extendido, y tiempo máximo propio (`LLM_CLASSIFIER_TIMEOUT_SECONDS`), más corto que el de la llamada principal. Los valores iniciales de estas dos variables los fija la ficha de ACO-042.
    - **Salida no reconocible.** Una respuesta que no sea exactamente una de las dos etiquetas se trata como `en_ambito`.
 
@@ -68,8 +69,9 @@ Restricciones que ya están en vigor:
    - Los tokens de la clasificación son gasto del paciente: los topes del Sprint 3 los cuentan junto a los de la llamada principal.
 
 8. **Cómo se acepta.** ACO-042 incluye un conjunto de evaluación sintético y etiquetado, y una ejecución real opcional (`ACOMPAS_LLM_LIVE=1`), con el mismo patrón que el ejecutor de ACO-052. Con temperatura 0, el conjunto completo se ejecuta **tres veces** y los criterios se cumplen en las tres, para no aceptar un resultado que dependa de una pasada afortunada.
-   - **En ámbito:** todos los mensajes del catálogo de ACO-052 (C01–C15) y de las sondas S1–S9 de ACO-029, más al menos 20 preguntas límite que deben pasar: nutrición durante el tratamiento, ansiedad por el diagnóstico, efectos secundarios, trámites de la consulta, síntomas urgentes, seguimientos cortos en conversación.
-   - **Fuera de ámbito:** al menos 20 peticiones claramente ajenas.
+   - **En ámbito:** los mensajes C01–C05, C07–C13 y C15 del catálogo de ACO-052 y las sondas S1–S3 y S5–S9 de ACO-029, más al menos 20 preguntas límite que deben pasar: nutrición durante el tratamiento, ansiedad por el diagnóstico, efectos secundarios, trámites de la consulta, síntomas urgentes, seguimientos cortos en conversación.
+   - **Fuera de ámbito:** C06 del catálogo y la sonda S4 —la petición de un poema, que el punto 1 define como «fuera de ámbito»—, más al menos 20 peticiones claramente ajenas.
+   - **C14 y los casos de interfaz** quedan fuera de los dos conjuntos: no son una entrada del clasificador, sino la pregunta de C01 en modo `demo`.
    - **Criterio:** **ningún falso positivo** en el conjunto en ámbito, en ninguna de las tres ejecuciones, y al menos el 80 % de detección en el conjunto fuera de ámbito en cada una. Lo que se escapa lo sigue declinando el prompt.
    - El informe registra modelo, huella de los dos prompts, tasa de fallos y latencia y tokens medios de la clasificación.
 
@@ -101,7 +103,7 @@ Restricciones que ya están en vigor:
 ## Fuera de esta decisión
 
 - Los topes de gasto y la regla de cálculo del crédito (Arquitectura §16 nº 16; Sprint 3).
-- La elección y la política de versiones del modelo principal de Claude, incluido el razonamiento (ADR del modelo; #87).
+- La elección y la política de versiones del modelo principal de Claude, incluido el razonamiento (decisión del modelo; #87).
 - El control de prompt injection y la respuesta inyectada en el historial (#116, ACO-041): el clasificador decide el ámbito, no detecta ataques.
 - El registro de auditoría: la clasificación no es un evento de ADR-024; deja solo los metadatos del punto 7 en el registro del gateway.
 - La conversación sin documento y su marcador (#170).
