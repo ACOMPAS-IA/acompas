@@ -33,6 +33,19 @@ jobs:
         # dependencias: llegan de PyPI en el paso siguiente.
         run: pip install --no-deps "torch>=2.2,<3.0" --index-url https://download.pytorch.org/whl/cpu
 
+      - name: Install OCR packages
+        # Tesseract y su paquete de español para los tests de ACO-035. Si la
+        # versión no es la calibrada, se avisa y se rehace la tabla
+        # (ADR-023:30); no se rompe la CI por un cambio de la imagen de GitHub.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-spa
+          current="$(tesseract --version 2>&1 | head -1 | awk '{print $2}')"
+          echo "tesseract $current"
+          if ! grep -q "tesseract $current" tests/anonymization/renders/README.md; then
+            echo "::warning::tesseract $current no es la versión calibrada; rehaz la tabla de CER (ADR-023:30)"
+          fi
+
       - name: Install dependencies
         run: pip install ".[dev]"
 
