@@ -28,6 +28,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install PyTorch (CPU)
+        # La imagen usa la variante CPU y la CI prueba la misma (ADR-020). Sin
+        # dependencias: llegan de PyPI en el paso siguiente.
+        run: pip install --no-deps "torch>=2.2,<3.0" --index-url https://download.pytorch.org/whl/cpu
+
       - name: Install dependencies
         run: pip install ".[dev]"
 

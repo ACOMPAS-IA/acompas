@@ -15,6 +15,7 @@ from presidio_analyzer.nlp_engine import (
     TransformersNlpEngine,
 )
 
+from .model_ids import MEDDOCAN_MODEL, SPACY_MODEL
 from .recognizers import build_recognizers
 
 logger = logging.getLogger("app.services.anonymization")
@@ -97,8 +98,6 @@ class SanitizedTransformersNlpEngine(TransformersNlpEngine):
             with _sanitize_analysis_warnings():
                 return super().process_text(text, language)
 
-MEDDOCAN_MODEL = "BSC-NLP4BIA/bsc-bio-ehr-es-meddocan"
-
 MEDDOCAN_ENTITY_MAPPING = {
     # Personas con rol; PERSON es el tipo genérico cuando el rol no está claro
     # (ficha ACO-022, P4).
@@ -168,7 +167,7 @@ def build_analyzer() -> AnalyzerEngine:
         {
             "lang_code": "es",
             "model_name": {
-                "spacy": "es_core_news_sm",
+                "spacy": SPACY_MODEL,
                 "transformers": MEDDOCAN_MODEL,
             },
         }
