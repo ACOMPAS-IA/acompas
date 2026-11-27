@@ -48,7 +48,7 @@ Restricciones que ya están en vigor:
 3. **Cómo clasifica.** Con una llamada a **Claude Haiku 4.5** (`claude-haiku-4-5-20251001`) a través del gateway, con un prompt de clasificación propio, **temperatura 0** y una salida de una sola etiqueta.
    - **Proveedor.** No añade un encargado de tratamiento: el mensaje va al mismo proveedor que ya trata los mensajes del paciente. Si la pregunta está en ámbito, también va a la llamada principal; si se bloquea, la clasificación es el único envío y se ahorra la llamada principal, no la clasificación.
    - **Prompt.** Es un fichero versionado junto a los de ACO-029 (`app/services/prompts`), con su huella en el registro, como el prompt de sistema. **No modifica el prompt de ACO-029.**
-   - **Modelo y cambio de modelo.** El modelo es configurable (`LLM_CLASSIFIER_MODEL`), con Claude Haiku 4.5 como valor inicial: es el modelo pequeño de Claude disponible y basta para una salida de una etiqueta. Cambiarlo no exige un ADR nuevo mientras el modelo nuevo cumpla el punto 8: el cambio va en una PR con la evaluación completa repetida y su informe. La decisión del modelo de Claude es la del modelo principal, no la del clasificador: #87 espera ese ADR y no es él.
+   - **Modelo y cambio de modelo.** El modelo es configurable (`LLM_CLASSIFIER_MODEL`), con Claude Haiku 4.5 como valor inicial: es el modelo pequeño de Claude disponible y basta para una salida de una etiqueta. Cambiarlo no exige un ADR nuevo mientras el modelo nuevo cumpla el punto 8: el cambio va en una PR con la evaluación completa repetida y su informe. La decisión del modelo principal y su razonamiento (#87) no alcanza a este modelo.
    - **Salida y tiempo.** Límite de salida de pocas decenas de tokens, sin razonamiento extendido, y tiempo máximo propio (`LLM_CLASSIFIER_TIMEOUT_SECONDS`), más corto que el de la llamada principal. Los valores iniciales de estas dos variables los fija la ficha de ACO-042.
    - **Salida no reconocible.** Una respuesta que no sea exactamente una de las dos etiquetas se trata como `en_ambito`.
 
@@ -94,7 +94,8 @@ Restricciones que ya están en vigor:
 - Las preguntas claramente ajenas dejan de llegar al modelo principal: menos coste y menos superficie para sacar al modelo de su ámbito.
 - Variables de entorno nuevas: `LLM_CLASSIFIER_MODEL` y `LLM_CLASSIFIER_TIMEOUT_SECONDS`, con su documentación en `.env.example` y el README. No hay secretos nuevos: usa la misma clave (ADR-015).
 - Un prompt nuevo, versionado y con huella. El prompt de ACO-029 no cambia.
-- La conversación entra al modelo principal solo por la operación de conversación del gateway; `complete()` queda como vía interna.
+- La conversación entra al modelo principal solo por la operación de conversación del gateway; `complete()` queda como vía interna. ACO-042 cambia la llamada de ACO-030 (`ConversationService.answer`, que hoy usa `complete()`) a esa operación; no cambia ni el prompt ni el contrato de la conversación.
+- El gateway gana modelo y temperatura por llamada: hoy `LLMRequest` no los lleva y la configuración lee un solo `LLM_MODEL`. Lo implementa ACO-042.
 - El contrato de `POST /api/conversation` no cambia.
 - El arnés gana una regla (clasificación previa obligatoria en la conversación, con la duda a favor del paciente) y su verificación, y R-04 se amplía a los mensajes del paciente.
 - Estimación de ACO-042: **8–10 h**, la de la matriz del Documento Operativo del S2 (módulo, prompt, integración, tests, conjunto de evaluación y ejecuciones reales).
