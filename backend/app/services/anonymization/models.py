@@ -14,6 +14,9 @@ class AnonymizationStatus(str, Enum):
 
 REASON_LOW_CONFIDENCE = "baja_confianza"
 REASON_EMPTY_TEXT = "texto_vacio"
+# Segundo motivo de ilegibilidad: el OCR leyó el documento con poca confianza
+# (ACO-035, ADR-023:34). No cambia el estado ni el código de respuesta.
+REASON_LOW_OCR_CONFIDENCE = "baja_confianza_ocr"
 
 
 class AnonymizationRequest(BaseModel):
