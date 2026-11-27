@@ -79,6 +79,7 @@ EAD
 | S2 | 25 nov 2026 | `backend/Dockerfile`, imagen del backend (ACO-034) | La imagen instala `.[dev]`: las dependencias de desarrollo viajan en producción y separarlas es una decisión de construcción que ACO-034 deja fuera de alcance | Próximo ACO que toque la imagen | abierta | [#208](https://github.com/ACOMPAS-IA/acompas/pull/208) |
 | S2 | 25 nov 2026 | `.github/workflows/ci.yml`, job de pruebas del backend (ACO-034) | La CI descarga los modelos de anonimización en cada ejecución (unos 508 MB, ADR-020 §Contexto) y cachearlos es una decisión aparte | Próximo ACO que toque la CI | abierta | [#208](https://github.com/ACOMPAS-IA/acompas/pull/208) |
 | S2 | 27 nov 2026 | ADR-028, puntos 3, 5 y 6 | Delega en la ficha de ACO-042 cuatro valores —la interfaz de la operación de conversación, el límite de salida, el tiempo máximo y el literal del bloqueo— y esa ficha aún no existe; el ADR no se puede editar tras el merge | Ficha de ACO-042, al abrir su BUILD, con el motivo de cada valor | abierta | [#203](https://github.com/ACOMPAS-IA/acompas/pull/203) |
+| S2 | 27 nov 2026 | `backend/Dockerfile`, paso de modelos (ACO-034) | La revisión de MEDDOCAN se resuelve en cada build y solo se anota en `BUILD-VERSIONS.txt`; los umbrales de ADR-013 están calibrados con una versión concreta, así que un rebuild puede recoger otra sin recalibrar | Al revisar la calibración de ADR-013: fijar `revision=` al commit calibrado y compararlo con `BUILD-VERSIONS.txt` | abierta | [#208](https://github.com/ACOMPAS-IA/acompas/pull/208) |
 
 ## Lo que no es este registro
 
