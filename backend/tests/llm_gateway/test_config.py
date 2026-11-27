@@ -11,10 +11,23 @@ from app.services.llm_gateway import (
     LLMMessage,
     LLMRequest,
 )
+from app.services.llm_gateway import config as gateway_config
 from app.services.llm_gateway.anthropic_provider import AnthropicProvider
 from app.services.llm_gateway.config import get_api_key, load_settings
 
 from .conftest import FAKE_API_KEY, FAKE_MODEL
+
+
+def test_gateway_env_vars_covers_every_variable_the_code_reads():
+    """La lista pública no puede separarse del código que lee el entorno (#107)."""
+    declared = set(gateway_config.GATEWAY_ENV_VARS)
+
+    assert len(declared) == len(gateway_config.GATEWAY_ENV_VARS)
+    assert declared == (
+        set(gateway_config._ALLOWED_ANTHROPIC_VARS)
+        | set(gateway_config._OPTIONAL_FIELDS)
+        | {"LLM_MODEL"}
+    )
 
 
 def test_defaults(llm_env):

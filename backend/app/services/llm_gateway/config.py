@@ -16,6 +16,17 @@ logger = logging.getLogger("app.services.llm_gateway")
 # nuevas y deben rechazarse hasta que se decidan (ADR-015 §3).
 _ALLOWED_ANTHROPIC_VARS = frozenset({"ANTHROPIC_API_KEY"})
 
+# Fuente única de la lista de variables del gateway (#107). La leen
+# scripts/check-secrets.sh para exigirlas en .env.example y en Compose, y el
+# test de este módulo para comprobar que no se separa del código que las usa.
+GATEWAY_ENV_VARS = (
+    "ANTHROPIC_API_KEY",
+    "LLM_MODEL",
+    "LLM_MAX_OUTPUT_TOKENS",
+    "LLM_TIMEOUT_SECONDS",
+    "LLM_MAX_RETRIES",
+)
+
 
 class LLMSettings(BaseModel):
     model_config = ConfigDict(frozen=True)

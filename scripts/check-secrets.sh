@@ -7,7 +7,8 @@
 #   - ninguna cadena con forma de clave real aparece en ninguna de esas
 #     superficies, sin excepciones;
 #   - .env está ignorado y no versionado;
-#   - .env.example tiene vacías las cinco variables actuales del gateway;
+#   - .env.example tiene vacías las variables del gateway que declara
+#     GATEWAY_ENV_VARS, y ninguna otra;
 #   - docker-compose.yml solo pasa esas variables al servicio backend;
 #   - el frontend no contiene referencias a la configuración de Anthropic.
 #
@@ -87,22 +88,37 @@ if git ls-files --error-unmatch .env >/dev/null 2>&1; then
   fail ".env está versionado"
 fi
 
-# 6. .env.example: las cinco variables actuales del gateway, presentes y vacías.
-gateway_vars=(
-  ANTHROPIC_API_KEY
-  LLM_MODEL
-  LLM_MAX_OUTPUT_TOKENS
-  LLM_TIMEOUT_SECONDS
-  LLM_MAX_RETRIES
+# 6. Variables del gateway: la lista sale de config.py (#107) y .env.example
+#    las tiene presentes, vacías y sin sobrantes.
+gateway_vars=()
+while IFS= read -r name; do
+  gateway_vars+=("${name}")
+done < <(
+  sed -n '/^GATEWAY_ENV_VARS = (/,/^)/p' \
+    backend/app/services/llm_gateway/config.py \
+    | grep -oE '"[A-Z0-9_]+"' | tr -d '"'
 )
+if (( ${#gateway_vars[@]} < 5 )); then
+  fail "no se pudo leer GATEWAY_ENV_VARS de backend/app/services/llm_gateway/config.py"
+fi
+for name in "${gateway_vars[@]}"; do
+  [[ "${name}" =~ ^(ANTHROPIC_|LLM_)[A-Z0-9_]+$ ]] \
+    || fail "GATEWAY_ENV_VARS contiene un nombre inesperado: ${name}"
+done
+
 for name in "${gateway_vars[@]}"; do
   grep -qx "${name}=" .env.example || fail ".env.example no tiene ${name}= vacía"
 done
 if grep -Eq '^(ANTHROPIC_|LLM_)[A-Z0-9_]+=.+' .env.example; then
   fail ".env.example contiene un valor para una variable del gateway"
 fi
+while IFS= read -r declared; do
+  [[ -z "${declared}" ]] && continue
+  printf '%s\n' "${gateway_vars[@]}" | grep -qx "${declared}" \
+    || fail ".env.example declara ${declared}, que no está en GATEWAY_ENV_VARS"
+done < <(grep -oE '^(ANTHROPIC_|LLM_)[A-Z0-9_]+' .env.example || true)
 
-# 7. docker-compose.yml: las cinco variables solo en el servicio backend.
+# 7. docker-compose.yml: las variables del gateway solo en el servicio backend.
 for name in "${gateway_vars[@]}"; do
   grep -q "^[[:space:]]*${name}:" docker-compose.yml \
     || fail "docker-compose.yml no pasa ${name}"
