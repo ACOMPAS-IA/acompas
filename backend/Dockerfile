@@ -27,6 +27,12 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
+# Tesseract y su paquete de español para el OCR local (ACO-035, ADR-023:25).
+# Sin las listas de apt-get, que no hacen falta en ejecución.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-spa \
+    && rm -rf /var/lib/apt/lists/*
+
 # 1. PyTorch, variante CPU: solo esa pieza, con el rango de `pyproject.toml` y
 #    solo desde su índice.
 RUN pip install --no-deps --report /tmp/torch-report.json \
