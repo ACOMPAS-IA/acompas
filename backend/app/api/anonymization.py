@@ -7,7 +7,7 @@ texto en la traza (ACO-025, P7).
 """
 
 import logging
-from functools import lru_cache
+import threading
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -28,16 +28,22 @@ logger = logging.getLogger("app.api.anonymization")
 router = APIRouter(prefix="/api", dependencies=[Depends(get_current_user)])
 
 
-@lru_cache(maxsize=1)
-def _default_service() -> AnonymizationService:
-    # El analyzer se construye de forma perezosa y se reutiliza entre
-    # peticiones: cargar el modelo en cada llamada sería inviable.
-    return AnonymizationService()
+# El analyzer se construye de forma perezosa y se reutiliza entre peticiones:
+# cargar el modelo en cada llamada sería inviable. `lru_cache` no garantiza una
+# sola ejecución si dos hilos fallan el caché a la vez, y dos servicios son dos
+# analyzers; el cerrojo lo evita (#119).
+_service_lock = threading.Lock()
+_service: AnonymizationService | None = None
 
 
 def get_anonymization_service() -> AnonymizationService:
     """Dependencia sustituible en los tests por un servicio sin modelo."""
-    return _default_service()
+    global _service
+    if _service is None:
+        with _service_lock:
+            if _service is None:
+                _service = AnonymizationService()
+    return _service
 
 
 async def anonymization_validation_handler(
