@@ -32,6 +32,8 @@ Se lee del entorno en cada llamada, no al importar ni al arrancar la aplicación
 
 `config.get_api_key()` es la única función que lee la clave. Sin clave o sin modelo, la aplicación arranca igual y solo falla la llamada al gateway, con `not_configured`.
 
+La lista de variables del gateway se declara una sola vez en `GATEWAY_ENV_VARS` (`config.py`), y `scripts/check-secrets.sh` la lee de ahí para exigirlas en `.env.example` y en Compose. La tabla de arriba documenta el significado de cada una; si se añade otra, va también en la tupla.
+
 `load_settings()` aplica una lista de permitidas (ADR-015): cualquier variable de entorno `ANTHROPIC_*` distinta de `ANTHROPIC_API_KEY` hace que la llamada falle con `not_configured`, sin llamar al proveedor. Se registra solo el nombre de la variable, nunca su valor. La comprobación se hace en cada llamada, no al importar.
 
 ## Cliente
