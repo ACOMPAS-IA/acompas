@@ -168,7 +168,7 @@ issue = 38
 [[aco]]
 id = "034"
 sprint = "S2"
-estado = "pendiente"
+estado = "hecho"
 issue = 159
 
 [[aco]]
@@ -180,7 +180,7 @@ issue = 185
 [[aco]]
 id = "047"
 sprint = "S2"
-estado = "pendiente"
+estado = "hecho"
 issue = 110
 
 [[aco]]
