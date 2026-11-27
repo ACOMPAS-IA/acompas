@@ -43,7 +43,7 @@
 | — | 031 | Disclaimer | S1 | hecho | [ACO-031](aco/ACO-031.md) | [#36](https://github.com/ACOMPAS-IA/acompas/issues/36) |
 | — | 032 | Flujo E2E | S1 | hecho | [ACO-032](aco/ACO-032.md) | [#37](https://github.com/ACOMPAS-IA/acompas/issues/37) |
 | — | 033 | Tests E2E | S2 | traspasado | [ACO-033](aco/ACO-033.md) | [#38](https://github.com/ACOMPAS-IA/acompas/issues/38) |
-| — | 034 | Imagen del backend con PyTorch en CPU y modelos precargados | S2 | pendiente | [ACO-034](aco/ACO-034.md) | [#159](https://github.com/ACOMPAS-IA/acompas/issues/159) |
+| — | 034 | Imagen del backend con PyTorch en CPU y modelos precargados | S2 | hecho | [ACO-034](aco/ACO-034.md) | [#159](https://github.com/ACOMPAS-IA/acompas/issues/159) |
 | — | 041 | Prompt v1: historial no fiable | S2 | pendiente | [ACO-041](aco/ACO-041.md) | [#185](https://github.com/ACOMPAS-IA/acompas/issues/185) |
 | — | 047 | Fixture `authenticated_user` en `conftest.py` | S2 | pendiente | [ACO-047](aco/ACO-047.md) | [#110](https://github.com/ACOMPAS-IA/acompas/issues/110) |
 | — | 051 | Datos sintéticos para demo | S1 | hecho | [ACO-051](aco/ACO-051.md) | [#8](https://github.com/ACOMPAS-IA/acompas/issues/8) |
