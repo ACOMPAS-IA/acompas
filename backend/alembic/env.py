@@ -25,7 +25,10 @@ import app.db.models  # noqa: F401,E402
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # `disable_existing_loggers=False`: sin él, `fileConfig` apaga los loggers
+    # ya creados —los de la aplicación— y cualquier test que capture registros
+    # después de una migración deja de verlos.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 
