@@ -178,6 +178,12 @@ estado = "en curso"
 issue = 204
 
 [[aco]]
+id = "038"
+sprint = "S2"
+estado = "en curso"
+issue = 219
+
+[[aco]]
 id = "041"
 sprint = "S2"
 estado = "pendiente"

@@ -32,6 +32,9 @@ services:
       EMAILS_AUTORIZADOS: ${EMAILS_AUTORIZADOS:-}
       ANONYMIZATION_FINDING_THRESHOLD: ${ANONYMIZATION_FINDING_THRESHOLD:-}
       ANONYMIZATION_DOCUMENT_THRESHOLD: ${ANONYMIZATION_DOCUMENT_THRESHOLD:-}
+      # Esquema del Sprint 2 (ACO-038). Va por la red de Compose; el host usa
+      # la de .env.example para Alembic y los tests.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-acompas}:${POSTGRES_PASSWORD:-acompas_dev}@postgres:5432/${POSTGRES_DB:-acompas}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:

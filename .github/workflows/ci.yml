@@ -12,6 +12,28 @@ jobs:
   backend:
     runs-on: ubuntu-latest
 
+    # Base de datos del esquema (ACO-038). El servicio no monta
+    # `infra/docker/postgres/init`: la extensión `vector` la crea la migración
+    # `0001`, y el usuario del servicio es superusuario de su instancia, así
+    # que puede crearla y crear las bases que usa cada test.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: acompas
+          POSTGRES_USER: acompas
+          POSTGRES_PASSWORD: acompas_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U acompas -d acompas"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://acompas:acompas_dev@localhost:5432/acompas
+
     defaults:
       run:
         working-directory: backend
@@ -48,6 +70,14 @@ jobs:
 
       - name: Install dependencies
         run: pip install ".[dev]"
+
+      - name: Migración sobre base vacía
+        # La extensión `vector` la crea la migración `0001`: el servicio no
+        # monta `infra/docker/postgres/init` (ACO-038).
+        run: |
+          alembic upgrade head
+          alembic check
+          alembic downgrade base
 
       - name: Check API key controls
         working-directory: .
