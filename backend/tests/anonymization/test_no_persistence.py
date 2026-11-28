@@ -351,13 +351,41 @@ def imported_roots(path):
             yield node.module.split(".")[0]
 
 
+def imported_modules(path):
+    """Módulos importados con su ruta completa, para reconocer `app.db`."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                yield alias.name
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            yield node.module
+
+
 def test_app_does_not_import_persistence_clients():
+    """El camino de la petición no persiste.
+
+    `app/db` es la capa de datos de ACO-038 y sí importa SQLAlchemy; el resto
+    de la aplicación no importa ningún cliente de persistencia ni la propia
+    capa de datos, así que atender una petición sigue sin escribir en ningún
+    sitio (ACO-025, T-03, T-04 y T-13).
+    """
     app_dir = Path(__file__).resolve().parents[2] / "app"
-    offenders = [
-        f"{path.relative_to(app_dir)}: {module}"
-        for path in app_dir.rglob("*.py")
-        for module in imported_roots(path)
-        if module in PERSISTENCE_MODULES
-    ]
+    data_layer = app_dir / "db"
+    offenders = []
+    for path in app_dir.rglob("*.py"):
+        if data_layer in path.parents:
+            continue
+        name = path.relative_to(app_dir)
+        offenders.extend(
+            f"{name}: {module}"
+            for module in imported_roots(path)
+            if module in PERSISTENCE_MODULES
+        )
+        if any(
+            module == "app.db" or module.startswith("app.db.")
+            for module in imported_modules(path)
+        ):
+            offenders.append(f"{name}: app.db")
 
     assert offenders == []
