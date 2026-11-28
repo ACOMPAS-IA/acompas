@@ -11,6 +11,7 @@ Estos tests cubren el pipeline de anonimización: detección, política, sustitu
 | `test_api.py` | Contrato HTTP, errores saneados y nombre de fichero. | No |
 | `test_confidence.py` | Fórmula de la confianza del documento. | No |
 | `test_config.py` | Umbrales leídos del entorno. | No |
+| `test_coverage.py` | Métricas de cobertura sobre el corpus (ACO-037). | Sí (test del corpus real) |
 | `test_detection.py` | Detección, asignación de rol y propagación. | Sí |
 | `test_no_persistence.py` | No persistencia, logs y contrato de la respuesta. | No |
 | `test_policy.py` | Política, umbral de hallazgo y falsos positivos. | No |
@@ -39,11 +40,20 @@ No usa red ni servicios externos.
 ```bash
 pytest tests/anonymization/test_analyzer.py \
   tests/anonymization/test_analyzer_warnings.py \
+  tests/anonymization/test_coverage.py \
   tests/anonymization/test_detection.py \
   tests/anonymization/test_service.py -q
 ```
 
-La imagen del backend trae los modelos desde ACO-034. Si ejecutas los tests fuera de ella, la primera ejecución descarga el modelo MEDDOCAN y el modelo de spaCy en español, y las siguientes usan la caché. Los tests de corpus de `test_service.py` reutilizan el fixture de módulo `model_service`, y los de detección el fixture `analyzer` de `test_detection.py`: no se añaden cargas nuevas del modelo.
+La imagen del backend trae los modelos desde ACO-034. Si ejecutas los tests fuera de ella, la primera ejecución descarga el modelo MEDDOCAN y el modelo de spaCy en español, y las siguientes usan la caché. Los tests de corpus de `test_service.py` reutilizan el fixture de módulo `model_service`, y los de detección el fixture `analyzer` de `test_detection.py`. `test_coverage.py` declara su propio fixture de módulo para el único test que usa el modelo real, porque el de `test_service.py` no se comparte: es la única carga nueva que añade ACO-037.
+
+### Métricas de cobertura (ACO-037)
+
+```bash
+python -m app.services.anonymization.coverage
+```
+
+Desde `backend/`. Mide cuántas ocurrencias de las categorías garantizadas por ADR-013 sobreviven a la anonimización en los tres documentos de ACO-051, con una cifra por categoría y un total. La salida solo publica nombres de fichero: ni el cuerpo de los documentos ni los valores del manifiesto. El objetivo superior al 85 % y el límite de ADR-027 §9 se muestran junto a la cifra y no alteran el código de salida: 0 si emite el informe y 2 si no puede leer el corpus o el manifiesto. No escribe ficheros ni filas y no lo importa la API.
 
 ### Suite completa
 
