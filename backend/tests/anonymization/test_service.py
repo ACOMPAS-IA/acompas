@@ -11,13 +11,13 @@ from app.services.anonymization import AnonymizationService
 from app.services.anonymization import confidence as confidence_module
 from app.services.anonymization.analyzer import build_analyzer
 from app.services.anonymization.config import load_settings
-from app.services.anonymization.detection import Detection
+from app.services.anonymization.coverage import guaranteed_entities
 from app.services.anonymization.models import (
     REASON_EMPTY_TEXT,
     REASON_LOW_CONFIDENCE,
     AnonymizationStatus,
 )
-from app.services.anonymization.policy import PERSON_TYPES, POLICY, is_birth_date
+from app.services.anonymization.policy import PERSON_TYPES
 from tests.synthetic_data import count_occurrences, load_document, load_manifest
 
 # Categorías del manifiesto que ADR-013 garantiza. Las demás no se comprueban:
@@ -79,12 +79,6 @@ def assert_no_guaranteed_leak(document_name, anonymized_text):
             assert normalize(value) not in normalized_text, (category, value)
 
 
-# Categorías que ADR-013 garantiza, derivadas de la política de ACO-023.
-# DATE_TIME no está aquí: solo la fecha de nacimiento es garantizada.
-GUARANTEED_CATEGORIES = {
-    entity_type for entity_type, policy in POLICY.items() if policy.guaranteed
-}
-
 # Fragmentos clínicos que T-34 exige conservar. El corpus no contiene
 # profesión ni país; esa parte la cubre el test unitario.
 CLINICAL_CONTEXT = {
@@ -127,22 +121,12 @@ def manifest_entities(document_name):
 def guaranteed_manifest_entities(document_name):
     """Entidades del manifiesto que ADR-013 garantiza para T-31.
 
-    El manifiesto mezcla la fecha de nacimiento con las fechas clínicas dentro
-    de DATE_TIME. Se aplica la regla de ACO-023 P6 sobre el documento original
-    para decidir cuáles cuentan.
+    Delega en `coverage.guaranteed_entities` (P5): la comprobación y la
+    métrica comparten una sola regla (ACO-026 §8.5).
     """
-    original = load_document(document_name)
-    for entity in manifest_entities(document_name):
-        category = entity["category"]
-        if category in GUARANTEED_CATEGORIES:
-            yield entity
-        elif category == "DATE_TIME":
-            start = original.index(entity["text"])
-            detection = Detection(
-                "DATE_TIME", start, start + len(entity["text"]), 1.0
-            )
-            if is_birth_date(original, detection):
-                yield entity
+    return guaranteed_entities(
+        manifest_entities(document_name), load_document(document_name)
+    )
 
 
 def assert_manifest_entity_absent(entity, anonymized_text):
