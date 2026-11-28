@@ -45,6 +45,7 @@
 | — | 033 | Tests E2E | S2 | traspasado | [ACO-033](aco/ACO-033.md) | [#38](https://github.com/ACOMPAS-IA/acompas/issues/38) |
 | — | 034 | Imagen del backend con PyTorch en CPU y modelos precargados | S2 | hecho | [ACO-034](aco/ACO-034.md) | [#159](https://github.com/ACOMPAS-IA/acompas/issues/159) |
 | — | 035 | OCR local y Nivel 2: validación reforzada de entidades y documento ilegible | S2 | en curso | [ACO-035](aco/ACO-035.md) | [#204](https://github.com/ACOMPAS-IA/acompas/issues/204) |
+| — | 037 | Métricas de cobertura de la anonimización | S2 | en curso | [ACO-037](aco/ACO-037.md) | [#221](https://github.com/ACOMPAS-IA/acompas/issues/221) |
 | — | 041 | Prompt v1: historial no fiable | S2 | pendiente | [ACO-041](aco/ACO-041.md) | [#185](https://github.com/ACOMPAS-IA/acompas/issues/185) |
 | — | 047 | Fixture `authenticated_user` en `conftest.py` | S2 | hecho | [ACO-047](aco/ACO-047.md) | [#110](https://github.com/ACOMPAS-IA/acompas/issues/110) |
 | — | 051 | Datos sintéticos para demo | S1 | hecho | [ACO-051](aco/ACO-051.md) | [#8](https://github.com/ACOMPAS-IA/acompas/issues/8) |
