@@ -70,8 +70,12 @@ def test_columnas_de_la_ficha(inspector: Inspector) -> None:
     """Posiciones, hash, invalidez, embedding y array (ADR-022; ficha §8)."""
     documento = columnas(inspector, "documento")
     assert documento["hash_texto_anonimizado"]["nullable"] is False
-    assert documento["hash_texto_anonimizado"]["type"].length == 64
-    assert documento["hash_fichero"]["type"].length == 64
+    # `VARCHAR(64)` y no `CHAR(64)`: el tipo tiene que ser de longitud variable.
+    for nombre in ("hash_texto_anonimizado", "hash_fichero"):
+        tipo = documento[nombre]["type"]
+        assert isinstance(tipo, sa.VARCHAR), f"{nombre} no es VARCHAR"
+        assert not isinstance(tipo, sa.CHAR), f"{nombre} es CHAR"
+        assert tipo.length == 64
     assert documento["posiciones_validas"]["nullable"] is False
 
     etiqueta = columnas(inspector, "etiqueta_anonimizacion")
@@ -162,6 +166,29 @@ def test_catalogos_de_motivo(inspector: Inspector) -> None:
         columnas_tabla = columnas(inspector, tabla)
         assert columnas_tabla["etiqueta"]["nullable"] is False
         assert columnas_tabla["activo"]["nullable"] is False
+
+
+def test_los_motivos_son_claves_foraneas_y_no_texto(inspector: Inspector) -> None:
+    """AC-03: los dos motivos son FK a su catálogo, sin texto libre (ADR-021 §2)."""
+    columnas_tabla = columnas(inspector, "solicitud_desbloqueo_credito")
+    for nombre in ("motivo", "motivo_resolucion"):
+        assert isinstance(
+            columnas_tabla[nombre]["type"], postgresql.UUID
+        ), f"{nombre} no es UUID"
+
+    destinos = {
+        tuple(clave["constrained_columns"]): clave["referred_table"]
+        for clave in inspector.get_foreign_keys("solicitud_desbloqueo_credito")
+    }
+    assert destinos[("motivo",)] == "motivo_solicitud"
+    assert destinos[("motivo_resolucion",)] == "motivo_resolucion"
+
+    textos = [
+        nombre
+        for nombre, columna in columnas_tabla.items()
+        if isinstance(columna["type"], sa.Text)
+    ]
+    assert textos == [], f"columnas de texto libre: {textos}"
 
 
 def test_restricciones_unicas(inspector: Inspector) -> None:

@@ -191,6 +191,43 @@ def test_motivo_que_no_esta_en_el_catalogo_se_rechaza(
         )
 
 
+@pytest.mark.parametrize(
+    ("columna", "catalogo", "pk"),
+    [
+        ("motivo_resolucion", "motivo_solicitud", "motivo_solicitud_id"),
+        ("motivo", "motivo_resolucion", "motivo_resolucion_id"),
+    ],
+)
+def test_un_motivo_del_catalogo_equivocado_se_rechaza(
+    engine: Engine,
+    paciente: uuid.UUID,
+    columna: str,
+    catalogo: str,
+    pk: str,
+) -> None:
+    """Cada columna apunta a su catálogo, no al otro (AC-03; ADR-021 §2)."""
+    identificador = uuid.uuid4()
+    ejecutar(
+        engine,
+        tabla(catalogo)
+        .insert()
+        .values(etiqueta="Motivo sintético", activo=True, **{pk: identificador}),
+    )
+    with pytest.raises(sa.exc.IntegrityError):
+        ejecutar(
+            engine,
+            tabla("solicitud_desbloqueo_credito")
+            .insert()
+            .values(
+                solicitud_id=uuid.uuid4(),
+                paciente_id=paciente,
+                fecha_solicitud=AHORA,
+                estado="pendiente",
+                **{columna: identificador},
+            ),
+        )
+
+
 def test_solicitud_pendiente_sin_motivo_se_acepta(
     engine: Engine, paciente: uuid.UUID
 ) -> None:
